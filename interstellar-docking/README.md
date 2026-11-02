@@ -1,8 +1,8 @@
 # Endurance Docking
 
 A two-player, top-down docking game inspired by the docking scene in *Interstellar*.
-Each mission opens with Dr. Mann docking with the Endurance. His lander latches on for a
-moment, then the hatch blows, and the
+Each mission opens with Dr. Mann docking with the Endurance. His lander latches on and he
+starts opening the hatch while Brand warns him off; a few seconds later the hatch blows, and the
 station starts to spin and drift. Fly the Ranger in, match its spin, lock the clamps, slow the
 spin and push it into the safe zone.
 
@@ -38,8 +38,8 @@ keep going after you let go until you push the other way.
    zero, then push into the green safe zone on the right.
 
 Difficulty sets the station's spin and drift (Easy, Normal, Hard). On Normal and Hard the
-station starts much farther from the Ranger (about 650 m and 800 m, off to one side) and the
-camera zooms out to show more space. On Hard the station drifts fastest, its spin direction is
+station starts much farther from the Ranger (about 650 m and 800 m, over on the left) and the
+camera zooms out as far as it needs to keep both ships on screen, then back in as you close in. On Hard the station drifts fastest, its spin direction is
 random, and its drift path curves back and forth.
 
 ## Music

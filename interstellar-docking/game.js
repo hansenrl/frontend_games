@@ -21,14 +21,15 @@ const INK = '#1a1030';
 // sepX: sideways gap between Ranger and station at the start (0 = station anywhere in the middle)
 // stY: station start height (negative = above the top of the starting view)
 // curve: how hard the station's drift path bends (rad/s of heading swing)
-// zoom: camera zoom (1 = normal, smaller = zoomed out to see more space)
+// zoom: closest camera zoom (1 = normal, smaller = zoomed out). The camera zooms out further
+//       when it needs to, so the Ranger and the station both stay on screen.
 const DIFF = {
   easy:   { spin: 0.35, drift: 5,     randomDir: false, sepX: 0,   stY: 270,  curve: 0,    zoom: 1 },
-  normal: { spin: 0.75, drift: 11,    randomDir: false, sepX: 700, stY: -400, curve: 0,    zoom: 0.72 },
-  hard:   { spin: 1.05, drift: 18.75, randomDir: true,  sepX: 800, stY: -710, curve: 0.16, zoom: 0.6 },
+  normal: { spin: 0.75, drift: 11,    randomDir: false, sepX: 900, stY: -234, curve: 0,    zoom: 0.72 },
+  hard:   { spin: 1.05, drift: 18.75, randomDir: true,  sepX: 960, stY: -615, curve: 0.16, zoom: 0.6 },
 };
 // opening scene timing (seconds): Mann's lander closes in, sits latched on the ring, then the hatch blows
-const MANN_LATCH = 1.8, MANN_TALK = 2.2, INTRO_BOOM = 4.0;
+const MANN_LATCH = 1.8, MANN_TALK = 1.8, BRAND_TALK = 4.0, INTRO_BOOM = 6.0;
 const MANN_FAR = 120, MANN_DOCKED = 36;   // lander gap from the ring, start and latched
 const THRUST = 70;        // units/s^2
 const TORQUE = 0.9;       // rad/s^2
@@ -44,7 +45,7 @@ let dpr = 1, scale = 1, VW = W, VH = H, ox = 0, oy = 0;
 // world view (zoomed per difficulty): world point (x, y) lands on screen at ((x + wox) * Z, (y - S.cam + woy) * Z)
 let Z = 1, wox = 0, woy = 0;
 function setView() {
-  Z = S ? DIFF[S.diff].zoom : 1;
+  Z = S ? S.zoom : 1;
   wox = (VW / Z - W) / 2; woy = (VH / Z - H) / 2;
 }
 const toScreen = (x, y) => ({ x: (x + wox) * Z, y: (y - S.cam + woy) * Z });
@@ -206,7 +207,8 @@ function startGame() { newGame(chosenDiff, false); }
 // ---------- crew talk (speech bubbles) ----------
 // Lines in quotes are from the docking scene in the film; the rest are game prompts.
 const LINES = {
-  mann: [['BRAND', "Dr. Mann, it's not safe—"]],
+  mann: [['MANN', 'Opening the hatch now.']],
+  brand: [['BRAND', "Dr. Mann, it's not safe—"]],
   moving: [
     ['BRAND', 'Cooper, what are you doing?'],
     ['COOPER', 'Docking.'],
@@ -262,9 +264,10 @@ function newGame(diff, title) {
   const d = DIFF[diff];
   const playW = W - ZONE_W;
   const dir = d.randomDir && Math.random() < .5 ? -1 : 1;
-  // start positions: Easy puts the station anywhere in the middle; harder levels put it off to one side, away from the Ranger
-  const side = Math.random() < .5 ? -1 : 1;
-  const stX = d.sepX ? playW / 2 + side * d.sepX / 2 + rand(-30, 30) : playW * (0.125 + 0.75 * Math.random());
+  // start positions: Easy puts the station anywhere in the middle; harder levels put it on the far left
+  // (away from the safe zone, so there's a long tow) with the Ranger off to the right
+  const side = -1;
+  const stX = d.sepX ? playW / 2 + side * (d.sepX / 2 - rand(0, 40)) : playW * (0.125 + 0.75 * Math.random());
   const shX = d.sepX ? playW / 2 - side * d.sepX / 2 : playW / 2;
   S = {
     diff, phase: title ? 'title' : 'intro', time: 0,
@@ -285,8 +288,9 @@ function newGame(diff, title) {
   setPause(false);
   startEl.hidden = !title;
   winEl.hidden = true;
-  setView();
   // start the camera where it will settle, so harder levels don't open with a long pan
+  S.zoom = zoomTarget();
+  setView();
   S.cam = camTarget();
   if (!title) syncMusic();
 }
@@ -313,6 +317,7 @@ function update(dt) {
     const k = Math.min(1, S.time / MANN_LATCH);
     S.mann.off = MANN_FAR - (MANN_FAR - MANN_DOCKED) * (1 - Math.pow(1 - k, 2));   // ease in, then sit still
     if (S.time >= MANN_TALK) sayOnce('mann');
+    if (S.time >= BRAND_TALK) sayOnce('brand');
     if (S.time >= INTRO_BOOM) explode();
   }
   // after the blast the station's spin winds up over a couple of seconds
@@ -407,6 +412,7 @@ function update(dt) {
   }
   S.confetti.step(dt);
 
+  S.zoom += (zoomTarget() - S.zoom) * Math.min(1, 1.5 * dt);
   setView();
   S.cam += (camTarget() - S.cam) * Math.min(1, 2.5 * dt);
 
@@ -416,6 +422,13 @@ function update(dt) {
   if (!T.cur && T.queue.length) { T.cur = T.queue.shift(); T.t = 1.6 + T.cur.text.length * 0.045; }
 }
 
+// zoom: as close as the difficulty allows, but far enough out that the Ranger below the station fits
+// between the top HUD and the bottom of the screen (see camTarget for the margins)
+function zoomTarget() {
+  const base = DIFF[S.diff].zoom, dy = S.ship.y - S.st.y;
+  if (dy <= 0) return base;
+  return clamp((H - 190) / (dy + R + 40), 0.3, base);
+}
 // camera: keep the station clear of the top HUD, and the ship on screen when possible
 function camTarget() {
   const st = S.st, sh = S.ship;
@@ -532,10 +545,14 @@ function drawStation(c, st, intact) {
   c.lineWidth = 2; circ(c, 0, 0, 8); c.stroke();
   c.restore();
 }
+function mannPos() {
+  const st = S.st, t = DMG + st.a, d = R + S.mann.off;
+  return { x: st.x + Math.cos(t) * d, y: st.y + Math.sin(t) * d, t };
+}
 function drawMann(c, st) {
   // Mann's lander, nose-in toward the damaged module's port
-  const t = DMG + st.a, d = R + S.mann.off;
-  c.save(); c.translate(st.x + Math.cos(t) * d, st.y + Math.sin(t) * d); c.rotate(t - Math.PI / 2); c.scale(SS * .8, SS * .8);
+  const { x, y, t } = mannPos();
+  c.save(); c.translate(x, y); c.rotate(t - Math.PI / 2); c.scale(SS * .8, SS * .8);
   c.lineJoin = 'round'; c.lineWidth = 3.5; c.strokeStyle = INK;
   rangerPath(c, 1.1); c.fillStyle = '#c9c2e0'; c.fill(); c.stroke();
   windows(c, 1.1); c.fillStyle = '#4fd8ff'; c.fill(); c.lineWidth = 2; c.stroke();
@@ -764,7 +781,7 @@ function stageText() {
   const st = S.st;
   switch (S.phase) {
     case 'title': return '';
-    case 'intro': return S.time < MANN_LATCH ? 'Dr. Mann is docking with Endurance…' : 'Dr. Mann is opening the hatch…';
+    case 'intro': return '';
     case 'approach':
       if (S.posM && S.spinM) return 'Hold steady! Clamps locking…';
       if (!S.posM) return 'Pilot: fly onto the yellow hub and match its drift';
@@ -792,7 +809,9 @@ function drawPlayerBadges(c) {
 }
 function drawBubble(c) {
   const T = S.talk; if (!T.cur || !opts.talk) return;
-  const sh = S.ship;
+  // Mann talks from his lander; everyone else is aboard the Ranger
+  const fromMann = T.cur.who === 'MANN' && S.intact;
+  const sh = fromMann ? mannPos() : S.ship;
   const { x: sx, y: sy } = toScreen(sh.x, sh.y);
   const maxW = 300;
   c.font = '20px Bangers, Impact, sans-serif';
@@ -802,7 +821,7 @@ function drawBubble(c) {
   lines.push(cur);
   const bw = Math.min(maxW, Math.max(...lines.map(l => c.measureText(l).width))) + 36, bh = lines.length * 24 + 34;
   // sit beside the ship, on the side away from the station (and clear of the ring when docked)
-  const stx = toScreen(S.st.x, S.st.y).x, gap = Math.hypot(S.st.x - sh.x, S.st.y - sh.y) < R + 40 ? (R + 40) * Z : 60;
+  const stx = toScreen(S.st.x, S.st.y).x, gap = Math.hypot(S.st.x - sh.x, S.st.y - sh.y) < R + 40 ? (R + 40) * Z : fromMann ? Math.max(60, R * Z) : 60;
   const leftSide = stx > sx ? true : sx + gap + bw > VW - 160;
   let bx = leftSide ? sx - gap - bw : sx + gap, by = sy - bh / 2 - 30;
   if (bx < 14) bx = sx + gap;
@@ -820,7 +839,7 @@ function drawBubble(c) {
   c.beginPath(); c.moveTo(ex - uy * 11.5, ey + ux * 11.5); c.lineTo(ex + ux * 6, ey + uy * 6); c.lineTo(ex + uy * 11.5, ey - ux * 11.5); c.closePath(); c.fill();
   // speaker tag
   c.font = '16px Bangers, Impact, sans-serif'; const tw = c.measureText(T.cur.who).width + 18;
-  c.fillStyle = { TARS: '#4fd8ff', CASE: '#ffd34d', BRAND: '#ff9ec4' }[T.cur.who] || '#ff8a3d';
+  c.fillStyle = { TARS: '#4fd8ff', CASE: '#ffd34d', BRAND: '#ff9ec4', MANN: '#c9c2e0' }[T.cur.who] || '#ff8a3d';
   rr(c, bx + 14, by - 12, tw, 24, 8); c.fill(); c.lineWidth = 3; c.stroke();
   c.fillStyle = INK; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText(T.cur.who, bx + 23, by + 1);
   c.font = '20px Bangers, Impact, sans-serif'; c.textAlign = 'center';
