@@ -1,5 +1,5 @@
 /* Endurance Docking — a two-player, top-down docking game.
- * Pilot: W A S D (screen-oriented thrusters). Co-pilot: K / L (spin).
+ * Pilot: W A S D (screen-oriented thrusters). Co-pilot: ← / → arrow keys (spin).
  * Art style: "Saturday Cartoon" (see design_artifacts/).
  */
 (() => {
@@ -18,11 +18,14 @@ const SHIP_S = 1.35;                 // ranger path scale inside the station-sca
 const M_PER_UNIT = 0.5;              // readouts: 1 world unit = 0.5 m
 const INK = '#1a1030';
 
+// sepX: sideways gap between Ranger and station at the start (0 = station anywhere in the middle)
+// stY: station start height. curve: how hard the station's drift path bends (rad/s of heading swing)
 const DIFF = {
-  easy:   { spin: 0.35, drift: 5,  randomDir: false },
-  normal: { spin: 0.6,  drift: 8,  randomDir: false },
-  hard:   { spin: 0.9,  drift: 12, randomDir: true  },
+  easy:   { spin: 0.35, drift: 5,  randomDir: false, sepX: 0,   stY: 270, curve: 0 },
+  normal: { spin: 0.75, drift: 11, randomDir: false, sepX: 440, stY: 210, curve: 0 },
+  hard:   { spin: 1.05, drift: 15, randomDir: true,  sepX: 620, stY: 170, curve: 0.16 },
 };
+const INTRO_BOOM = 2.3;   // seconds into the opening scene when Mann's hatch blows
 const THRUST = 70;        // units/s^2
 const TORQUE = 0.9;       // rad/s^2
 const DOCKED_THRUST = 0.45, DOCKED_TORQUE = 0.35;   // the joined ships are heavier
@@ -72,13 +75,16 @@ function connectorIsBroken(i) { return MISSING.includes(i) || MISSING.includes((
 
 // ---------- input ----------
 const keys = new Set();
-const GAME_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyK', 'KeyL'];
+const GAME_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowLeft', 'ArrowRight'];
+const CCW = 'ArrowLeft', CW = 'ArrowRight';
 window.addEventListener('keydown', e => {
   if (GAME_KEYS.includes(e.code)) { keys.add(e.code); e.preventDefault(); }
   if (e.repeat) return;
   if (e.code === 'KeyH') toggle('data');
   else if (e.code === 'KeyG') toggle('hints');
   else if (e.code === 'KeyT') toggle('talk');
+  else if (e.code === 'KeyM') toggle('music');
+  else if (e.code === 'Escape' && !settingsEl.hidden) closeSettings();
   else if (e.code === 'KeyP' || e.code === 'Escape') togglePause();
   else if (e.code === 'KeyR' && S.phase !== 'title') newGame(S.diff, false);
   else if (e.code === 'Enter') {
@@ -91,17 +97,89 @@ window.addEventListener('blur', () => { keys.clear(); if (S.phase !== 'title' &&
 const down = k => keys.has(k);
 
 // ---------- settings / UI ----------
-const opts = { data: true, hints: true, talk: true };
+const opts = { data: true, hints: true, talk: true, music: true };
 try { const saved = JSON.parse(localStorage.getItem('endurance-docking-opts') || 'null'); if (saved) Object.assign(opts, saved); } catch (e) { /* storage unavailable */ }
-const btn = { data: document.getElementById('btnData'), hints: document.getElementById('btnHints'), talk: document.getElementById('btnTalk'), pause: document.getElementById('btnPause') };
-function syncButtons() { for (const k of ['data', 'hints', 'talk']) btn[k].setAttribute('aria-pressed', String(opts[k])); btn.pause.setAttribute('aria-pressed', String(paused)); }
+const btn = { data: document.getElementById('btnData'), hints: document.getElementById('btnHints'), talk: document.getElementById('btnTalk'), music: document.getElementById('btnSound'), pause: document.getElementById('btnPause') };
+function syncButtons() {
+  for (const k of ['data', 'hints', 'talk']) btn[k].setAttribute('aria-pressed', String(opts[k]));
+  btn.pause.setAttribute('aria-pressed', String(paused));
+  btn.music.setAttribute('aria-pressed', String(opts.music));
+  btn.music.classList.toggle('off', !opts.music);
+  btn.music.title = !track ? 'Sound (M). No music track yet: pause and open Settings to pick one.' : opts.music ? 'Sound on (M)' : 'Sound off (M)';
+  btn.music.setAttribute('aria-label', opts.music ? 'Sound on' : 'Sound off');
+  pauseEl.hidden = !paused || !S || S.phase === 'title' || S.phase === 'won';
+  if (pauseEl.hidden) { settingsEl.hidden = true; pausePanel.hidden = false; }
+  syncMusic();
+}
 function toggle(k) { opts[k] = !opts[k]; try { localStorage.setItem('endurance-docking-opts', JSON.stringify(opts)); } catch (e) { /* ignore */ } syncButtons(); }
 btn.data.onclick = () => toggle('data');
 btn.hints.onclick = () => toggle('hints');
 btn.talk.onclick = () => toggle('talk');
+btn.music.onclick = () => toggle('music');
 btn.pause.onclick = () => togglePause();
 let paused = false;
 function setPause(p) { paused = p; syncButtons(); }
+
+// ---------- pause menu & settings ----------
+const pauseEl = document.getElementById('pauseMenu'), settingsEl = document.getElementById('settings');
+const trackName = document.getElementById('trackName'), trackFile = document.getElementById('trackFile');
+const btnClearTrack = document.getElementById('btnClearTrack');
+document.getElementById('btnResume').onclick = () => setPause(false);
+document.getElementById('btnRestart').onclick = () => newGame(S.diff, false);
+const pausePanel = document.getElementById('pausePanel');
+document.getElementById('btnSettings').onclick = () => { settingsEl.hidden = false; pausePanel.hidden = true; document.getElementById('btnPickTrack').focus(); };
+document.getElementById('btnCloseSettings').onclick = () => closeSettings();
+document.getElementById('btnPickTrack').onclick = () => trackFile.click();
+function closeSettings() { settingsEl.hidden = true; pausePanel.hidden = false; document.getElementById('btnSettings').focus(); }
+trackFile.onchange = () => {
+  const f = trackFile.files && trackFile.files[0];
+  trackFile.value = '';
+  if (!f) return;
+  setTrack({ name: f.name, blob: f });
+  saveTrack({ name: f.name, blob: f });
+};
+btnClearTrack.onclick = () => { setTrack(null); saveTrack(null); };
+
+// ---------- music (toggle: M) ----------
+// The chosen MP3 is copied into the browser's IndexedDB, so it's still there next time the game opens.
+const music = document.getElementById('music');
+music.volume = 0.6;
+let track = null, trackUrl = null;
+function setTrack(t) {
+  if (trackUrl) URL.revokeObjectURL(trackUrl);
+  track = t; trackUrl = t ? URL.createObjectURL(t.blob) : null;
+  music.pause();
+  if (trackUrl) { music.src = trackUrl; music.load(); } else music.removeAttribute('src');
+  trackName.textContent = t ? t.name : 'None chosen';
+  btnClearTrack.hidden = !t;
+  syncButtons();
+}
+function syncMusic() {
+  if (!track || !S) return;
+  const want = opts.music && !paused && S.phase !== 'title';
+  if (want && music.paused) music.play().catch(() => { /* blocked until a key/click */ });
+  else if (!want && !music.paused) music.pause();
+}
+function openDB() {
+  return new Promise((ok, fail) => {
+    const r = indexedDB.open('endurance-docking', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('music');
+    r.onsuccess = () => ok(r.result); r.onerror = () => fail(r.error);
+  });
+}
+async function saveTrack(t) {
+  try {
+    const db = await openDB(), tx = db.transaction('music', 'readwrite');
+    if (t) tx.objectStore('music').put(t, 'track'); else tx.objectStore('music').delete('track');
+  } catch (e) { /* storage unavailable: the track still plays this session */ }
+}
+async function loadTrack() {
+  try {
+    const db = await openDB();
+    const t = await new Promise((ok, fail) => { const r = db.transaction('music').objectStore('music').get('track'); r.onsuccess = () => ok(r.result); r.onerror = () => fail(r.error); });
+    if (t && t.blob && !track) setTrack(t);
+  } catch (e) { /* storage unavailable */ }
+}
 function togglePause() { if (S.phase === 'title' || S.phase === 'won') return; setPause(!paused); }
 
 let chosenDiff = 'easy';
@@ -117,6 +195,11 @@ function startGame() { newGame(chosenDiff, false); }
 // ---------- crew talk (speech bubbles) ----------
 // Lines in quotes are from the docking scene in the film; the rest are game prompts.
 const LINES = {
+  mann: [['BRAND', "Dr. Mann, it's not safe—"]],
+  moving: [
+    ['BRAND', 'Cooper, what are you doing?'],
+    ['COOPER', 'Docking.'],
+  ],
   intro: [
     ['COOPER', 'Case, get ready to match our spin with the retro thrusters.'],
     ['CASE', "It's not possible."],
@@ -168,23 +251,41 @@ function newGame(diff, title) {
   const d = DIFF[diff];
   const playW = W - ZONE_W;
   const dir = d.randomDir && Math.random() < .5 ? -1 : 1;
+  // start positions: Easy puts the station anywhere in the middle; harder levels put it off to one side, away from the Ranger
+  const side = Math.random() < .5 ? -1 : 1;
+  const stX = d.sepX ? playW / 2 + side * d.sepX / 2 + rand(-30, 30) : playW * (0.125 + 0.75 * Math.random());
+  const shX = d.sepX ? playW / 2 - side * d.sepX / 2 : playW / 2;
   S = {
-    diff, phase: title ? 'title' : 'approach', time: 0,
-    st: { x: playW * (0.125 + 0.75 * Math.random()), y: 270, vx: rand(-1.5, 1.5), vy: -d.drift, a: Math.random() * TAU, w: d.spin * dir },
-    ship: { x: playW / 2, y: H - 110, vx: 0, vy: 0, a: 0, w: 0 },
+    diff, phase: title ? 'title' : 'intro', time: 0,
+    st: { x: stX, y: d.stY, vx: 0, vy: 0, a: Math.random() * TAU, w: 0 },
+    // what the explosion leaves the station doing
+    kick: { vx: rand(-1.5, 1.5), vy: -d.drift, w: d.spin * dir },
+    intact: true, boomAt: 0, spinUp: 0,
+    curve: d.curve, curveT: Math.random() * TAU, curveDir: Math.random() < .5 ? -1 : 1,
+    mann: { off: 120 },
+    ship: { x: shX, y: H - 110, vx: 0, vy: 0, a: 0, w: 0 },
     cam: 0, trail: [], trailT: 0,
     posM: false, spinM: false, hold: 0, dockRel: 0, bestHold: 0,
     flash: 0, nextBurst: rand(6, 10),
     parts: new Particles(), confetti: new Particles(400),
     talk: { queue: [], cur: null, t: 0 }, said: new Set(),
-    wonAt: 0, lostHolds: 0,
+    wonAt: 0, lostHolds: 0, panelA: 1,
   };
-  burst(S.st, 70);
-  for (let i = 0; i < 40; i++) S.parts.step(1 / 30);
   setPause(false);
   startEl.hidden = !title;
   winEl.hidden = true;
-  if (!title) setTimeout(() => S.phase === 'approach' && sayOnce('intro'), 600);
+  if (!title) { say('mann'); syncMusic(); }
+}
+
+function explode() {
+  const st = S.st;
+  S.intact = false; S.boomAt = S.time; S.phase = 'approach';
+  st.vx = S.kick.vx; st.vy = S.kick.vy;
+  burst(st, 90);
+  S.flash = 1.4;
+  S.nextBurst = rand(6, 10);
+  // Brand gets cut off
+  S.talk.queue = []; S.talk.cur = null;
 }
 
 // ---------- update ----------
@@ -193,6 +294,25 @@ function update(dt) {
   S.time += dt;
   const playing = S.phase === 'approach' || S.phase === 'docked';
 
+  // opening scene: Mann's lander creeps in to dock, then the hatch blows
+  if (S.phase === 'intro') {
+    S.mann.off = Math.max(28, 120 - S.time * 42);
+    if (S.time >= INTRO_BOOM) explode();
+  }
+  // after the blast the station's spin winds up over a couple of seconds
+  if (!S.intact && S.spinUp < 1) {
+    S.spinUp = Math.min(1, (S.time - S.boomAt) / 2);
+    st.w = S.kick.w * (1 - Math.pow(1 - S.spinUp, 2));
+  }
+  // Hard: the station's drift path bends back and forth
+  if (S.phase === 'approach' && S.curve) {
+    S.curveT += dt;
+    const turn = S.curve * S.curveDir * Math.cos(S.curveT * 0.3) * dt;
+    const c = Math.cos(turn), s = Math.sin(turn);
+    const vx = st.vx * c - st.vy * s, vy = st.vx * s + st.vy * c;
+    st.vx = vx; st.vy = vy;
+  }
+
   if (S.phase !== 'docked' && S.phase !== 'won') {
     // free flight
     if (playing) {
@@ -200,8 +320,9 @@ function update(dt) {
       if (down('KeyS')) sh.vy += THRUST * dt;
       if (down('KeyA')) sh.vx -= THRUST * dt;
       if (down('KeyD')) sh.vx += THRUST * dt;
-      if (down('KeyL')) sh.w += TORQUE * dt;
-      if (down('KeyK')) sh.w -= TORQUE * dt;
+      if (down(CW)) sh.w += TORQUE * dt;
+      if (down(CCW)) sh.w -= TORQUE * dt;
+      if (!S.said.has('moving') && GAME_KEYS.some(down)) { sayOnce('moving'); sayOnce('intro'); }
     }
     sh.x += sh.vx * dt; sh.y += sh.vy * dt; sh.a += sh.w * dt;
     st.x += st.vx * dt; st.y += st.vy * dt; st.a += st.w * dt;
@@ -242,8 +363,8 @@ function update(dt) {
       if (down('KeyS')) st.vy += THRUST * DOCKED_THRUST * dt;
       if (down('KeyA')) st.vx -= THRUST * DOCKED_THRUST * dt;
       if (down('KeyD')) st.vx += THRUST * DOCKED_THRUST * dt;
-      if (down('KeyL')) st.w += TORQUE * DOCKED_TORQUE * dt;
-      if (down('KeyK')) st.w -= TORQUE * DOCKED_TORQUE * dt;
+      if (down(CW)) st.w += TORQUE * DOCKED_TORQUE * dt;
+      if (down(CCW)) st.w -= TORQUE * DOCKED_TORQUE * dt;
     }
     st.x += st.vx * dt; st.y += st.vy * dt; st.a += st.w * dt;
     sh.x = st.x; sh.y = st.y; sh.vx = st.vx; sh.vy = st.vy; sh.w = st.w; sh.a = st.a + S.dockRel;
@@ -254,10 +375,10 @@ function update(dt) {
   }
 
   // explosions & venting (fades over time)
-  if (S.phase !== 'won') {
+  if (S.phase !== 'won' && !S.intact) {
     S.nextBurst -= dt;
     if (S.nextBurst <= 0 && S.phase !== 'docked') { burst(st, 30); S.nextBurst = rand(8, 13); }
-    vent(st, Math.max(1.2, 6 - S.time * .08), dt);
+    vent(st, Math.max(1.2, 6 - (S.time - S.boomAt) * .08), dt);
   }
   S.parts.step(dt);
   S.flash = Math.max(0, S.flash - dt * 1.6);
@@ -358,26 +479,27 @@ function drawParticles(c, kind) {
     else { c.save(); c.translate(q.x, q.y); c.rotate(q.rot); c.globalAlpha = Math.min(1, k * 3); c.fillStyle = '#ff8a3d'; c.fillRect(-q.size / 2, -q.size / 2, q.size, q.size); c.strokeRect(-q.size / 2, -q.size / 2, q.size, q.size); c.restore(); c.globalAlpha = 1; }
   }
 }
-function drawStation(c, st) {
+function drawStation(c, st, intact) {
+  const missing = intact ? [] : MISSING;
   c.save(); c.translate(st.x, st.y); c.rotate(st.a); c.scale(SS, SS); c.lineJoin = 'round';
   c.lineWidth = 9; c.strokeStyle = INK;
   for (const i of SPOKES) { const th = i * TAU / 12; line(c, 0, 0, Math.cos(th) * (R0 - MOD_R / 2), Math.sin(th) * (R0 - MOD_R / 2)); }
   c.lineWidth = 4.5; c.strokeStyle = '#b9b2e8';
   for (const i of SPOKES) { const th = i * TAU / 12; line(c, 0, 0, Math.cos(th) * (R0 - MOD_R / 2), Math.sin(th) * (R0 - MOD_R / 2)); }
   for (let i = 0; i < 12; i++) {
-    if (connectorIsBroken(i)) continue;
+    if (!intact && connectorIsBroken(i)) continue;
     c.save(); c.rotate((i + .5) * TAU / 12); c.translate(R0, 0);
     c.fillStyle = '#b9b2e8'; c.lineWidth = 3; c.strokeStyle = INK; rr(c, -4, -6, 8, 12, 2); c.fill(); c.stroke(); c.restore();
   }
   for (let i = 0; i < 12; i++) {
-    if (MISSING.includes(i)) continue;
+    if (missing.includes(i)) continue;
     c.save(); c.rotate(i * TAU / 12); c.translate(R0, 0);
     c.lineWidth = 3.5; c.strokeStyle = INK; c.fillStyle = '#f4f1ff'; rr(c, -MOD_R / 2 - 1, -MOD_T / 2, MOD_R + 2, MOD_T, 5); c.fill(); c.stroke();
     c.fillStyle = '#ff8a3d'; c.fillRect(-MOD_R / 2 + 2, -3, MOD_R - 3, 6);
     c.fillStyle = '#4fd8ff'; circ(c, 3, -9, 2.4); c.fill(); circ(c, 3, 9, 2.4); c.fill();
     c.restore();
   }
-  for (const s of [-1, 1]) {
+  if (!intact) for (const s of [-1, 1]) {
     c.save(); c.rotate(DMG + s * TAU / 12 * 1.02); c.translate(R0, 0);
     c.fillStyle = '#ff8a3d'; c.strokeStyle = INK; c.lineWidth = 3;
     c.beginPath(); c.moveTo(-6, 0); c.lineTo(-3, -s * 6); c.lineTo(0, -s * 2); c.lineTo(3, -s * 7); c.lineTo(6, 0); c.closePath(); c.fill(); c.stroke();
@@ -385,6 +507,15 @@ function drawStation(c, st) {
   }
   c.fillStyle = '#ffd34d'; c.lineWidth = 4; c.strokeStyle = INK; circ(c, 0, 0, HUB + 3); c.fill(); c.stroke();
   c.lineWidth = 2; circ(c, 0, 0, 8); c.stroke();
+  c.restore();
+}
+function drawMann(c, st) {
+  // Mann's lander, nose-in toward the damaged module's port
+  const t = DMG + st.a, d = R + S.mann.off;
+  c.save(); c.translate(st.x + Math.cos(t) * d, st.y + Math.sin(t) * d); c.rotate(t - Math.PI / 2); c.scale(SS * .8, SS * .8);
+  c.lineJoin = 'round'; c.lineWidth = 3.5; c.strokeStyle = INK;
+  rangerPath(c, 1.1); c.fillStyle = '#c9c2e0'; c.fill(); c.stroke();
+  windows(c, 1.1); c.fillStyle = '#4fd8ff'; c.fill(); c.lineWidth = 2; c.stroke();
   c.restore();
 }
 function drawFlash(c, st) {
@@ -413,8 +544,8 @@ function drawShip(c, sh, thrusting) {
   }
   c.rotate(sh.a); c.scale(SS, SS); c.lineJoin = 'round';
   // spin puffs at the wing tips
-  if (thrusting && (down('KeyK') || down('KeyL'))) {
-    const dir = down('KeyL') ? -1 : 1;
+  if (thrusting && (down(CCW) || down(CW))) {
+    const dir = down(CW) ? -1 : 1;
     c.fillStyle = '#ffffff'; c.strokeStyle = INK; c.lineWidth = 2;
     for (const s of [-1, 1]) { const r = 4 + Math.sin(S.time * 30 + s) * 1.2; circ(c, s * 23, 16 + dir * s * 6, r); c.fill(); c.stroke(); }
   }
@@ -505,6 +636,11 @@ function drawDataPanel(c) {
   const pw = Math.min(640, VW - 380), ph = 132;
   if (pw < 300) return;
   const px = (VW - pw) / 2, py = VH - ph - 14;
+  // fade the panel out when the Ranger (or the docked pair) is underneath it
+  const m = 50, sx = sh.x + ox, sy = sh.y - S.cam + oy;
+  const under = sx > px - m && sx < px + pw + m && sy > py - m && sy < py + ph + m;
+  S.panelA += ((under ? 0.18 : 1) - S.panelA) * Math.min(1, frameDt * 8);
+  c.save(); c.globalAlpha = S.panelA;
   c.fillStyle = 'rgba(12,39,70,.9)'; c.fillRect(px, py, pw, ph);
   c.strokeStyle = '#5f9fd6'; c.lineWidth = 1.5; c.strokeRect(px + .5, py + .5, pw, ph);
   const degS = st.w * 180 / Math.PI, rpm = st.w * 60 / TAU, drift = Math.hypot(st.vx, st.vy) * M_PER_UNIT;
@@ -538,6 +674,7 @@ function drawDataPanel(c) {
     meter(c, mx, py + 14, mw, 'SPIN LEFT', `${Math.abs(degS).toFixed(1)}°/s`, Math.abs(st.w) / Math.max(.3, DIFF[S.diff].spin), Math.abs(st.w) < WIN_SPIN, false);
     meter(c, mx, py + 44, mw, 'SPEED', `${drift.toFixed(1)} m/s`, drift / 40, true, false);
   }
+  c.restore();
 }
 
 // ---------- hints (toggle: G): ghost, trail, arrows ----------
@@ -552,7 +689,7 @@ function outlinedText(c, txt, x, y, col, size = 20, align = 'center') {
   c.lineWidth = 6; c.strokeStyle = INK; c.strokeText(txt, x, y); c.fillStyle = col; c.fillText(txt, x, y);
 }
 function drawSpinHint(c, x, y, cw, label) {
-  // cw = +1 means "spin clockwise more" (press L)
+  // cw = +1 means "spin clockwise more" (press →)
   const pulse = .55 + .45 * Math.sin(S.time * 6);
   const col = `rgba(255,211,77,${pulse})`, r = 62;
   const a0 = -Math.PI / 2 - cw * .9, a1 = -Math.PI / 2 + cw * .9;
@@ -560,7 +697,7 @@ function drawSpinHint(c, x, y, cw, label) {
   c.beginPath(); c.arc(x, y, r, a0, a1, cw < 0); c.stroke(); c.lineCap = 'butt';
   const tx = -Math.sin(a1) * cw, ty = Math.cos(a1) * cw, hx = x + Math.cos(a1) * r, hy = y + Math.sin(a1) * r;
   c.fillStyle = col; c.beginPath(); c.moveTo(hx + tx * 14, hy + ty * 14); c.lineTo(hx - Math.cos(a1) * 10, hy - Math.sin(a1) * 10); c.lineTo(hx + Math.cos(a1) * 10, hy + Math.sin(a1) * 10); c.closePath(); c.fill();
-  keycap(c, x - 15, y - r - 50, cw > 0 ? 'L' : 'K', down(cw > 0 ? 'KeyL' : 'KeyK'));
+  keycap(c, x - 15, y - r - 50, cw > 0 ? '→' : '←', down(cw > 0 ? CW : CCW));
   outlinedText(c, label, x, y - r - 64, '#ffd34d', 17);
 }
 function drawThrustHint(c, sh, need) {
@@ -604,12 +741,13 @@ function stageText() {
   const st = S.st;
   switch (S.phase) {
     case 'title': return '';
+    case 'intro': return 'Dr. Mann is docking with Endurance…';
     case 'approach':
       if (S.posM && S.spinM) return 'Hold steady! Clamps locking…';
       if (!S.posM) return 'Pilot: fly onto the yellow hub and match its drift';
       return 'Co-pilot: spin to line up with the ghost ship';
     case 'docked':
-      if (Math.abs(st.w) >= WIN_SPIN) return `Docked! Co-pilot: hold ${st.w > 0 ? 'K' : 'L'} to slow the spin`;
+      if (Math.abs(st.w) >= WIN_SPIN) return `Docked! Co-pilot: hold ${st.w > 0 ? '←' : '→'} to slow the spin`;
       return 'Pilot: push into the safe zone →';
     case 'won': return 'Mission complete!';
   }
@@ -626,7 +764,7 @@ function drawPlayerBadges(c) {
   const x2 = VW - 146;
   c.lineWidth = 3; c.strokeStyle = INK; c.fillStyle = 'rgba(255,138,61,.92)'; rr(c, x2, y, 132, bh, 16); c.fill(); c.stroke();
   outlinedText(c, 'CO-PILOT', x2 + 66, y + 14, '#ffffff', 15);
-  keycap(c, x2 + 26, y + 36, 'K', down('KeyK')); keycap(c, x2 + 76, y + 36, 'L', down('KeyL'));
+  keycap(c, x2 + 26, y + 36, '←', down(CCW)); keycap(c, x2 + 76, y + 36, '→', down(CW));
   outlinedText(c, '↺', x2 + 41, y + 82, '#ffffff', 18); outlinedText(c, '↻', x2 + 91, y + 82, '#ffffff', 18);
 }
 function drawBubble(c) {
@@ -659,7 +797,7 @@ function drawBubble(c) {
   c.beginPath(); c.moveTo(ex - uy * 11.5, ey + ux * 11.5); c.lineTo(ex + ux * 6, ey + uy * 6); c.lineTo(ex + uy * 11.5, ey - ux * 11.5); c.closePath(); c.fill();
   // speaker tag
   c.font = '16px Bangers, Impact, sans-serif'; const tw = c.measureText(T.cur.who).width + 18;
-  c.fillStyle = T.cur.who === 'TARS' ? '#4fd8ff' : T.cur.who === 'CASE' ? '#ffd34d' : '#ff8a3d';
+  c.fillStyle = { TARS: '#4fd8ff', CASE: '#ffd34d', BRAND: '#ff9ec4' }[T.cur.who] || '#ff8a3d';
   rr(c, bx + 14, by - 12, tw, 24, 8); c.fill(); c.lineWidth = 3; c.stroke();
   c.fillStyle = INK; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText(T.cur.who, bx + 23, by + 1);
   c.font = '20px Bangers, Impact, sans-serif'; c.textAlign = 'center';
@@ -700,12 +838,8 @@ function drawHUD(c) {
     c.save(); c.translate(VW / 2, VH / 2 - 40); c.scale(s, s); outlinedText(c, 'SAFE!', 0, 0, '#5cff9d', 72); c.restore();
   }
   drawPlayerBadges(c);
-  if (opts.data) drawDataPanel(c);
-  if (paused) {
-    c.fillStyle = 'rgba(18,12,48,.5)'; c.fillRect(0, 0, VW, VH);
-    outlinedText(c, 'Paused', VW / 2, VH / 2 - 10, '#ffffff', 56);
-    outlinedText(c, 'Press P to keep flying', VW / 2, VH / 2 + 40, '#ffd34d', 20);
-  }
+  if (opts.data && S.phase !== 'intro') drawDataPanel(c);
+  // (the pause menu itself is HTML: #pauseMenu)
 }
 
 // ---------- frame ----------
@@ -722,12 +856,13 @@ function render() {
   if (live && opts.hints && S.phase === 'approach') drawTrail(c);
   drawParticles(c, 'smoke');
   drawHoldRing(c);
-  drawStation(c, S.st);
+  drawStation(c, S.st, S.intact);
+  if (S.intact) drawMann(c, S.st);
   drawParticles(c, 'frag');
   drawFlash(c, S.st);
   if (live && opts.hints && S.phase === 'approach') drawGhost(c);
   if (live) drawShip(c, S.ship, S.phase === 'approach' || S.phase === 'docked');
-  if (live && opts.data && S.phase !== 'won') drawWorldData(c);
+  if (live && opts.data && S.phase !== 'won' && S.phase !== 'intro') drawWorldData(c);
   if (live && opts.hints && !paused) {
     if (S.phase === 'approach') {
       if (!S.posM) drawThrustHint(c, S.ship, thrustNeed());
@@ -756,15 +891,16 @@ function render() {
   }
 }
 
-let last = performance.now();
+let last = performance.now(), frameDt = 0;
 function loop(now) {
-  const dt = clamp((now - last) / 1000, 0, 0.05); last = now;
+  const dt = clamp((now - last) / 1000, 0, 0.05); last = now; frameDt = dt;
   if (!paused) update(dt);
   render();
   requestAnimationFrame(loop);
 }
 newGame('normal', true);
 syncButtons();
+loadTrack();
 requestAnimationFrame(loop);
 
 // debug / testing hook
