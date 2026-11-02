@@ -8,6 +8,7 @@ Every push to `main` deploys to GitHub Pages:
 | --- | --- |
 | Home page (list of games) | https://hansenrl.github.io/frontend_games/ |
 | Choo-Choo Junction | https://hansenrl.github.io/frontend_games/train-junction/ |
+| Endurance Docking | https://hansenrl.github.io/frontend_games/interstellar-docking/ |
 
 ## One-time GitHub setup
 
@@ -57,3 +58,9 @@ node tools/check-levels.js
 ```
 
 It tries every combination of pieces and makes sure each level can be solved. The deploy workflow runs it too, and won't publish a level that can't be solved.
+
+## Endurance Docking
+
+A two-player, top-down docking game inspired by the spinning-station docking scene in *Interstellar*. One player flies the Ranger with **W A S D** (thrust is always up/left/down/right on the screen), the other spins it with **K** and **L**. Match the station's position and drift, match its spin, hold for 10 seconds while the clamps lock, then slow the spin and push the station into the safe zone.
+
+`H` toggles flight data, `G` toggles hints, `T` toggles crew speech bubbles, `P` pauses, `R` restarts. More detail, and the art-style mockups it was designed from, are in [`interstellar-docking/`](interstellar-docking/).
