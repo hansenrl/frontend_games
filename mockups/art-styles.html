@@ -1,0 +1,455 @@
+<title>Endurance Docking Mockups</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Baloo+2:wght@600;800&display=swap">
+<style>
+/* Layout: a mission-briefing sheet. Header, a 2x2 wall of live game screens, then the flow and the two-player controls. Single dark look on purpose (it is space). */
+:root{
+  --void:#0a0c11;
+  --panel:#12151d;
+  --rule:#232836;
+  --fg:#e4e7ee;
+  --muted:#8b92a5;
+  --ice:#a9d3ea;
+  --burn:#f2a65a;
+  --go:#7be0a1;
+  --display:"Saira Condensed","Arial Narrow",sans-serif;
+  --body:"IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+html{background:var(--void)}
+body{background:var(--void);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+header{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;border-bottom:1px solid var(--rule);padding-bottom:28px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(44px,7vw,84px);line-height:.92;letter-spacing:.01em;margin:10px 0 14px;text-transform:uppercase;text-wrap:balance}
+.lede{max-width:62ch;color:var(--muted);margin:0}
+.lede strong{color:var(--fg);font-weight:500}
+.quote{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right;line-height:1.7;white-space:nowrap}
+.quote b{color:var(--fg);font-weight:500}
+h2{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:.02em;text-transform:uppercase;margin:0 0 18px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+.card{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:22px;background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:18px}
+.screen{position:relative;width:100%;aspect-ratio:2/3;max-width:100%;border-radius:2px;overflow:hidden;background:#000}
+.screen canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.meta{display:flex;flex-direction:column;gap:12px;min-width:0}
+.tag{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.tag span{color:var(--ice)}
+h3{font-family:var(--display);font-weight:700;font-size:28px;line-height:1;text-transform:uppercase;margin:0;letter-spacing:.02em}
+.meta p{margin:0;color:var(--muted);font-size:14px}
+.meta p strong{color:var(--fg);font-weight:500}
+.swatches{display:flex;gap:6px;margin-top:auto}
+.swatches i{width:22px;height:22px;border-radius:2px;border:1px solid rgba(255,255,255,.12);display:block}
+dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:13px}
+dt{font-family:var(--mono);color:var(--muted);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding-top:2px}
+dd{margin:0}
+.flow{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.flow li{padding:18px 18px 20px;border-right:1px solid var(--rule);display:flex;flex-direction:column;gap:6px;background:var(--panel)}
+.flow li:last-child{border-right:0}
+.flow .n{font-family:var(--mono);font-size:12px;color:var(--ice)}
+.flow b{font-family:var(--display);font-size:21px;text-transform:uppercase;letter-spacing:.02em;font-weight:700;line-height:1.05}
+.flow p{margin:0;color:var(--muted);font-size:13.5px}
+.flow .shown{font-family:var(--mono);font-size:11px;color:var(--go);letter-spacing:.06em;margin-top:auto;padding-top:6px}
+.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+.pad{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:22px;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+.keys{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:6px}
+.keys.two{grid-template-columns:repeat(2,52px);grid-template-rows:52px}
+.key{display:grid;place-items:center;border:1px solid #39405a;border-bottom-width:3px;border-radius:5px;font-family:var(--mono);font-weight:500;font-size:17px;background:#181c27;position:relative}
+.key small{position:absolute;bottom:2px;font-size:10px;color:var(--muted)}
+.pad h4{margin:0 0 6px;font-family:var(--display);font-size:22px;text-transform:uppercase;letter-spacing:.02em}
+.pad p{margin:0;color:var(--muted);font-size:14px}
+.note{font-size:13.5px;color:var(--muted);max-width:75ch;margin:14px 0 0}
+@media (max-width:1020px){.grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:860px){.flow{grid-template-columns:minmax(0,1fr)}.flow li{border-right:0;border-bottom:1px solid var(--rule)}.flow li:last-child{border-bottom:0}.controls{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){header{grid-template-columns:minmax(0,1fr)}.quote{text-align:left;white-space:normal}.card{grid-template-columns:minmax(0,1fr)}.screen{max-width:340px}.pad{grid-template-columns:minmax(0,1fr)}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Art direction · 4 mockups · live canvas</div>
+      <h1>Endurance Docking</h1>
+      <p class="lede">A top-down, two-player docking game. <strong>Player one flies the Ranger</strong> with W A S D; <strong>player two handles spin</strong> with K and L. Each mockup below is drawn in a different art style and shows a different stage of the docking sequence, so you can judge both the look and the flow.</p>
+    </div>
+    <div class="quote">“It's not possible.”<br><b>“No. It's necessary.”</b></div>
+  </header>
+
+  <section>
+    <h2>Four looks</h2>
+    <div class="grid">
+      <article class="card">
+        <div class="screen"><canvas data-style="cinema" aria-label="Cinematic mockup: spinning, damaged Endurance at the top, Ranger waiting at the bottom over an icy planet"></canvas></div>
+        <div class="meta">
+          <div class="tag">A · Stage shown: <span>Approach</span></div>
+          <h3>Cinematic</h3>
+          <p>Closest to the film. Grey hull panels lit by a fixed sun so each module brightens as it swings round, an icy planet below, and a live explosion venting sparks and smoke from the two missing modules.</p>
+          <dl><dt>Feel</dt><dd>Tense, quiet, beautiful</dd><dt>HUD</dt><dd>Thin corner text, indicators stay dark until earned</dd><dt>Kid fit</dt><dd>Good, but small text; ship is low contrast</dd></dl>
+          <div class="swatches"><i style="background:#05070b"></i><i style="background:#c9d2dc"></i><i style="background:#6c7682"></i><i style="background:#ffb36b"></i><i style="background:#dfeaf2"></i></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="screen"><canvas data-style="blueprint" aria-label="Blueprint mockup: Ranger over the hub with position locked, dashed ghost showing the spin it needs to match"></canvas></div>
+        <div class="meta">
+          <div class="tag">B · Stage shown: <span>Match spin</span></div>
+          <h3>Flight Plan</h3>
+          <p>Line art on a blueprint grid. A dashed <strong>ghost Ranger</strong> shows exactly where the ship needs to point, which makes the spin player's job obvious. Dotted trail and live readouts teach what “matching” means.</p>
+          <dl><dt>Feel</dt><dd>Clever, technical, readable</dd><dt>HUD</dt><dd>Boxed readouts with a centre-target spin meter</dd><dt>Kid fit</dt><dd>Great for explaining the physics</dd></dl>
+          <div class="swatches"><i style="background:#0c2746"></i><i style="background:#cfe8ff"></i><i style="background:#5f9fd6"></i><i style="background:#ffd166"></i><i style="background:#7be0a1"></i></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="screen"><canvas data-style="toon" aria-label="Cartoon mockup: Ranger docked on the hub, green ring filling during the ten second hold"></canvas></div>
+        <div class="meta">
+          <div class="tag">C · Stage shown: <span>Hold 10 s</span></div>
+          <h3>Saturday Cartoon</h3>
+          <p>Chunky outlines, bright colours, big rounded text. Both checkmarks are lit and a fat green ring fills around the hub while the count runs down. The easiest style to read from the couch.</p>
+          <dl><dt>Feel</dt><dd>Friendly, celebratory</dd><dt>HUD</dt><dd>Big chips with checkmarks, giant countdown</dd><dt>Kid fit</dt><dd>Best of the four</dd></dl>
+          <div class="swatches"><i style="background:#2a1c5e"></i><i style="background:#f6f2ff"></i><i style="background:#ff8a3d"></i><i style="background:#ffd34d"></i><i style="background:#5cff9d"></i></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="screen"><canvas data-style="amber" aria-label="Amber instrument mockup: docked pair despinning and drifting toward the safe zone on the right"></canvas></div>
+        <div class="meta">
+          <div class="tag">D · Stage shown: <span>Despin &amp; tow</span></div>
+          <h3>Ship Console</h3>
+          <p>Amber phosphor on black with scanlines, like the Ranger's own flight display. A spin dial shows the rotation bleeding off, then the pair is pushed into the hatched <strong>safe zone</strong> on the right.</p>
+          <dl><dt>Feel</dt><dd>Retro, gritty, NASA</dd><dt>HUD</dt><dd>Gauges and dials, one colour only</dd><dt>Kid fit</dt><dd>Cool, but one colour makes states harder to tell apart</dd></dl>
+          <div class="swatches"><i style="background:#0a0700"></i><i style="background:#ffb347"></i><i style="background:#8a5a1c"></i><i style="background:#3a2608"></i><i style="background:#ffe2b0"></i></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>The docking sequence</h2>
+    <ol class="flow">
+      <li><span class="n">1</span><b>Approach</b><p>Endurance starts near the top at a random spot in the middle 75%, spinning and drifting up. Ranger sits still at the bottom.</p><span class="shown">Mockup A</span></li>
+      <li><span class="n">2</span><b>Match position</b><p>Fly over the hub and match its drift. First indicator lights when you're close and moving at the same speed.</p><span class="shown">Mockup B (lit)</span></li>
+      <li><span class="n">3</span><b>Match spin</b><p>Spin up with L until the ship lines up with the ghost and turns at the same rate. Second indicator lights.</p><span class="shown">Mockup B</span></li>
+      <li><span class="n">4</span><b>Hold 10 s</b><p>Keep both matched while the clamps engage. Drift out and the timer resets.</p><span class="shown">Mockup C</span></li>
+      <li><span class="n">5</span><b>Despin &amp; tow</b><p>Press K to slow the spin, then push the joined ships into the safe zone on the right.</p><span class="shown">Mockup D</span></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Two players, one keyboard</h2>
+    <div class="controls">
+      <div class="pad">
+        <div class="keys">
+          <span></span><div class="key">W<small>up</small></div><span></span>
+          <div class="key">A<small>left</small></div><div class="key">S<small>down</small></div><div class="key">D<small>right</small></div>
+        </div>
+        <div><h4>Pilot · position</h4><p>Thrusters push along the <strong>screen</strong>, not the ship's nose. W always pushes up the screen, even while the ship is spinning. Let go and you keep coasting; press the opposite key to slow down.</p></div>
+      </div>
+      <div class="pad">
+        <div class="keys two">
+          <div class="key">K<small>↺</small></div><div class="key">L<small>↻</small></div>
+        </div>
+        <div><h4>Co-pilot · spin</h4><p>Hold L to spin faster clockwise, K to spin faster counter-clockwise. Let go and the spin rate stays where it is. To dock, match Endurance's spin rate and line up with the ghost.</p></div>
+      </div>
+    </div>
+    <p class="note">Pick a style (or mix them, like the cartoon look with the flight-plan ghost and trail) and I'll build the playable version from it.</p>
+  </section>
+</div>
+
+<script>
+(()=>{
+const W=360,H=540,TAU=Math.PI*2;
+const R=72,MOD_T=30,MOD_R=18,HUB=15,MISSING=[4,5],SPOKES=[0,3,6,9];
+const DMG=4.5*TAU/12; // middle of the missing modules
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function rng(seed){return()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646}}
+function stars(seed,n){const r=rng(seed);return Array.from({length:n},()=>({x:r()*W,y:r()*H,s:r(),tw:r()*TAU}))}
+
+// Ranger outline, nose pointing up (-y)
+const RP=[[0,-22],[4,-17],[7,-6],[16,7],[17,13],[8,15],[6,18]];
+function rangerPath(c,s=1){c.beginPath();c.moveTo(RP[0][0]*s,RP[0][1]*s);for(let i=1;i<RP.length;i++)c.lineTo(RP[i][0]*s,RP[i][1]*s);for(let i=RP.length-1;i>0;i--)c.lineTo(-RP[i][0]*s,RP[i][1]*s);c.closePath()}
+function windows(c,s=1){c.beginPath();c.moveTo(-3*s,-15*s);c.lineTo(3*s,-15*s);c.lineTo(4*s,-11*s);c.lineTo(-4*s,-11*s);c.closePath()}
+
+// Endurance geometry iterator
+function eachModule(cb){for(let i=0;i<12;i++)cb(i,i*TAU/12,MISSING.includes(i))}
+function connectorIsBroken(i){return MISSING.includes(i)||MISSING.includes((i+1)%12)}
+function dmgPoint(sx,sy,a){const t=DMG+a;return{x:sx+Math.cos(t)*R,y:sy+Math.sin(t)*R,t}}
+
+// simple particle pool
+function Particles(){this.p=[]}
+Particles.prototype.add=function(o){this.p.push(Object.assign({age:0,rot:Math.random()*TAU,vr:(Math.random()-.5)*6},o));if(this.p.length>420)this.p.shift()};
+Particles.prototype.step=function(dt){for(const q of this.p){q.age+=dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.rot+=q.vr*dt;if(q.drag){q.vx*=1-q.drag*dt;q.vy*=1-q.drag*dt}}this.p=this.p.filter(q=>q.age<q.life)};
+function vent(P,sx,sy,a,w,kinds,rate,dt,spread=40){
+  const n=rate*dt;let k=Math.floor(n)+(Math.random()<n%1?1:0);
+  while(k--){const d=dmgPoint(sx,sy,a+(Math.random()-.5)*.35);const tan=w*R;const out=10+Math.random()*spread;
+    const kind=kinds[Math.floor(Math.random()*kinds.length)];
+    d.x+= (Math.random()-.5)*6; d.y+=(Math.random()-.5)*6;
+    P.add({x:d.x,y:d.y,vx:Math.cos(d.t)*out-Math.sin(d.t)*tan*.7,vy:Math.sin(d.t)*out+Math.cos(d.t)*tan*.7,life:kind==='smoke'?3+Math.random()*2:1.2+Math.random()*2.4,kind,size:kind==='frag'?2+Math.random()*3:1+Math.random()*2,drag:kind==='smoke'?.4:0})}
+}
+function burst(P,sx,sy,a,w,count){for(let i=0;i<count;i++){const d=dmgPoint(sx,sy,a);const ang=Math.random()*TAU;const sp=20+Math.random()*90;const kind=i%3===0?'frag':(i%3===1?'spark':'smoke');
+  P.add({x:d.x,y:d.y,vx:Math.cos(ang)*sp-Math.sin(d.t)*w*R*.6,vy:Math.sin(ang)*sp+Math.cos(d.t)*w*R*.6,life:kind==='smoke'?3.5:1.5+Math.random()*2.5,kind,size:kind==='frag'?2+Math.random()*4:1+Math.random()*2.5,drag:kind==='smoke'?.6:.05})}}
+
+/* ============ A. CINEMATIC ============ */
+function Cinema(){
+  const st=stars(7,170),P=new Particles();let flash=0,nextBurst=.4;
+  const sx=212,sy0=150,w=.85,light=-.9;
+  return{draw(c,t,dt){
+    const a=t*w, sy=sy0-((t%24)*1.2);
+    c.fillStyle='#04060a';c.fillRect(0,0,W,H);
+    for(const s of st){c.globalAlpha=.25+.6*s.s*(.7+.3*Math.sin(t*1.3+s.tw));c.fillStyle='#dfe7f2';c.fillRect(s.x,s.y,s.s>.9?1.6:1,s.s>.9?1.6:1)}c.globalAlpha=1;
+    // icy planet
+    const px=-60,py=930,pr=560;
+    let g=c.createRadialGradient(px+260,py-380,40,px,py,pr);g.addColorStop(0,'#eef4f8');g.addColorStop(.55,'#b8c7d3');g.addColorStop(.85,'#5f7181');g.addColorStop(1,'#1d2832');
+    c.fillStyle=g;c.beginPath();c.arc(px,py,pr,0,TAU);c.fill();
+    c.save();c.beginPath();c.arc(px,py,pr,0,TAU);c.clip();c.globalAlpha=.18;c.strokeStyle='#ffffff';c.lineWidth=10;
+    for(let i=0;i<7;i++){c.beginPath();c.ellipse(px+40,py,pr-40-i*28,pr-60-i*30,-.25,3.6,5.6);c.stroke()}c.restore();c.globalAlpha=1;
+    g=c.createRadialGradient(px,py,pr-4,px,py,pr+26);g.addColorStop(0,'rgba(180,215,240,.55)');g.addColorStop(1,'rgba(180,215,240,0)');c.fillStyle=g;c.beginPath();c.arc(px,py,pr+26,0,TAU);c.fill();
+
+    // particles
+    nextBurst-=dt;if(nextBurst<=0){burst(P,sx,sy,a,w,70);flash=1;nextBurst=5+Math.random()*2}
+    vent(P,sx,sy,a,w,['spark','smoke','frag','smoke'],30,dt);P.step(dt);flash=Math.max(0,flash-dt*1.4);
+    for(const q of P.p){const k=1-q.age/q.life;
+      if(q.kind==='smoke'){c.globalAlpha=.16*k;c.fillStyle='#b9c0c8';c.beginPath();c.arc(q.x,q.y,3+q.age*7,0,TAU);c.fill()}}
+    c.globalAlpha=1;
+    // station
+    c.save();c.translate(sx,sy);c.rotate(a);
+    c.strokeStyle='#7d8894';c.lineWidth=3;
+    for(const i of SPOKES){const th=i*TAU/12;c.beginPath();c.moveTo(Math.cos(th)*HUB,Math.sin(th)*HUB);c.lineTo(Math.cos(th)*(R-MOD_R/2),Math.sin(th)*(R-MOD_R/2));c.stroke()}
+    for(let i=0;i<12;i++){const th=(i+.5)*TAU/12;const lum=.55+.35*Math.cos(th+a-light);
+      c.save();c.rotate(th);c.translate(R,0);
+      if(connectorIsBroken(i)){ if(!(MISSING.includes(i)&&MISSING.includes((i+1)%12))){c.fillStyle=`hsl(210,8%,${lum*55}%)`;const side=MISSING.includes(i)?1:-1;c.fillRect(-3,side>0?0:-5,6,5)} }
+      else{c.fillStyle=`hsl(210,8%,${lum*60}%)`;c.fillRect(-3.5,-4.5,7,9)}
+      c.restore()}
+    eachModule((i,th,miss)=>{if(miss)return;const lum=.5+.42*Math.cos(th+a-light);
+      c.save();c.rotate(th);c.translate(R,0);
+      c.fillStyle=`hsl(208,9%,${22+lum*62}%)`;c.fillRect(-MOD_R/2,-MOD_T/2,MOD_R,MOD_T);
+      c.fillStyle=`hsl(208,9%,${12+lum*40}%)`;c.fillRect(-MOD_R/2,-MOD_T/2,4,MOD_T);
+      c.strokeStyle=`hsla(208,10%,${10+lum*30}%,.9)`;c.lineWidth=.6;for(let k=-1;k<=1;k++){c.beginPath();c.moveTo(-MOD_R/2,k*8);c.lineTo(MOD_R/2,k*8);c.stroke()}
+      c.restore()});
+    // scorched edges at damage
+    c.fillStyle='#2a2522';for(const s of [-1,1]){c.save();c.rotate(DMG+s*TAU/12*1.05);c.translate(R,0);c.beginPath();c.moveTo(-9,0);c.lineTo(-4,s*-5);c.lineTo(3,s*-2);c.lineTo(9,s*-6);c.lineTo(9,0);c.fill();c.restore()}
+    // hub
+    let hg=c.createRadialGradient(-4,-4,2,0,0,HUB);hg.addColorStop(0,'#dfe5ea');hg.addColorStop(1,'#59636e');c.fillStyle=hg;c.beginPath();c.arc(0,0,HUB,0,TAU);c.fill();
+    c.strokeStyle='#2c333b';c.lineWidth=1.5;c.beginPath();c.arc(0,0,7,0,TAU);c.stroke();
+    c.restore();
+    // sparks + frags on top
+    for(const q of P.p){const k=1-q.age/q.life;
+      if(q.kind==='spark'){c.globalAlpha=k;c.fillStyle=k>.6?'#fff3d6':'#ff9a4a';c.fillRect(q.x,q.y,q.size,q.size)}
+      else if(q.kind==='frag'){c.globalAlpha=Math.min(1,k*2);c.save();c.translate(q.x,q.y);c.rotate(q.rot);c.fillStyle='#8a939c';c.fillRect(-q.size/2,-q.size/3,q.size,q.size/1.6);c.restore()}}
+    c.globalAlpha=1;
+    // flash
+    const d=dmgPoint(sx,sy,a);const fl=.25+flash;
+    g=c.createRadialGradient(d.x,d.y,0,d.x,d.y,20+flash*70);g.addColorStop(0,`rgba(255,240,210,${fl})`);g.addColorStop(.3,`rgba(255,150,60,${fl*.6})`);g.addColorStop(1,'rgba(255,120,40,0)');
+    c.globalCompositeOperation='lighter';c.fillStyle=g;c.beginPath();c.arc(d.x,d.y,20+flash*70,0,TAU);c.fill();c.globalCompositeOperation='source-over';
+
+    // ranger
+    c.save();c.translate(178,452);
+    c.fillStyle='rgba(0,0,0,.35)';c.save();c.translate(5,7);rangerPath(c,1.25);c.fill();c.restore();
+    rangerPath(c,1.25);let rg=c.createLinearGradient(-20,-20,20,20);rg.addColorStop(0,'#cfd5da');rg.addColorStop(1,'#5b636b');c.fillStyle=rg;c.fill();
+    c.fillStyle='#262b30';c.beginPath();c.moveTo(0,-24);c.lineTo(5,-18);c.lineTo(-5,-18);c.closePath();c.fill();
+    windows(c,1.25);c.fillStyle='#10161c';c.fill();
+    c.strokeStyle='rgba(30,35,40,.6)';c.lineWidth=.6;c.beginPath();c.moveTo(0,-14);c.lineTo(0,20);c.moveTo(-9,4);c.lineTo(9,4);c.stroke();
+    c.fillStyle='#2b3036';c.fillRect(-7,21,4,4);c.fillRect(3,21,4,4);
+    c.restore();
+
+    // HUD
+    g=c.createLinearGradient(0,H-70,0,H);g.addColorStop(0,'rgba(4,6,10,0)');g.addColorStop(1,'rgba(4,6,10,.85)');c.fillStyle=g;c.fillRect(0,H-70,W,70);
+    c.font='500 9px "IBM Plex Mono",monospace';c.fillStyle='rgba(230,236,244,.7)';c.textBaseline='top';
+    c.fillText('ENDURANCE',14,14);c.fillStyle='rgba(230,236,244,.45)';c.fillText('SPIN  '+(w*180/Math.PI).toFixed(0)+'°/s  CW',14,27);c.fillText('DRIFT ↑ 1.2',14,40);
+    c.textAlign='right';c.fillStyle='rgba(230,236,244,.7)';c.fillText('RANGER',W-14,14);c.fillStyle='rgba(230,236,244,.45)';c.fillText('V  0.0',W-14,27);c.fillText('SPIN 0°/s',W-14,40);c.textAlign='left';
+    // indicators (unlit)
+    const iy=H-30;c.strokeStyle='rgba(230,236,244,.5)';c.lineWidth=1;
+    c.beginPath();c.arc(20,iy,4,0,TAU);c.stroke();c.fillText('POS / VEL',30,iy-5);
+    c.beginPath();c.arc(118,iy,4,0,TAU);c.stroke();c.fillText('SPIN',128,iy-5);
+    c.fillStyle='rgba(255,180,110,.9)';c.fillText('HULL BREACH · MODULES 5–6',14,53);
+  }}
+}
+
+/* ============ B. BLUEPRINT ============ */
+function Blueprint(){
+  const P=new Particles();const sx=168,sy=205,w=.75,lag=.72;
+  const L='#cfe8ff',M='#5f9fd6',Y='#ffd166',G='#7be0a1';
+  return{draw(c,t,dt){
+    const a=t*w, shipA=t*w*lag+.6;
+    c.fillStyle='#0c2746';c.fillRect(0,0,W,H);
+    c.strokeStyle='rgba(120,170,220,.13)';c.lineWidth=1;
+    for(let x=0;x<=W;x+=20){c.beginPath();c.moveTo(x+.5,0);c.lineTo(x+.5,H);c.stroke()}
+    for(let y=0;y<=H;y+=20){c.beginPath();c.moveTo(0,y+.5);c.lineTo(W,y+.5);c.stroke()}
+    c.strokeStyle='rgba(120,170,220,.25)';for(let x=0;x<=W;x+=100){c.beginPath();c.moveTo(x+.5,0);c.lineTo(x+.5,H);c.stroke()}for(let y=0;y<=H;y+=100){c.beginPath();c.moveTo(0,y+.5);c.lineTo(W,y+.5);c.stroke()}
+    // trail from start
+    c.setLineDash([2,5]);c.strokeStyle=M;c.lineWidth=1.2;c.beginPath();c.moveTo(196,405);c.bezierCurveTo(205,350,140,300,sx,sy);c.stroke();c.setLineDash([]);
+    c.strokeStyle=M;c.beginPath();c.arc(196,405,5,0,TAU);c.stroke();c.font='9px "IBM Plex Mono",monospace';c.fillStyle=M;c.fillText('START',206,400);
+    // envelope ring
+    c.setLineDash([4,4]);c.strokeStyle='rgba(207,232,255,.35)';c.beginPath();c.arc(sx,sy,R+MOD_R/2+10,0,TAU);c.stroke();c.setLineDash([]);
+    // particles
+    vent(P,sx,sy,a,w,['frag','frag','spark'],10,dt,25);P.step(dt);
+    for(const q of P.p){const k=1-q.age/q.life;c.globalAlpha=k;c.strokeStyle=L;c.lineWidth=.8;c.save();c.translate(q.x,q.y);c.rotate(q.rot);if(q.kind==='frag')c.strokeRect(-q.size/2,-q.size/2,q.size,q.size);else{c.beginPath();c.moveTo(-2,0);c.lineTo(2,0);c.moveTo(0,-2);c.lineTo(0,2);c.stroke()}c.restore()}c.globalAlpha=1;
+    // station
+    c.save();c.translate(sx,sy);c.rotate(a);c.strokeStyle=L;c.lineWidth=1.2;
+    for(const i of SPOKES){const th=i*TAU/12;c.beginPath();c.moveTo(Math.cos(th)*HUB,Math.sin(th)*HUB);c.lineTo(Math.cos(th)*(R-MOD_R/2),Math.sin(th)*(R-MOD_R/2));c.stroke()}
+    for(let i=0;i<12;i++){if(connectorIsBroken(i))continue;const th=(i+.5)*TAU/12;c.save();c.rotate(th);c.translate(R,0);c.strokeRect(-3,-4,6,8);c.restore()}
+    eachModule((i,th,miss)=>{c.save();c.rotate(th);c.translate(R,0);
+      if(miss){c.setLineDash([2,3]);c.strokeStyle='rgba(255,209,102,.6)';c.strokeRect(-MOD_R/2,-MOD_T/2,MOD_R,MOD_T);c.setLineDash([]);c.strokeStyle=L}
+      else{c.strokeRect(-MOD_R/2,-MOD_T/2,MOD_R,MOD_T);c.beginPath();c.moveTo(-MOD_R/2+4,-MOD_T/2);c.lineTo(-MOD_R/2+4,MOD_T/2);c.stroke()}
+      c.restore()});
+    c.beginPath();c.arc(0,0,HUB,0,TAU);c.stroke();c.beginPath();c.arc(0,0,7,0,TAU);c.stroke();
+    // ghost: required orientation
+    c.setLineDash([3,3]);c.strokeStyle=Y;c.lineWidth=1.3;rangerPath(c,1.25);c.stroke();c.setLineDash([]);
+    c.restore();
+    // ship (position matched, spin lagging)
+    c.save();c.translate(sx,sy);c.rotate(shipA);c.fillStyle='#0c2746';rangerPath(c,1.25);c.fill();c.strokeStyle=L;c.lineWidth=1.6;c.stroke();windows(c,1.25);c.stroke();
+    c.beginPath();c.moveTo(0,-14);c.lineTo(0,20);c.stroke();c.restore();
+    // spin arcs
+    c.lineWidth=1.4;c.strokeStyle=Y;c.beginPath();c.arc(sx,sy,R+MOD_R/2+18,-1.2,-.2);c.stroke();arrowHead(c,sx,sy,R+MOD_R/2+18,-.2,Y);
+    c.font='9px "IBM Plex Mono",monospace';c.fillStyle=Y;c.fillText('ω '+(w*180/Math.PI).toFixed(0)+'°/s',sx+60,sy-95);
+    // leader to labels
+    c.strokeStyle=M;c.lineWidth=.8;c.beginPath();c.moveTo(sx+16,sy+14);c.lineTo(sx+70,sy+100);c.lineTo(W-12,sy+100);c.stroke();
+    c.fillStyle=L;c.fillText('RANGER  ω '+(w*lag*180/Math.PI).toFixed(0)+'°/s',sx+72,sy+88);
+    c.fillStyle=M;c.fillText('drift ↑ 1.2 · matched',sx+72,sy+104);
+    // HUD boxes
+    const bx=14,by=H-104;
+    box(c,bx,by,W-28,38);c.font='600 10px "IBM Plex Mono",monospace';c.fillStyle=G;c.fillRect(bx+10,by+13,12,12);c.fillStyle=L;c.fillText('POSITION + VELOCITY',bx+32,by+15);c.textAlign='right';c.fillStyle=G;c.fillText('LOCKED',W-24,by+15);c.textAlign='left';
+    box(c,bx,by+46,W-28,46);c.strokeStyle=Y;c.lineWidth=1.2;c.strokeRect(bx+10.5,by+59.5,11,11);c.fillStyle=L;c.fillText('SPIN',bx+32,by+61);
+    // meter
+    const mx=bx+80,mw=W-28-80-14,my=by+66;c.strokeStyle=M;c.beginPath();c.moveTo(mx,my);c.lineTo(mx+mw,my);c.stroke();
+    for(let k=0;k<=10;k++){c.beginPath();c.moveTo(mx+k*mw/10,my-(k===5?7:3));c.lineTo(mx+k*mw/10,my+(k===5?7:3));c.stroke()}
+    c.fillStyle=G;c.fillRect(mx+mw/2-mw*.06,my-9,mw*.12,2);
+    const off=-.28+.04*Math.sin(t*2);c.fillStyle=Y;c.beginPath();c.moveTo(mx+mw/2+off*mw,my-4);c.lineTo(mx+mw/2+off*mw-5,my-12);c.lineTo(mx+mw/2+off*mw+5,my-12);c.fill();
+    c.font='9px "IBM Plex Mono",monospace';c.fillStyle=M;c.fillText('slow',mx,my+10);c.textAlign='right';c.fillText('fast',mx+mw,my+10);c.textAlign='center';c.fillStyle=Y;c.fillText('Δω −12°/s · press L',mx+mw/2,my+10);c.textAlign='left';
+    // title block
+    c.strokeStyle=M;c.lineWidth=1;c.strokeRect(14.5,14.5,150,34);c.font='700 13px "Saira Condensed",sans-serif';c.fillStyle=L;c.fillText('ENDURANCE · DOCK PLAN',22,19);c.font='9px "IBM Plex Mono",monospace';c.fillStyle=M;c.fillText('SHEET 3/5  ·  MATCH SPIN',22,35);
+  }}
+}
+function box(c,x,y,w,h){c.fillStyle='rgba(12,39,70,.85)';c.fillRect(x,y,w,h);c.strokeStyle='#5f9fd6';c.lineWidth=1;c.strokeRect(x+.5,y+.5,w,h);c.textBaseline='top'}
+function arrowHead(c,cx,cy,r,ang,col){const x=cx+Math.cos(ang)*r,y=cy+Math.sin(ang)*r;const tx=-Math.sin(ang),ty=Math.cos(ang);c.fillStyle=col;c.beginPath();c.moveTo(x+tx*6,y+ty*6);c.lineTo(x-ty*4,y+tx*4);c.lineTo(x+ty*4,y-tx*4);c.fill()}
+
+/* ============ C. CARTOON ============ */
+function Toon(){
+  const st=stars(31,60),P=new Particles();const sx=180,sy=232,w=.6;const O='#1a1030';
+  return{draw(c,t,dt){
+    const a=t*w;const hold=(t%12);const prog=Math.min(1,hold/10);const done=hold>=10;
+    let g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2a1c5e');g.addColorStop(1,'#123068');c.fillStyle=g;c.fillRect(0,0,W,H);
+    for(const s of st){const r=1+s.s*2.2;c.fillStyle=s.s>.85?'#ffe58a':'#c9c2ff';c.globalAlpha=.5+.5*Math.sin(t*2+s.tw);if(s.s>.85){star4(c,s.x,s.y,r*2)}else{c.beginPath();c.arc(s.x,s.y,r*.6,0,TAU);c.fill()}}c.globalAlpha=1;
+    // friendly planet
+    c.lineWidth=4;c.strokeStyle=O;c.fillStyle='#62d2c7';c.beginPath();c.arc(56,112,32,0,TAU);c.fill();c.stroke();
+    c.fillStyle='#4bb3ab';c.beginPath();c.arc(46,104,7,0,TAU);c.arc(68,124,5,0,TAU);c.fill();
+    // safe zone hint
+    c.fillStyle='rgba(92,255,157,.12)';c.fillRect(W-34,70,34,H-150);c.strokeStyle='rgba(92,255,157,.5)';c.lineWidth=2;c.setLineDash([6,6]);c.beginPath();c.moveTo(W-34,70);c.lineTo(W-34,H-80);c.stroke();c.setLineDash([]);
+    c.save();c.translate(W-14,H/2-20);c.rotate(-Math.PI/2);c.font='800 12px "Baloo 2",sans-serif';c.fillStyle='rgba(92,255,157,.8)';c.textAlign='center';c.fillText('SAFE ZONE',0,4);c.restore();
+    // puffs
+    vent(P,sx,sy,a,w,['smoke','frag'],4,dt,18);P.step(dt);
+    for(const q of P.p){const k=1-q.age/q.life;c.globalAlpha=Math.min(1,k*1.5);c.lineWidth=2.5;c.strokeStyle=O;
+      if(q.kind==='smoke'){c.fillStyle='#e9e4ff';c.beginPath();c.arc(q.x,q.y,3+q.age*2.5,0,TAU);c.fill();c.stroke()}
+      else{c.save();c.translate(q.x,q.y);c.rotate(q.rot);c.fillStyle='#ff8a3d';c.fillRect(-3,-3,6,6);c.strokeRect(-3,-3,6,6);c.restore()}}c.globalAlpha=1;
+    // progress ring
+    c.lineCap='round';c.lineWidth=14;c.strokeStyle='rgba(92,255,157,.18)';c.beginPath();c.arc(sx,sy,R+MOD_R/2+18,0,TAU);c.stroke();
+    c.strokeStyle='#5cff9d';c.beginPath();c.arc(sx,sy,R+MOD_R/2+18,-Math.PI/2,-Math.PI/2+TAU*prog);c.stroke();c.lineCap='butt';
+    // station + docked ship
+    c.save();c.translate(sx,sy);c.rotate(a);c.lineJoin='round';
+    c.lineWidth=9;c.strokeStyle=O;for(const i of SPOKES){const th=i*TAU/12;c.beginPath();c.moveTo(0,0);c.lineTo(Math.cos(th)*(R-MOD_R/2),Math.sin(th)*(R-MOD_R/2));c.stroke()}
+    c.lineWidth=4.5;c.strokeStyle='#b9b2e8';for(const i of SPOKES){const th=i*TAU/12;c.beginPath();c.moveTo(0,0);c.lineTo(Math.cos(th)*(R-MOD_R/2),Math.sin(th)*(R-MOD_R/2));c.stroke()}
+    for(let i=0;i<12;i++){if(connectorIsBroken(i))continue;const th=(i+.5)*TAU/12;c.save();c.rotate(th);c.translate(R,0);c.fillStyle='#b9b2e8';c.lineWidth=3;c.strokeStyle=O;rr(c,-4,-6,8,12,2);c.fill();c.stroke();c.restore()}
+    eachModule((i,th,miss)=>{if(miss)return;c.save();c.rotate(th);c.translate(R,0);c.lineWidth=3.5;c.strokeStyle=O;c.fillStyle='#f6f2ff';rr(c,-MOD_R/2-1,-MOD_T/2,MOD_R+2,MOD_T,5);c.fill();c.stroke();c.fillStyle='#ff8a3d';c.fillRect(-MOD_R/2+2,-3,MOD_R-3,6);c.fillStyle='#4fd8ff';c.beginPath();c.arc(3,-9,2.4,0,TAU);c.arc(3,9,2.4,0,TAU);c.fill();c.restore()});
+    // jagged break
+    for(const s of [-1,1]){c.save();c.rotate(DMG+s*TAU/12*1.02);c.translate(R,0);c.fillStyle='#ff8a3d';c.strokeStyle=O;c.lineWidth=3;c.beginPath();c.moveTo(-6,0);c.lineTo(-3,-s*6);c.lineTo(0,-s*2);c.lineTo(3,-s*7);c.lineTo(6,0);c.closePath();c.fill();c.stroke();c.restore()}
+    c.fillStyle='#ffd34d';c.lineWidth=4;c.strokeStyle=O;c.beginPath();c.arc(0,0,HUB+3,0,TAU);c.fill();c.stroke();
+    // ship on hub
+    c.lineWidth=3.5;rangerPath(c,1.35);c.fillStyle='#ffffff';c.fill();c.stroke();
+    c.fillStyle='#2c2350';c.beginPath();c.moveTo(0,-29.7);c.lineTo(5.4,-23);c.lineTo(-5.4,-23);c.closePath();c.fill();
+    windows(c,1.35);c.fillStyle='#4fd8ff';c.fill();c.lineWidth=2;c.stroke();
+    c.fillStyle='#ff8a3d';c.fillRect(-14,10,8,4);c.fillRect(6,10,8,4);
+    c.restore();
+    // top chips
+    chip(c,14,14,150,'Position','#5cff9d',true,t);chip(c,172,14,104,'Spin','#5cff9d',true,t);
+    // countdown
+    c.textAlign='center';c.textBaseline='middle';
+    if(!done){const n=Math.ceil(10-hold);c.font='800 64px "Baloo 2",sans-serif';c.lineWidth=8;c.strokeStyle=O;c.strokeText(n,sx,sy+R+92);c.fillStyle='#ffffff';c.fillText(n,sx,sy+R+92);
+      c.font='800 17px "Baloo 2",sans-serif';c.lineWidth=5;c.strokeText('Hold steady!',sx,sy+R+136);c.fillStyle='#ffd34d';c.fillText('Hold steady!',sx,sy+R+136)}
+    else{const s=1+.08*Math.sin(t*12);c.save();c.translate(sx,sy+R+100);c.scale(s,s);c.font='800 44px "Baloo 2",sans-serif';c.lineWidth=8;c.strokeStyle=O;c.strokeText('DOCKED!',0,0);c.fillStyle='#5cff9d';c.fillText('DOCKED!',0,0);c.restore()}
+    // player badges
+    c.font='800 12px "Baloo 2",sans-serif';badge(c,14,H-40,'P1 · W A S D','#4fd8ff');badge(c,W-118,H-40,'P2 · K  L','#ff8a3d');
+    c.textAlign='left';c.textBaseline='alphabetic';
+  }}
+}
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+function star4(c,x,y,r){c.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4;const rr=i%2?r*.35:r;c.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr)}c.closePath();c.fill()}
+function chip(c,x,y,w,label,col,on){c.lineWidth=3.5;c.strokeStyle='#1a1030';c.fillStyle=on?col:'#4a3f80';rr(c,x,y,w,34,17);c.fill();c.stroke();
+  c.fillStyle='#ffffff';c.beginPath();c.arc(x+18,y+17,10,0,TAU);c.fill();c.lineWidth=3;c.stroke();
+  c.strokeStyle='#1a1030';c.lineWidth=3;c.lineCap='round';c.beginPath();c.moveTo(x+13,y+17);c.lineTo(x+17,y+21);c.lineTo(x+24,y+12);c.stroke();c.lineCap='butt';
+  c.font='800 16px "Baloo 2",sans-serif';c.fillStyle='#1a1030';c.textBaseline='middle';c.fillText(label,x+34,y+19);c.textBaseline='alphabetic'}
+function badge(c,x,y,txt,col){c.lineWidth=3;c.strokeStyle='#1a1030';c.fillStyle=col;rr(c,x,y,104,26,13);c.fill();c.stroke();c.fillStyle='#1a1030';c.textAlign='center';c.textBaseline='middle';c.fillText(txt,x+52,y+14)}
+
+/* ============ D. AMBER CONSOLE ============ */
+function Amber(){
+  const st=stars(91,90),P=new Particles();const A='#ffb347';
+  const CYCLE=16;
+  return{draw(c,t,dt){
+    const tc=t%CYCLE;const w0=.8;
+    const despin=Math.min(1,tc/7);const w=w0*(1-despin);
+    // integrate angle analytically: ∫ w0(1-s/7) ds for s<7
+    const s=Math.min(tc,7);let a=w0*(s-s*s/14);
+    const tow=Math.max(0,tc-7.5);const x=140+Math.min(170,tow*tow*4.2+tow*6);const y=230+tow*2;
+    c.fillStyle='#0a0700';c.fillRect(0,0,W,H);
+    c.save();c.shadowColor='rgba(255,170,60,.7)';c.shadowBlur=6;
+    for(const q of st){c.globalAlpha=.25+.5*q.s;c.fillStyle=A;c.fillRect(q.x,q.y,1,1)}c.globalAlpha=1;
+    // safe zone
+    const zx=W-58;c.strokeStyle='rgba(255,179,71,.35)';c.lineWidth=1;c.save();c.beginPath();c.rect(zx,0,58,H-120);c.clip();for(let k=-H;k<H;k+=10){c.beginPath();c.moveTo(zx,k);c.lineTo(zx+58,k+58);c.stroke()}c.restore();
+    c.strokeStyle=A;c.lineWidth=1.2;c.beginPath();c.moveTo(zx+.5,0);c.lineTo(zx+.5,H-120);c.stroke();
+    c.save();c.translate(zx+30,180);c.rotate(-Math.PI/2);c.font='500 10px "IBM Plex Mono",monospace';c.fillStyle=A;c.textAlign='center';c.fillText('SAFE ZONE',0,0);c.restore();
+    // debris
+    vent(P,x,y,a,w,['spark','frag'],6*(1-despin*.8),dt,20);P.step(dt);
+    for(const q of P.p){c.globalAlpha=1-q.age/q.life;c.fillStyle=A;c.fillRect(q.x,q.y,1.5,1.5)}c.globalAlpha=1;
+    // station
+    c.save();c.translate(x,y);c.rotate(a);c.strokeStyle=A;c.lineWidth=1.1;
+    for(const i of SPOKES){const th=i*TAU/12;c.beginPath();c.moveTo(Math.cos(th)*HUB,Math.sin(th)*HUB);c.lineTo(Math.cos(th)*(R-MOD_R/2),Math.sin(th)*(R-MOD_R/2));c.stroke()}
+    for(let i=0;i<12;i++){if(connectorIsBroken(i))continue;const th=(i+.5)*TAU/12;c.save();c.rotate(th);c.translate(R,0);c.strokeRect(-3,-4,6,8);c.restore()}
+    eachModule((i,th,miss)=>{if(miss)return;c.save();c.rotate(th);c.translate(R,0);c.fillStyle='rgba(255,179,71,.12)';c.fillRect(-MOD_R/2,-MOD_T/2,MOD_R,MOD_T);c.strokeRect(-MOD_R/2,-MOD_T/2,MOD_R,MOD_T);c.restore()});
+    c.beginPath();c.arc(0,0,HUB,0,TAU);c.stroke();
+    c.fillStyle='#0a0700';rangerPath(c,1.25);c.fill();c.lineWidth=1.6;c.stroke();windows(c,1.25);c.fillStyle=A;c.fill();
+    c.restore();
+    // tow vector
+    if(tc>7.5){c.strokeStyle=A;c.setLineDash([3,4]);c.beginPath();c.moveTo(x+R+20,y);c.lineTo(zx+20,y+10);c.stroke();c.setLineDash([])}
+    // header
+    c.font='500 10px "IBM Plex Mono",monospace';c.fillStyle=A;c.textBaseline='top';
+    c.fillText('RANGER-1 / ENDURANCE',14,14);c.fillStyle='rgba(255,179,71,.6)';c.fillText(tc<7.5?'STAGE 5A  DESPIN':'STAGE 5B  TOW TO SAFE ZONE',14,28);
+    c.textAlign='right';c.fillStyle=A;c.fillText('CLAMPS ■ ■ ■ ■',zx-8,14);c.textAlign='left';
+    // gauges
+    const gy=H-100;c.strokeStyle='rgba(255,179,71,.5)';c.beginPath();c.moveTo(0,gy-12);c.lineTo(W,gy-12);c.stroke();
+    dial(c,60,gy+44,36,w/w0,'SPIN',(w*180/Math.PI).toFixed(0)+'°/s');
+    const vx=tc>7.5?(tow*8.4+6)/10:0;dial(c,160,gy+44,36,Math.min(1,vx/4),'TOW V',vx.toFixed(1));
+    // text block
+    c.font='500 10px "IBM Plex Mono",monospace';c.fillStyle=A;c.fillText('DOCK  ■ HARD',220,gy+4);c.fillText('SPIN  '+(despin<1?'▼ PRESS K':'■ STOPPED'),220,gy+22);
+    c.fillText('ZONE  '+(x>zx-40?'■ SAFE':'□ '+Math.max(0,Math.round(zx-x))+' m'),220,gy+40);
+    c.fillStyle='rgba(255,179,71,.6)';c.fillText('HULL 84%',220,gy+58);
+    c.restore();
+    // scanlines + vignette
+    c.fillStyle='rgba(0,0,0,.28)';for(let yy=0;yy<H;yy+=3)c.fillRect(0,yy,W,1);
+    const g=c.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,H*.75);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.55)');c.fillStyle=g;c.fillRect(0,0,W,H);
+    c.textBaseline='alphabetic';
+  }}
+}
+function dial(c,x,y,r,v,label,val){const A='#ffb347';c.strokeStyle='rgba(255,179,71,.45)';c.lineWidth=1;c.beginPath();c.arc(x,y,r,Math.PI*.75,Math.PI*2.25);c.stroke();
+  for(let k=0;k<=8;k++){const an=Math.PI*.75+k*Math.PI*1.5/8;c.beginPath();c.moveTo(x+Math.cos(an)*(r-5),y+Math.sin(an)*(r-5));c.lineTo(x+Math.cos(an)*r,y+Math.sin(an)*r);c.stroke()}
+  const an=Math.PI*.75+v*Math.PI*1.5;c.strokeStyle=A;c.lineWidth=2;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(an)*(r-8),y+Math.sin(an)*(r-8));c.stroke();
+  c.fillStyle=A;c.beginPath();c.arc(x,y,2.5,0,TAU);c.fill();c.font='500 9px "IBM Plex Mono",monospace';c.textAlign='center';c.textBaseline='top';c.fillText(label,x,y+r-14);c.fillText(val,x,y+10);c.textAlign='left'}
+
+/* ============ loop ============ */
+const makers={cinema:Cinema,blueprint:Blueprint,toon:Toon,amber:Amber};
+const scenes=[...document.querySelectorAll('canvas[data-style]')].map(cv=>({cv,ctx:cv.getContext('2d'),s:makers[cv.dataset.style](),visible:true}));
+function fit(){for(const o of scenes){const r=o.cv.getBoundingClientRect();const dpr=Math.min(2,devicePixelRatio||1);o.cv.width=Math.max(1,Math.round(r.width*dpr));o.cv.height=Math.max(1,Math.round(r.height*dpr));o.k=o.cv.width/W}}
+function frame(o,t,dt){const c=o.ctx;c.setTransform(o.k,0,0,o.k,0,0);try{o.s.draw(c,t,dt)}catch(e){console.error(e)}}
+if('IntersectionObserver'in window){const io=new IntersectionObserver(es=>es.forEach(e=>{const o=scenes.find(s=>s.cv===e.target);if(o)o.visible=e.isIntersecting}));scenes.forEach(o=>io.observe(o.cv))}
+addEventListener('resize',fit);
+function start(){fit();
+  if(reduce){for(const o of scenes){for(let i=0;i<120;i++)frame(o,i/30,1/30);} return}
+  let last=performance.now(),t=0;
+  // pre-roll so particles exist in the first frame
+  for(const o of scenes)for(let i=0;i<60;i++)frame(o,i/30,1/30);t=2;
+  (function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;for(const o of scenes)if(o.visible)frame(o,t,dt);requestAnimationFrame(loop)})(last);
+}
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(start,start);
+})();
+</script>
