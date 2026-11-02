@@ -19,13 +19,17 @@ const M_PER_UNIT = 0.5;              // readouts: 1 world unit = 0.5 m
 const INK = '#1a1030';
 
 // sepX: sideways gap between Ranger and station at the start (0 = station anywhere in the middle)
-// stY: station start height. curve: how hard the station's drift path bends (rad/s of heading swing)
+// stY: station start height (negative = above the top of the starting view)
+// curve: how hard the station's drift path bends (rad/s of heading swing)
+// zoom: camera zoom (1 = normal, smaller = zoomed out to see more space)
 const DIFF = {
-  easy:   { spin: 0.35, drift: 5,  randomDir: false, sepX: 0,   stY: 270, curve: 0 },
-  normal: { spin: 0.75, drift: 11, randomDir: false, sepX: 440, stY: 210, curve: 0 },
-  hard:   { spin: 1.05, drift: 15, randomDir: true,  sepX: 620, stY: 170, curve: 0.16 },
+  easy:   { spin: 0.35, drift: 5,     randomDir: false, sepX: 0,   stY: 270,  curve: 0,    zoom: 1 },
+  normal: { spin: 0.75, drift: 11,    randomDir: false, sepX: 700, stY: -400, curve: 0,    zoom: 0.72 },
+  hard:   { spin: 1.05, drift: 18.75, randomDir: true,  sepX: 800, stY: -710, curve: 0.16, zoom: 0.6 },
 };
-const INTRO_BOOM = 2.3;   // seconds into the opening scene when Mann's hatch blows
+// opening scene timing (seconds): Mann's lander closes in, sits latched on the ring, then the hatch blows
+const MANN_LATCH = 1.8, MANN_TALK = 2.2, INTRO_BOOM = 4.0;
+const MANN_FAR = 120, MANN_DOCKED = 36;   // lander gap from the ring, start and latched
 const THRUST = 70;        // units/s^2
 const TORQUE = 0.9;       // rad/s^2
 const DOCKED_THRUST = 0.45, DOCKED_TORQUE = 0.35;   // the joined ships are heavier
@@ -37,6 +41,13 @@ const WIN_SPIN = 0.06;
 const cv = document.getElementById('game');
 const ctx = cv.getContext('2d');
 let dpr = 1, scale = 1, VW = W, VH = H, ox = 0, oy = 0;
+// world view (zoomed per difficulty): world point (x, y) lands on screen at ((x + wox) * Z, (y - S.cam + woy) * Z)
+let Z = 1, wox = 0, woy = 0;
+function setView() {
+  Z = S ? DIFF[S.diff].zoom : 1;
+  wox = (VW / Z - W) / 2; woy = (VH / Z - H) / 2;
+}
+const toScreen = (x, y) => ({ x: (x + wox) * Z, y: (y - S.cam + woy) * Z });
 function resize() {
   dpr = Math.min(2, window.devicePixelRatio || 1);
   const cw = window.innerWidth, ch = window.innerHeight;
@@ -262,7 +273,7 @@ function newGame(diff, title) {
     kick: { vx: rand(-1.5, 1.5), vy: -d.drift, w: d.spin * dir },
     intact: true, boomAt: 0, spinUp: 0,
     curve: d.curve, curveT: Math.random() * TAU, curveDir: Math.random() < .5 ? -1 : 1,
-    mann: { off: 120 },
+    mann: { off: MANN_FAR },
     ship: { x: shX, y: H - 110, vx: 0, vy: 0, a: 0, w: 0 },
     cam: 0, trail: [], trailT: 0,
     posM: false, spinM: false, hold: 0, dockRel: 0, bestHold: 0,
@@ -274,7 +285,10 @@ function newGame(diff, title) {
   setPause(false);
   startEl.hidden = !title;
   winEl.hidden = true;
-  if (!title) { say('mann'); syncMusic(); }
+  setView();
+  // start the camera where it will settle, so harder levels don't open with a long pan
+  S.cam = camTarget();
+  if (!title) syncMusic();
 }
 
 function explode() {
@@ -296,7 +310,9 @@ function update(dt) {
 
   // opening scene: Mann's lander creeps in to dock, then the hatch blows
   if (S.phase === 'intro') {
-    S.mann.off = Math.max(28, 120 - S.time * 42);
+    const k = Math.min(1, S.time / MANN_LATCH);
+    S.mann.off = MANN_FAR - (MANN_FAR - MANN_DOCKED) * (1 - Math.pow(1 - k, 2));   // ease in, then sit still
+    if (S.time >= MANN_TALK) sayOnce('mann');
     if (S.time >= INTRO_BOOM) explode();
   }
   // after the blast the station's spin winds up over a couple of seconds
@@ -391,17 +407,24 @@ function update(dt) {
   }
   S.confetti.step(dt);
 
-  // camera: keep the station clear of the top HUD, and the ship on screen when possible
-  const TOP = 250;
-  let tgt = Math.min(0, st.y - TOP);
-  const needShip = sh.y - (H - 60);
-  if (needShip > tgt) tgt = Math.min(needShip, st.y - TOP);
-  S.cam += (tgt - S.cam) * Math.min(1, 2.5 * dt);
+  setView();
+  S.cam += (camTarget() - S.cam) * Math.min(1, 2.5 * dt);
 
   // talk queue
   const T = S.talk;
   if (T.cur) { T.t -= dt; if (T.t <= 0) T.cur = null; }
   if (!T.cur && T.queue.length) { T.cur = T.queue.shift(); T.t = 1.6 + T.cur.text.length * 0.045; }
+}
+
+// camera: keep the station clear of the top HUD, and the ship on screen when possible
+function camTarget() {
+  const st = S.st, sh = S.ship;
+  const top = oy + 110 + (R + 40) * Z;          // screen px the station's centre stays below
+  const stMax = st.y + woy - top / Z;
+  let tgt = Math.min(0, stMax);
+  const needShip = sh.y + woy - (H - 60 + oy) / Z;
+  if (needShip > tgt) tgt = Math.min(needShip, stMax);
+  return tgt;
 }
 
 function dock() {
@@ -458,7 +481,7 @@ function drawPlanet(c) {
   c.lineWidth = 6; c.strokeStyle = INK; circ(c, px, py, pr); c.stroke();
 }
 function drawSafeZone(c) {
-  const zx = ox + W - ZONE_W;
+  const zx = (wox + W - ZONE_W) * Z;
   c.fillStyle = 'rgba(92,255,157,.12)'; c.fillRect(zx, 0, VW - zx, VH);
   c.strokeStyle = 'rgba(92,255,157,.6)'; c.lineWidth = 3; c.setLineDash([12, 12]); c.lineDashOffset = -S.time * 20;
   line(c, zx, 0, zx, VH); c.setLineDash([]);
@@ -637,7 +660,7 @@ function drawDataPanel(c) {
   if (pw < 300) return;
   const px = (VW - pw) / 2, py = VH - ph - 14;
   // fade the panel out when the Ranger (or the docked pair) is underneath it
-  const m = 50, sx = sh.x + ox, sy = sh.y - S.cam + oy;
+  const m = 50, { x: sx, y: sy } = toScreen(sh.x, sh.y);
   const under = sx > px - m && sx < px + pw + m && sy > py - m && sy < py + ph + m;
   S.panelA += ((under ? 0.18 : 1) - S.panelA) * Math.min(1, frameDt * 8);
   c.save(); c.globalAlpha = S.panelA;
@@ -741,7 +764,7 @@ function stageText() {
   const st = S.st;
   switch (S.phase) {
     case 'title': return '';
-    case 'intro': return 'Dr. Mann is docking with Endurance…';
+    case 'intro': return S.time < MANN_LATCH ? 'Dr. Mann is docking with Endurance…' : 'Dr. Mann is opening the hatch…';
     case 'approach':
       if (S.posM && S.spinM) return 'Hold steady! Clamps locking…';
       if (!S.posM) return 'Pilot: fly onto the yellow hub and match its drift';
@@ -770,7 +793,7 @@ function drawPlayerBadges(c) {
 function drawBubble(c) {
   const T = S.talk; if (!T.cur || !opts.talk) return;
   const sh = S.ship;
-  const sx = sh.x + ox, sy = sh.y - S.cam + oy;
+  const { x: sx, y: sy } = toScreen(sh.x, sh.y);
   const maxW = 300;
   c.font = '20px Bangers, Impact, sans-serif';
   // wrap
@@ -779,7 +802,7 @@ function drawBubble(c) {
   lines.push(cur);
   const bw = Math.min(maxW, Math.max(...lines.map(l => c.measureText(l).width))) + 36, bh = lines.length * 24 + 34;
   // sit beside the ship, on the side away from the station (and clear of the ring when docked)
-  const stx = S.st.x + ox, gap = Math.hypot(S.st.x - sh.x, S.st.y - sh.y) < R + 40 ? R + 40 : 60;
+  const stx = toScreen(S.st.x, S.st.y).x, gap = Math.hypot(S.st.x - sh.x, S.st.y - sh.y) < R + 40 ? (R + 40) * Z : 60;
   const leftSide = stx > sx ? true : sx + gap + bw > VW - 160;
   let bx = leftSide ? sx - gap - bw : sx + gap, by = sy - bh / 2 - 30;
   if (bx < 14) bx = sx + gap;
@@ -805,7 +828,7 @@ function drawBubble(c) {
   c.restore();
 }
 function drawEdgeArrow(c, wx, wy, label) {
-  const x = wx + ox, y = wy - S.cam + oy, m = 30;
+  const { x, y } = toScreen(wx, wy), m = 30;
   if (x > -10 && x < VW + 10 && y > -10 && y < VH + 10) return;
   const cx = clamp(x, m, VW - m), cy = clamp(y, m + 60, VH - m - 100);
   const a = Math.atan2(y - cy, x - cx);
@@ -829,7 +852,7 @@ function drawHUD(c) {
   // hold countdown
   if (S.phase === 'approach' && S.hold > 0) {
     const st = S.st, n = Math.ceil(HOLD_TIME - S.hold);
-    const x = st.x + ox, y = st.y - S.cam + oy + R + 96;
+    const p = toScreen(st.x, st.y), x = p.x, y = p.y + (R + 40) * Z + 56;
     outlinedText(c, String(n), x, y, '#ffffff', 64);
     outlinedText(c, 'Hold steady!', x, y + 44, '#ffd34d', 20);
   }
@@ -852,7 +875,8 @@ function render() {
   drawSafeZone(c);
 
   const live = S.phase !== 'title';
-  c.save(); c.translate(ox, oy - S.cam);
+  setView();
+  c.save(); c.scale(Z, Z); c.translate(wox, woy - S.cam);
   if (live && opts.hints && S.phase === 'approach') drawTrail(c);
   drawParticles(c, 'smoke');
   drawHoldRing(c);
