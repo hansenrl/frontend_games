@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Endurance Docking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Bangers&family=IBM+Plex+Mono:wght@500&display=swap" media="print" onload="this.media='all'">
+<style>
+  :root{
+    --ink:#1a1030;
+    --sky-top:#2a1c5e;
+    --sky-bot:#123068;
+    --paper:#f6f2ff;
+    --orange:#ff8a3d;
+    --gold:#ffd34d;
+    --go:#5cff9d;
+    --cyan:#4fd8ff;
+    --toon:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+    color-scheme:dark;
+  }
+  html,body{height:100%;margin:0;background:var(--sky-bot);overflow:hidden;font-family:var(--toon);color:var(--ink)}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .toggles{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;z-index:2}
+  .toggles button{font:800 14px/1 var(--toon);border:3px solid var(--ink);border-radius:999px;padding:7px 12px 5px;background:var(--paper);color:var(--ink);cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+  .toggles button[aria-pressed="true"]{background:var(--go)}
+  .toggles button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+  .toggles button:focus-visible,.panel button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .toggles kbd{font:inherit;opacity:.6;margin-left:4px}
+  .overlay{position:fixed;inset:0;display:grid;place-items:center;background:rgba(18,12,48,.55);z-index:3;padding:16px}
+  .panel{background:var(--paper);border:5px solid var(--ink);border-radius:28px;box-shadow:0 8px 0 var(--ink);padding:26px 30px 28px;max-width:640px;width:100%;text-align:center}
+  .panel h1{font-weight:800;font-size:clamp(34px,6vw,54px);line-height:1;margin:0 0 6px;color:var(--ink)}
+  .panel h1 span{color:var(--orange)}
+  .panel p{margin:6px 0;font-weight:600;font-size:17px}
+  .quote{font-family:Bangers,Impact,sans-serif;font-size:21px;letter-spacing:.03em;color:#3b2a7a}
+  .players{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+  .player{border:3px solid var(--ink);border-radius:18px;padding:12px 10px 10px}
+  .player.p1{background:#c9f3ff}.player.p2{background:#ffe1cc}
+  .player b{display:block;font-size:18px}
+  .keys{display:flex;gap:5px;justify-content:center;margin:6px 0 2px}
+  .keys kbd{display:inline-grid;place-items:center;width:34px;height:34px;border:3px solid var(--ink);border-bottom-width:5px;border-radius:8px;background:#fff;font:800 17px var(--toon)}
+  .player small{font-weight:600;font-size:13.5px;display:block;line-height:1.3}
+  .steps{text-align:left;margin:10px auto 0;padding-left:22px;max-width:480px;font-weight:600;font-size:15px}
+  .diff{display:flex;gap:8px;justify-content:center;margin:16px 0 14px}
+  .diff button{font:800 16px/1 var(--toon);border:3px solid var(--ink);border-radius:999px;padding:9px 16px 7px;background:#fff;cursor:pointer}
+  .diff button[aria-pressed="true"]{background:var(--gold)}
+  .go{font:800 24px/1 var(--toon);border:4px solid var(--ink);border-radius:999px;padding:12px 34px 9px;background:var(--go);cursor:pointer;box-shadow:0 5px 0 var(--ink)}
+  .go:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
+  .hint{font-size:13px!important;opacity:.7}
+  [hidden]{display:none!important}
+  @media (max-width:560px){.players{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<canvas id="game" aria-label="Endurance docking game"></canvas>
+
+<div class="toggles">
+  <button id="btnData" aria-pressed="true">Flight data<kbd>H</kbd></button>
+  <button id="btnHints" aria-pressed="true">Hints<kbd>G</kbd></button>
+  <button id="btnTalk" aria-pressed="true">Crew talk<kbd>T</kbd></button>
+  <button id="btnPause" aria-pressed="false">Pause<kbd>P</kbd></button>
+</div>
+
+<div class="overlay" id="start">
+  <div class="panel">
+    <h1>Endurance <span>Docking</span></h1>
+    <p class="quote">“It's not possible.” “No. It's necessary.”</p>
+    <div class="players">
+      <div class="player p1"><b>Pilot</b>
+        <div class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
+        <small>Thrusters push up, left, down, right on the screen. You keep coasting after you let go.</small></div>
+      <div class="player p2"><b>Co-pilot</b>
+        <div class="keys"><kbd>K</kbd><kbd>L</kbd></div>
+        <small>K spins counter-clockwise, L spins clockwise. The spin keeps going after you let go.</small></div>
+    </div>
+    <ol class="steps">
+      <li>Fly onto the yellow hub and match the station's drift.</li>
+      <li>Spin to line up with the ghost ship.</li>
+      <li>Hold steady for 10 seconds while the clamps lock.</li>
+      <li>Slow the spin, then push into the green safe zone.</li>
+    </ol>
+    <div class="diff" role="group" aria-label="Difficulty">
+      <button data-diff="easy" aria-pressed="true">Easy</button>
+      <button data-diff="normal" aria-pressed="false">Normal</button>
+      <button data-diff="hard" aria-pressed="false">Hard</button>
+    </div>
+    <button class="go" id="btnStart">Launch!</button>
+    <p class="hint">Enter to launch · R restarts · P pauses</p>
+  </div>
+</div>
+
+<div class="overlay" id="win" hidden>
+  <div class="panel">
+    <h1>Mission <span>complete!</span></h1>
+    <p id="winText">Endurance is safe.</p>
+    <p class="quote" id="winStars"></p>
+    <button class="go" id="btnAgain">Play again</button>
+    <p class="hint">Enter to play again</p>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
