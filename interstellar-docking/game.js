@@ -84,6 +84,7 @@ window.addEventListener('keydown', e => {
   else if (e.code === 'KeyG') toggle('hints');
   else if (e.code === 'KeyT') toggle('talk');
   else if (e.code === 'KeyM') toggle('music');
+  else if (e.code === 'Escape' && !settingsEl.hidden) closeSettings();
   else if (e.code === 'KeyP' || e.code === 'Escape') togglePause();
   else if (e.code === 'KeyR' && S.phase !== 'title') newGame(S.diff, false);
   else if (e.code === 'Enter') {
@@ -98,8 +99,18 @@ const down = k => keys.has(k);
 // ---------- settings / UI ----------
 const opts = { data: true, hints: true, talk: true, music: true };
 try { const saved = JSON.parse(localStorage.getItem('endurance-docking-opts') || 'null'); if (saved) Object.assign(opts, saved); } catch (e) { /* storage unavailable */ }
-const btn = { data: document.getElementById('btnData'), hints: document.getElementById('btnHints'), talk: document.getElementById('btnTalk'), music: document.getElementById('btnMusic'), pause: document.getElementById('btnPause') };
-function syncButtons() { for (const k of ['data', 'hints', 'talk', 'music']) btn[k].setAttribute('aria-pressed', String(opts[k])); btn.pause.setAttribute('aria-pressed', String(paused)); syncMusic(); }
+const btn = { data: document.getElementById('btnData'), hints: document.getElementById('btnHints'), talk: document.getElementById('btnTalk'), music: document.getElementById('btnSound'), pause: document.getElementById('btnPause') };
+function syncButtons() {
+  for (const k of ['data', 'hints', 'talk']) btn[k].setAttribute('aria-pressed', String(opts[k]));
+  btn.pause.setAttribute('aria-pressed', String(paused));
+  btn.music.setAttribute('aria-pressed', String(opts.music));
+  btn.music.classList.toggle('off', !opts.music);
+  btn.music.title = !track ? 'Sound (M). No music track yet: pause and open Settings to pick one.' : opts.music ? 'Sound on (M)' : 'Sound off (M)';
+  btn.music.setAttribute('aria-label', opts.music ? 'Sound on' : 'Sound off');
+  pauseEl.hidden = !paused || !S || S.phase === 'title' || S.phase === 'won';
+  if (pauseEl.hidden) { settingsEl.hidden = true; pausePanel.hidden = false; }
+  syncMusic();
+}
 function toggle(k) { opts[k] = !opts[k]; try { localStorage.setItem('endurance-docking-opts', JSON.stringify(opts)); } catch (e) { /* ignore */ } syncButtons(); }
 btn.data.onclick = () => toggle('data');
 btn.hints.onclick = () => toggle('hints');
@@ -109,20 +120,65 @@ btn.pause.onclick = () => togglePause();
 let paused = false;
 function setPause(p) { paused = p; syncButtons(); }
 
+// ---------- pause menu & settings ----------
+const pauseEl = document.getElementById('pauseMenu'), settingsEl = document.getElementById('settings');
+const trackName = document.getElementById('trackName'), trackFile = document.getElementById('trackFile');
+const btnClearTrack = document.getElementById('btnClearTrack');
+document.getElementById('btnResume').onclick = () => setPause(false);
+document.getElementById('btnRestart').onclick = () => newGame(S.diff, false);
+const pausePanel = document.getElementById('pausePanel');
+document.getElementById('btnSettings').onclick = () => { settingsEl.hidden = false; pausePanel.hidden = true; document.getElementById('btnPickTrack').focus(); };
+document.getElementById('btnCloseSettings').onclick = () => closeSettings();
+document.getElementById('btnPickTrack').onclick = () => trackFile.click();
+function closeSettings() { settingsEl.hidden = true; pausePanel.hidden = false; document.getElementById('btnSettings').focus(); }
+trackFile.onchange = () => {
+  const f = trackFile.files && trackFile.files[0];
+  trackFile.value = '';
+  if (!f) return;
+  setTrack({ name: f.name, blob: f });
+  saveTrack({ name: f.name, blob: f });
+};
+btnClearTrack.onclick = () => { setTrack(null); saveTrack(null); };
+
 // ---------- music (toggle: M) ----------
-// Plays music/no-time-for-caution.(mp3|m4a|ogg) if it's there; quietly does nothing if not.
+// The chosen MP3 is copied into the browser's IndexedDB, so it's still there next time the game opens.
 const music = document.getElementById('music');
-let musicOk = true;
-if (music) {
-  music.volume = 0.6;
-  const srcs = music.querySelectorAll('source');
-  if (srcs.length) srcs[srcs.length - 1].addEventListener('error', () => { musicOk = false; btn.music.hidden = true; });
+music.volume = 0.6;
+let track = null, trackUrl = null;
+function setTrack(t) {
+  if (trackUrl) URL.revokeObjectURL(trackUrl);
+  track = t; trackUrl = t ? URL.createObjectURL(t.blob) : null;
+  music.pause();
+  if (trackUrl) { music.src = trackUrl; music.load(); } else music.removeAttribute('src');
+  trackName.textContent = t ? t.name : 'None chosen';
+  btnClearTrack.hidden = !t;
+  syncButtons();
 }
 function syncMusic() {
-  if (!music || !musicOk || !S) return;
+  if (!track || !S) return;
   const want = opts.music && !paused && S.phase !== 'title';
-  if (want && music.paused) music.play().catch(() => { /* autoplay blocked until a key/click */ });
+  if (want && music.paused) music.play().catch(() => { /* blocked until a key/click */ });
   else if (!want && !music.paused) music.pause();
+}
+function openDB() {
+  return new Promise((ok, fail) => {
+    const r = indexedDB.open('endurance-docking', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('music');
+    r.onsuccess = () => ok(r.result); r.onerror = () => fail(r.error);
+  });
+}
+async function saveTrack(t) {
+  try {
+    const db = await openDB(), tx = db.transaction('music', 'readwrite');
+    if (t) tx.objectStore('music').put(t, 'track'); else tx.objectStore('music').delete('track');
+  } catch (e) { /* storage unavailable: the track still plays this session */ }
+}
+async function loadTrack() {
+  try {
+    const db = await openDB();
+    const t = await new Promise((ok, fail) => { const r = db.transaction('music').objectStore('music').get('track'); r.onsuccess = () => ok(r.result); r.onerror = () => fail(r.error); });
+    if (t && t.blob && !track) setTrack(t);
+  } catch (e) { /* storage unavailable */ }
 }
 function togglePause() { if (S.phase === 'title' || S.phase === 'won') return; setPause(!paused); }
 
@@ -783,11 +839,7 @@ function drawHUD(c) {
   }
   drawPlayerBadges(c);
   if (opts.data && S.phase !== 'intro') drawDataPanel(c);
-  if (paused) {
-    c.fillStyle = 'rgba(18,12,48,.5)'; c.fillRect(0, 0, VW, VH);
-    outlinedText(c, 'Paused', VW / 2, VH / 2 - 10, '#ffffff', 56);
-    outlinedText(c, 'Press P to keep flying', VW / 2, VH / 2 + 40, '#ffd34d', 20);
-  }
+  // (the pause menu itself is HTML: #pauseMenu)
 }
 
 // ---------- frame ----------
@@ -848,6 +900,7 @@ function loop(now) {
 }
 newGame('normal', true);
 syncButtons();
+loadTrack();
 requestAnimationFrame(loop);
 
 // debug / testing hook

@@ -29,7 +29,7 @@
   .toggles button:focus-visible,.panel button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
   .toggles kbd{font:inherit;opacity:.6;margin-left:4px}
   .overlay{position:fixed;inset:0;display:grid;place-items:center;background:rgba(18,12,48,.55);z-index:3;padding:16px}
-  .panel{background:var(--paper);border:5px solid var(--ink);border-radius:28px;box-shadow:0 8px 0 var(--ink);padding:26px 30px 28px;max-width:640px;width:100%;text-align:center}
+  .panel{box-sizing:border-box;background:var(--paper);border:5px solid var(--ink);border-radius:28px;box-shadow:0 8px 0 var(--ink);padding:26px 30px 28px;max-width:640px;width:100%;text-align:center}
   .panel h1{font-weight:800;font-size:clamp(34px,6vw,54px);line-height:1;margin:0 0 6px;color:var(--ink)}
   .panel h1 span{color:var(--orange)}
   .panel p{margin:6px 0;font-weight:600;font-size:17px}
@@ -49,6 +49,25 @@
   .go:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
   .hint{font-size:13px!important;opacity:.7}
   [hidden]{display:none!important}
+  .toggles .sound{width:46px;padding:0;display:grid;place-items:center;background:var(--go)}
+  .sound svg{width:22px;height:22px;fill:none;stroke:var(--ink);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .sound .spk{fill:var(--ink)}
+  .sound .mute{display:none}
+  .toggles .sound.off{background:var(--paper)}
+  .sound.off .wave{display:none}.sound.off .mute{display:inline}
+  .sound:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+  .sound:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .overlay.pause{background:rgba(18,12,48,.5)}
+  .panel.small{max-width:380px;position:relative}
+  .panel.settings{max-width:420px}
+  .panel h2{font-weight:800;font-size:34px;line-height:1;margin:0 0 12px}
+  .menu{display:flex;flex-direction:column;gap:10px;align-items:center;margin:14px 0 6px}
+  .menu.row{flex-direction:row;justify-content:center;flex-wrap:wrap}
+  .alt{font:800 18px/1 var(--toon);border:3px solid var(--ink);border-radius:999px;padding:10px 22px 8px;background:#fff;color:var(--ink);cursor:pointer;box-shadow:0 4px 0 var(--ink)}
+  .alt:active{transform:translateY(2px);box-shadow:0 2px 0 var(--ink)}
+  .panel .label{font-size:14px;opacity:.7;margin:0}
+  .track{font-family:"IBM Plex Mono",monospace;font-size:15px!important;word-break:break-all;background:#e7e0ff;border:2px solid var(--ink);border-radius:10px;padding:6px 10px}
+  .settings .go{margin-top:12px}
   @media (max-width:560px){.players{grid-template-columns:1fr}}
 </style>
 </head>
@@ -56,10 +75,12 @@
 <canvas id="game" aria-label="Endurance docking game"></canvas>
 
 <div class="toggles">
+  <button class="sound" id="btnSound" aria-pressed="true" aria-label="Sound on">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="mute" d="M16 9l6 6M22 9l-6 6"/></svg>
+  </button>
   <button id="btnData" aria-pressed="true">Flight data<kbd>H</kbd></button>
   <button id="btnHints" aria-pressed="true">Hints<kbd>G</kbd></button>
   <button id="btnTalk" aria-pressed="true">Crew talk<kbd>T</kbd></button>
-  <button id="btnMusic" aria-pressed="true">Music<kbd>M</kbd></button>
   <button id="btnPause" aria-pressed="false">Pause<kbd>P</kbd></button>
 </div>
 
@@ -87,7 +108,7 @@
       <button data-diff="hard" aria-pressed="false">Hard</button>
     </div>
     <button class="go" id="btnStart">Launch!</button>
-    <p class="hint">Enter to launch · R restarts · P pauses · M music</p>
+    <p class="hint">Enter to launch · R restarts · P pauses · M sound</p>
   </div>
 </div>
 
@@ -101,11 +122,31 @@
   </div>
 </div>
 
-<audio id="music" loop preload="auto">
-  <source src="music/no-time-for-caution.mp3" type="audio/mpeg">
-  <source src="music/no-time-for-caution.m4a" type="audio/mp4">
-  <source src="music/no-time-for-caution.ogg" type="audio/ogg">
-</audio>
+<div class="overlay pause" id="pauseMenu" hidden>
+  <div class="panel small" id="pausePanel" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+    <h1 id="pauseTitle">Paused</h1>
+    <div class="menu">
+      <button class="go" id="btnResume">Keep flying</button>
+      <button class="alt" id="btnSettings">Settings</button>
+      <button class="alt" id="btnRestart">Restart</button>
+    </div>
+    <p class="hint">P or Esc to keep flying</p>
+  </div>
+  <div class="panel small settings" id="settings" role="dialog" aria-modal="true" aria-labelledby="setTitle" hidden>
+    <h2 id="setTitle">Settings</h2>
+    <p class="label">Music track</p>
+    <p class="track" id="trackName">None chosen</p>
+    <div class="menu row">
+      <button class="alt" id="btnPickTrack">Choose MP3…</button>
+      <button class="alt" id="btnClearTrack" hidden>Remove</button>
+    </div>
+    <p class="hint">The browser keeps a copy of the track, so it plays every time you start the game. The speaker button (or M) turns sound on and off.</p>
+    <input type="file" id="trackFile" accept="audio/mpeg,.mp3,audio/*" hidden>
+    <button class="go" id="btnCloseSettings">Done</button>
+  </div>
+</div>
+
+<audio id="music" loop preload="auto"></audio>
 <script src="game.js"></script>
 </body>
 </html>
