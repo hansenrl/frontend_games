@@ -59,6 +59,7 @@
   <button id="btnData" aria-pressed="true">Flight data<kbd>H</kbd></button>
   <button id="btnHints" aria-pressed="true">Hints<kbd>G</kbd></button>
   <button id="btnTalk" aria-pressed="true">Crew talk<kbd>T</kbd></button>
+  <button id="btnMusic" aria-pressed="true">Music<kbd>M</kbd></button>
   <button id="btnPause" aria-pressed="false">Pause<kbd>P</kbd></button>
 </div>
 
@@ -71,8 +72,8 @@
         <div class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
         <small>Thrusters push up, left, down, right on the screen. You keep coasting after you let go.</small></div>
       <div class="player p2"><b>Co-pilot</b>
-        <div class="keys"><kbd>K</kbd><kbd>L</kbd></div>
-        <small>K spins counter-clockwise, L spins clockwise. The spin keeps going after you let go.</small></div>
+        <div class="keys"><kbd>←</kbd><kbd>→</kbd></div>
+        <small>← spins counter-clockwise, → spins clockwise. The spin keeps going after you let go.</small></div>
     </div>
     <ol class="steps">
       <li>Fly onto the yellow hub and match the station's drift.</li>
@@ -86,7 +87,7 @@
       <button data-diff="hard" aria-pressed="false">Hard</button>
     </div>
     <button class="go" id="btnStart">Launch!</button>
-    <p class="hint">Enter to launch · R restarts · P pauses</p>
+    <p class="hint">Enter to launch · R restarts · P pauses · M music</p>
   </div>
 </div>
 
@@ -100,6 +101,11 @@
   </div>
 </div>
 
+<audio id="music" loop preload="auto">
+  <source src="music/no-time-for-caution.mp3" type="audio/mpeg">
+  <source src="music/no-time-for-caution.m4a" type="audio/mp4">
+  <source src="music/no-time-for-caution.ogg" type="audio/ogg">
+</audio>
 <script src="game.js"></script>
 </body>
 </html>
