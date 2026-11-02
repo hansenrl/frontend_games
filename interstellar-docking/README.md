@@ -50,6 +50,12 @@ No music ships with the game. Pause, open **Settings** and choose an MP3. The br
 copy of it in IndexedDB, so it loops in the background every time you start the game, until you
 remove it in Settings or clear the site's data. The speaker button (or M) turns sound on and off.
 
+If the track is "No Time for Caution" from the film soundtrack (the game recognises its 4:06 length), the
+music follows the mission. It crossfades ahead, landing on the beat, when the Ranger first moves (the ticking
+comes in, 0:44), when it reaches the hub and the spin match starts (1:57), when the clamps lock and the despin
+and tow begin (first big organ hit, 2:35) and when the docked ships reach the safe zone (the cut-off, 3:54). Until the next of those moments it loops the part it's in, so a slow mission never runs
+ahead of the music. The cue times are in `SYNC_CUES` in `game.js`.
+
 ## Files
 
 - `index.html`: page, start, pause, settings and win screens, toggle buttons

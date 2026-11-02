@@ -161,6 +161,7 @@ function setTrack(t) {
   if (trackUrl) URL.revokeObjectURL(trackUrl);
   track = t; trackUrl = t ? URL.createObjectURL(t.blob) : null;
   music.pause();
+  stopSync();
   if (trackUrl) { music.src = trackUrl; music.load(); } else music.removeAttribute('src');
   trackName.textContent = t ? t.name : 'None chosen';
   btnClearTrack.hidden = !t;
@@ -169,6 +170,13 @@ function setTrack(t) {
 function syncMusic() {
   if (!track || !S) return;
   const want = opts.music && !paused && S.phase !== 'title';
+  if (sync.buf) {
+    // the synced soundtrack plays through Web Audio; pausing the context freezes any crossfade mid-way
+    if (!music.paused) music.pause();
+    if (want && sync.ctx.state !== 'running') sync.ctx.resume().catch(() => { /* blocked until a key/click */ });
+    else if (!want && sync.ctx.state === 'running') sync.ctx.suspend();
+    return;
+  }
   if (want && music.paused) music.play().catch(() => { /* blocked until a key/click */ });
   else if (!want && !music.paused) music.pause();
 }
@@ -191,6 +199,88 @@ async function loadTrack() {
     const t = await new Promise((ok, fail) => { const r = db.transaction('music').objectStore('music').get('track'); r.onsuccess = () => ok(r.result); r.onerror = () => fail(r.error); });
     if (t && t.blob && !track) setTrack(t);
   } catch (e) { /* storage unavailable */ }
+}
+
+// ---------- soundtrack sync ----------
+// If the track is "No Time for Caution" from the film (spotted by its length), it plays through Web Audio instead
+// of the <audio> tag and crossfades to the part of the piece that fits what's on screen.
+// Times are seconds into the album track (4:06). The organ ticks once a second, about 0.67 s past each second.
+const SYNC_LEN = 246.3;
+// hit: the moment in the music to land on. lead: the crossfade starts this long before it, so the hit arrives
+// `lead` seconds after the game event. loop: until the next cue, jump back from loop[1] to loop[0], so a slow
+// mission never runs on into the next part of the music.
+const SYNC_CUES = [
+  { hit: 0,      lead: 0.5, loop: [44.67, 104.67] },    // start: quiet organ while Mann docks
+  { hit: 44.7,   lead: 1.5, loop: [44.67, 104.67] },    // ship starts moving: the ticking arpeggios come in
+  { hit: 116.7,  lead: 1.0, loop: [116.67, 140.67] },   // on the hub, spin match starts: new phrase after a dip
+  { hit: 155.55, lead: 1.0, loop: [182.6, 222.6] },     // lock, then despin and tow: the first big organ hit
+  { hit: 234.28, lead: 1.0, loop: null },               // safe zone, engines off: the sudden cut-off, then the ringing tail
+];
+const LOOP_FADE = 0.3;
+const sync = { ctx: null, out: null, buf: null, voices: [], offset: 0, at: 0, stage: -1, game: null };
+const syncNote = document.getElementById('syncNote');
+music.addEventListener('loadedmetadata', () => { if (track && Math.abs(music.duration - SYNC_LEN) < 1.5) prepareSync(track); });
+async function prepareSync(t) {
+  try {
+    if (!sync.ctx) {
+      sync.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      sync.out = sync.ctx.createGain(); sync.out.gain.value = music.volume; sync.out.connect(sync.ctx.destination);
+    }
+    const buf = await sync.ctx.decodeAudioData(await t.blob.arrayBuffer());
+    if (t !== track) return;
+    sync.buf = buf; sync.stage = -1; sync.game = null;
+    syncNote.hidden = false;
+    syncMusic();
+  } catch (e) { /* no Web Audio: the track just loops as usual */ }
+}
+function stopSync() {
+  for (const v of sync.voices) v.src.stop();
+  sync.voices = []; sync.buf = null;
+  syncNote.hidden = true;
+}
+const syncPos = () => sync.offset + sync.ctx.currentTime - sync.at;
+// play the track from `pos` starting at context time `when`, crossfading out whatever is playing over `fade` seconds
+function syncPlay(pos, fade, when) {
+  const c = sync.ctx, now = c.currentTime;
+  when = Math.max(now, when ?? now);
+  for (const v of sync.voices) {
+    if (v.start > now) { v.src.stop(); continue; }   // a loop jump that hasn't started yet
+    const g = v.gain.gain;
+    g.cancelScheduledValues(when); g.setValueAtTime(when > now ? 1 : g.value, when);
+    g.linearRampToValueAtTime(0, when + fade); v.src.stop(when + fade + 0.05);
+  }
+  const src = c.createBufferSource(), gain = c.createGain(), v = { src, gain, start: when };
+  src.buffer = sync.buf; src.connect(gain).connect(sync.out);
+  gain.gain.setValueAtTime(fade ? 0 : 1, when); if (fade) gain.gain.linearRampToValueAtTime(1, when + fade);
+  src.onended = () => { sync.voices = sync.voices.filter(o => o !== v); gain.disconnect(); };
+  src.start(when, pos);
+  sync.voices = sync.voices.filter(o => o.start <= now).concat(v);
+  sync.offset = pos; sync.at = when;
+}
+function syncStage() {
+  if (S.phase === 'won') return 4;
+  if (S.phase === 'docked') return 3;
+  if (S.said.has('spinPhase')) return 2;
+  if (S.said.has('moving')) return 1;
+  return 0;
+}
+function tickSync() {
+  if (!sync.buf || !S || S.phase === 'title') return;
+  if (sync.game !== S) { sync.game = S; sync.stage = -1; }   // new mission: back to the top
+  const want = syncStage();
+  if (want > sync.stage) {
+    const cue = SYNC_CUES[want], pos = sync.voices.length ? syncPos() : -1;
+    // skip only if the music isn't already there (the intro runs into the ticking on its own if you wait)
+    const there = cue.loop && sync.stage >= 0 && pos >= cue.hit - cue.lead && pos < cue.loop[1];
+    if (!there) syncPlay(Math.max(0, cue.hit - cue.lead), cue.lead);
+    sync.stage = want;
+  }
+  const loop = SYNC_CUES[sync.stage].loop;
+  if (!loop) return;
+  // schedule the loop jump on the exact beat, a moment ahead
+  const pos = syncPos(), jump = loop[1] - LOOP_FADE;
+  if (pos >= loop[1]) syncPlay(loop[0] + pos - loop[1], LOOP_FADE);
+  else if (pos > jump - 0.5) syncPlay(loop[0] - LOOP_FADE, LOOP_FADE, sync.at + jump - sync.offset);
 }
 function togglePause() { if (S.phase === 'title' || S.phase === 'won') return; setPause(!paused); }
 
@@ -968,6 +1058,7 @@ let last = performance.now(), frameDt = 0;
 function loop(now) {
   const dt = clamp((now - last) / 1000, 0, 0.05); last = now; frameDt = dt;
   if (!paused) update(dt);
+  tickSync();
   render();
   requestAnimationFrame(loop);
 }
@@ -977,5 +1068,5 @@ loadTrack();
 requestAnimationFrame(loop);
 
 // debug / testing hook
-window.__dock = { get state() { return S; }, newGame, update, render };
+window.__dock = { get state() { return S; }, newGame, update, render, sync, syncPos, tickSync };
 })();
