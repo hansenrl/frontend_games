@@ -37,10 +37,12 @@ keep going after you let go until you push the other way.
 5. **Despin and tow.** The two ships are now joined and heavier. Slow the spin to (almost)
    zero, then push into the green safe zone on the right.
 
-Difficulty sets the station's spin and drift (Easy, Normal, Hard). On Normal and Hard the
-station starts much farther from the Ranger (about 650 m and 800 m, over on the left) and the
-camera zooms out as far as it needs to keep both ships on screen, then back in as you close in. On Hard the station drifts fastest, its spin direction is
-random, and its drift path curves back and forth.
+Difficulty sets the station's spin and drift (Easy, Normal, Hard). The station always drifts
+up and away from the safe zone, and the camera slides sideways to follow it. On Normal and Hard
+the station starts much farther from the Ranger (about 650 m and 800 m, over on the left) and
+the camera zooms out as far as it needs to keep both ships on screen, then back in as you close
+in. On Hard the station drifts fastest and spins fastest (about 20 RPM), its spin direction is
+random, and its drift path swings between straight up and up-left.
 
 ## Music
 

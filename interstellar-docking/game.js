@@ -20,13 +20,13 @@ const INK = '#1a1030';
 
 // sepX: sideways gap between Ranger and station at the start (0 = station anywhere in the middle)
 // stY: station start height (negative = above the top of the starting view)
-// curve: how hard the station's drift path bends (rad/s of heading swing)
+// curve: how far the station's drift heading swings back and forth (radians); it always leans away from the safe zone
 // zoom: closest camera zoom (1 = normal, smaller = zoomed out). The camera zooms out further
 //       when it needs to, so the Ranger and the station both stay on screen.
 const DIFF = {
   easy:   { spin: 0.35, drift: 5,     randomDir: false, sepX: 0,   stY: 270,  curve: 0,    zoom: 1 },
   normal: { spin: 0.75, drift: 11,    randomDir: false, sepX: 900, stY: -234, curve: 0,    zoom: 0.72 },
-  hard:   { spin: 1.05, drift: 18.75, randomDir: true,  sepX: 960, stY: -615, curve: 0.16, zoom: 0.6 },
+  hard:   { spin: 2.1,  drift: 18.75, randomDir: true,  sepX: 960, stY: -615, curve: 0.7,  zoom: 0.6 },
 };
 // opening scene timing (seconds): Mann's lander closes in, sits latched on the ring, then the hatch blows
 const MANN_LATCH = 1.8, MANN_TALK = 1.8, BRAND_TALK = 4.0, INTRO_BOOM = 6.0;
@@ -42,13 +42,13 @@ const WIN_SPIN = 0.06;
 const cv = document.getElementById('game');
 const ctx = cv.getContext('2d');
 let dpr = 1, scale = 1, VW = W, VH = H, ox = 0, oy = 0;
-// world view (zoomed per difficulty): world point (x, y) lands on screen at ((x + wox) * Z, (y - S.cam + woy) * Z)
+// world view: world point (x, y) lands on screen at ((x - S.camX + wox) * Z, (y - S.cam + woy) * Z)
 let Z = 1, wox = 0, woy = 0;
 function setView() {
   Z = S ? S.zoom : 1;
   wox = (VW / Z - W) / 2; woy = (VH / Z - H) / 2;
 }
-const toScreen = (x, y) => ({ x: (x + wox) * Z, y: (y - S.cam + woy) * Z });
+const toScreen = (x, y) => ({ x: (x - S.camX + wox) * Z, y: (y - S.cam + woy) * Z });
 function resize() {
   dpr = Math.min(2, window.devicePixelRatio || 1);
   const cw = window.innerWidth, ch = window.innerHeight;
@@ -273,9 +273,10 @@ function newGame(diff, title) {
     diff, phase: title ? 'title' : 'intro', time: 0,
     st: { x: stX, y: d.stY, vx: 0, vy: 0, a: Math.random() * TAU, w: 0 },
     // what the explosion leaves the station doing
-    kick: { vx: rand(-1.5, 1.5), vy: -d.drift, w: d.spin * dir },
+    // (drift is always up and to the left, away from the safe zone on the right)
+    kick: { vx: -rand(0.5, 2), vy: -d.drift, w: d.spin * dir },
     intact: true, boomAt: 0, spinUp: 0,
-    curve: d.curve, curveT: Math.random() * TAU, curveDir: Math.random() < .5 ? -1 : 1,
+    curve: d.curve, curveT: Math.random() * TAU, camX: 0,
     mann: { off: MANN_FAR },
     ship: { x: shX, y: H - 110, vx: 0, vy: 0, a: 0, w: 0 },
     cam: 0, trail: [], trailT: 0,
@@ -291,14 +292,24 @@ function newGame(diff, title) {
   // start the camera where it will settle, so harder levels don't open with a long pan
   S.zoom = zoomTarget();
   setView();
-  S.cam = camTarget();
+  S.cam = camTarget(); S.camX = camXTarget();
   if (!title) syncMusic();
+}
+
+// Hard: the station's drift path bends back and forth between straight up and up-left,
+// so it always moves away from the safe zone
+function curveDrift(dt) {
+  const st = S.st, speed = DIFF[S.diff].drift;
+  S.curveT += dt;
+  const lean = 0.05 + S.curve * (0.5 - 0.5 * Math.cos(S.curveT * 0.3));   // radians left of straight up
+  st.vx = -Math.sin(lean) * speed; st.vy = -Math.cos(lean) * speed;
 }
 
 function explode() {
   const st = S.st;
   S.intact = false; S.boomAt = S.time; S.phase = 'approach';
   st.vx = S.kick.vx; st.vy = S.kick.vy;
+  if (S.curve) curveDrift(0);
   burst(st, 90);
   S.flash = 1.4;
   S.nextBurst = rand(6, 10);
@@ -325,14 +336,7 @@ function update(dt) {
     S.spinUp = Math.min(1, (S.time - S.boomAt) / 2);
     st.w = S.kick.w * (1 - Math.pow(1 - S.spinUp, 2));
   }
-  // Hard: the station's drift path bends back and forth
-  if (S.phase === 'approach' && S.curve) {
-    S.curveT += dt;
-    const turn = S.curve * S.curveDir * Math.cos(S.curveT * 0.3) * dt;
-    const c = Math.cos(turn), s = Math.sin(turn);
-    const vx = st.vx * c - st.vy * s, vy = st.vx * s + st.vy * c;
-    st.vx = vx; st.vy = vy;
-  }
+  if (S.phase === 'approach' && S.curve) curveDrift(dt);
 
   if (S.phase !== 'docked' && S.phase !== 'won') {
     // free flight
@@ -415,6 +419,7 @@ function update(dt) {
   S.zoom += (zoomTarget() - S.zoom) * Math.min(1, 1.5 * dt);
   setView();
   S.cam += (camTarget() - S.cam) * Math.min(1, 2.5 * dt);
+  S.camX += (camXTarget() - S.camX) * Math.min(1, 2.5 * dt);
 
   // talk queue
   const T = S.talk;
@@ -426,8 +431,9 @@ function update(dt) {
 // between the top HUD and the bottom of the screen (see camTarget for the margins)
 function zoomTarget() {
   const base = DIFF[S.diff].zoom, dy = S.ship.y - S.st.y;
-  if (dy <= 0) return base;
-  return clamp((H - 190) / (dy + R + 40), 0.3, base);
+  const zx = (VW - 120) / (Math.abs(S.ship.x - S.st.x) + R + 110);   // side by side
+  const zy = dy > 0 ? (H - 190) / (dy + R + 40) : base;                // Ranger below the station
+  return clamp(Math.min(zx, zy), 0.3, base);
 }
 // camera: keep the station clear of the top HUD, and the ship on screen when possible
 function camTarget() {
@@ -438,6 +444,14 @@ function camTarget() {
   const needShip = sh.y + woy - (H - 60 + oy) / Z;
   if (needShip > tgt) tgt = Math.min(needShip, stMax);
   return tgt;
+}
+
+// sideways camera: normally still, but slides to keep the station (and the Ranger, if they fit) on screen
+function camXTarget() {
+  const st = S.st, sh = S.ship, w = VW / Z, m = R + 50;
+  const lo = Math.min(st.x - m, sh.x - 60), hi = Math.max(st.x + m, sh.x + 60);
+  if (hi - lo > w) return st.x - w / 2 + wox;
+  return clamp(-wox, hi - w, lo) + wox;
 }
 
 function dock() {
@@ -465,7 +479,8 @@ function drawBackground(c) {
   const g = c.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, '#2a1c5e'); g.addColorStop(1, '#123068');
   c.fillStyle = g; c.fillRect(0, 0, VW, VH);
   for (const s of STARS) {
-    const x = s.x % (VW + 20), y = ((s.y - S.cam * .25) % 1400 + 1400) % 1400;
+    const x = ((s.x - S.camX * .25) % 2000 + 2000) % 2000, y = ((s.y - S.cam * .25) % 1400 + 1400) % 1400;
+    if (x > VW + 10) continue;
     if (y > VH) continue;
     c.globalAlpha = .5 + .5 * Math.sin(S.time * 2 + s.tw);
     c.fillStyle = s.s > .88 ? '#ffe58a' : '#c9c2ff';
@@ -475,7 +490,7 @@ function drawBackground(c) {
 }
 function drawPlanet(c) {
   // icy planet far below (parallax)
-  const px = ox + 300, py = oy + 1650 - S.cam * .35, pr = 1000;
+  const px = ox + 300 - S.camX * .35, py = oy + 1650 - S.cam * .35, pr = 1000;
   if (py - pr > VH + 40) return;
   let g = c.createRadialGradient(px, py, pr - 6, px, py, pr + 34);
   g.addColorStop(0, 'rgba(170,225,255,.55)'); g.addColorStop(1, 'rgba(170,225,255,0)');
@@ -494,7 +509,7 @@ function drawPlanet(c) {
   c.lineWidth = 6; c.strokeStyle = INK; circ(c, px, py, pr); c.stroke();
 }
 function drawSafeZone(c) {
-  const zx = (wox + W - ZONE_W) * Z;
+  const zx = (wox - S.camX + W - ZONE_W) * Z;
   c.fillStyle = 'rgba(92,255,157,.12)'; c.fillRect(zx, 0, VW - zx, VH);
   c.strokeStyle = 'rgba(92,255,157,.6)'; c.lineWidth = 3; c.setLineDash([12, 12]); c.lineDashOffset = -S.time * 20;
   line(c, zx, 0, zx, VH); c.setLineDash([]);
@@ -857,16 +872,31 @@ function drawEdgeArrow(c, wx, wy, label) {
   c.restore();
   outlinedText(c, label, cx - Math.cos(a) * 34, cy - Math.sin(a) * 26, '#ffffff', 14);
 }
+// left edge of the HTML toggle buttons (top right), in canvas units
+const togglesEl = document.querySelector('.toggles');
+let togglesLeftCache = -1;
+window.addEventListener('resize', () => { togglesLeftCache = -1; });
+function togglesLeft() {
+  if (togglesLeftCache < 0) {
+    const r = togglesEl.getBoundingClientRect();
+    // if the buttons wrap onto a second row they reach further down, so treat the whole width as taken
+    togglesLeftCache = r.height > 60 ? 0 : r.left / scale;
+  }
+  return togglesLeftCache;
+}
 function drawHUD(c) {
   chip(c, 14, 14, 150, 'Position', S.posM || S.phase === 'docked' || S.phase === 'won');
   chip(c, 172, 14, 110, 'Spin', S.spinM || S.phase === 'docked' || S.phase === 'won');
   const txt = stageText();
   if (txt) {
-    c.font = '800 19px "Baloo 2", sans-serif';
-    const w = c.measureText(txt).width + 36, x = clamp(VW / 2 - w / 2, 296, VW - w - 14), y = 62;
-    c.lineWidth = 3.5; c.strokeStyle = INK; c.fillStyle = S.phase === 'docked' ? '#ff8a3d' : '#f6f2ff';
-    rr(c, x, y, w, 36, 18); c.fill(); c.stroke();
-    c.fillStyle = INK; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText(txt, x + 18, y + 20);
+    // small pill beside the Position/Spin chips; drops below them if the top-right buttons are in the way
+    c.font = '800 15px "Baloo 2", sans-serif';
+    const w = c.measureText(txt).width + 26;
+    let x = 292, y = 19;
+    if (x + w > togglesLeft() - 10) { x = 14; y = 60; }
+    c.lineWidth = 3; c.strokeStyle = INK; c.fillStyle = S.phase === 'docked' ? '#ff8a3d' : '#f6f2ff';
+    rr(c, x, y, w, 28, 14); c.fill(); c.stroke();
+    c.fillStyle = INK; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText(txt, x + 13, y + 15.5);
   }
   // hold countdown
   if (S.phase === 'approach' && S.hold > 0) {
@@ -895,7 +925,7 @@ function render() {
 
   const live = S.phase !== 'title';
   setView();
-  c.save(); c.scale(Z, Z); c.translate(wox, woy - S.cam);
+  c.save(); c.scale(Z, Z); c.translate(wox - S.camX, woy - S.cam);
   if (live && opts.hints && S.phase === 'approach') drawTrail(c);
   drawParticles(c, 'smoke');
   drawHoldRing(c);
