@@ -109,7 +109,7 @@ window.addEventListener('blur', () => { keys.clear(); if (S.phase !== 'title' &&
 const down = k => keys.has(k);
 
 // ---------- settings / UI ----------
-const opts = { data: true, hints: true, talk: true, music: true };
+const opts = { data: true, hints: true, talk: true, music: true, syncMusic: true };
 try { const saved = JSON.parse(localStorage.getItem('endurance-docking-opts') || 'null'); if (saved) Object.assign(opts, saved); } catch (e) { /* storage unavailable */ }
 const btn = { data: document.getElementById('btnData'), hints: document.getElementById('btnHints'), talk: document.getElementById('btnTalk'), music: document.getElementById('btnSound'), pause: document.getElementById('btnPause') };
 function syncButtons() {
@@ -119,11 +119,17 @@ function syncButtons() {
   btn.music.classList.toggle('off', !opts.music);
   btn.music.title = !track ? 'Sound (M). No music track yet: pause and open Settings to pick one.' : opts.music ? 'Sound on (M)' : 'Sound off (M)';
   btn.music.setAttribute('aria-label', opts.music ? 'Sound on' : 'Sound off');
+  btnSync.setAttribute('aria-pressed', String(opts.syncMusic));
+  btnSync.textContent = 'Sync to mission: ' + (opts.syncMusic ? 'On' : 'Off');
+  syncNote.textContent = opts.syncMusic
+    ? 'This track follows the mission: it skips ahead when you start moving, start spinning, lock on and reach the safe zone.'
+    : 'Sync is off: the track just plays and loops from start to finish.';
   pauseEl.hidden = !paused || !S || S.phase === 'title' || S.phase === 'won';
   if (pauseEl.hidden) { settingsEl.hidden = true; pausePanel.hidden = false; }
   syncMusic();
 }
-function toggle(k) { opts[k] = !opts[k]; try { localStorage.setItem('endurance-docking-opts', JSON.stringify(opts)); } catch (e) { /* ignore */ } syncButtons(); }
+function saveOpts() { try { localStorage.setItem('endurance-docking-opts', JSON.stringify(opts)); } catch (e) { /* ignore */ } }
+function toggle(k) { opts[k] = !opts[k]; saveOpts(); syncButtons(); }
 btn.data.onclick = () => toggle('data');
 btn.hints.onclick = () => toggle('hints');
 btn.talk.onclick = () => toggle('talk');
@@ -151,6 +157,18 @@ trackFile.onchange = () => {
   saveTrack({ name: f.name, blob: f });
 };
 btnClearTrack.onclick = () => { setTrack(null); saveTrack(null); };
+const btnSync = document.getElementById('btnSync');
+btnSync.onclick = () => {
+  const on = !opts.syncMusic;
+  if (sync.buf) {
+    // hand over between the synced Web Audio player and the plain <audio> loop without jumping back to the top
+    if (!on && sync.voices.length) { try { music.currentTime = Math.max(0, syncPos()); } catch (e) { /* not seekable yet */ } }
+    for (const v of sync.voices) v.src.stop();
+    sync.voices = []; sync.stage = -1; sync.game = null;
+    if (on) music.pause();
+  }
+  opts.syncMusic = on; saveOpts(); syncButtons();
+};
 
 // ---------- music (toggle: M) ----------
 // The chosen MP3 is copied into the browser's IndexedDB, so it's still there next time the game opens.
@@ -170,13 +188,14 @@ function setTrack(t) {
 function syncMusic() {
   if (!track || !S) return;
   const want = opts.music && !paused && S.phase !== 'title';
-  if (sync.buf) {
+  if (syncing()) {
     // the synced soundtrack plays through Web Audio; pausing the context freezes any crossfade mid-way
     if (!music.paused) music.pause();
     if (want && sync.ctx.state !== 'running') sync.ctx.resume().catch(() => { /* blocked until a key/click */ });
     else if (!want && sync.ctx.state === 'running') sync.ctx.suspend();
     return;
   }
+  if (sync.ctx && sync.ctx.state === 'running') sync.ctx.suspend();
   if (want && music.paused) music.play().catch(() => { /* blocked until a key/click */ });
   else if (!want && !music.paused) music.pause();
 }
@@ -218,7 +237,8 @@ const SYNC_CUES = [
 ];
 const LOOP_FADE = 0.3;
 const sync = { ctx: null, out: null, buf: null, voices: [], offset: 0, at: 0, stage: -1, game: null };
-const syncNote = document.getElementById('syncNote');
+const syncNote = document.getElementById('syncNote'), syncBox = document.getElementById('syncBox');
+const syncing = () => !!sync.buf && opts.syncMusic;
 music.addEventListener('loadedmetadata', () => { if (track && Math.abs(music.duration - SYNC_LEN) < 1.5) prepareSync(track); });
 async function prepareSync(t) {
   try {
@@ -229,14 +249,14 @@ async function prepareSync(t) {
     const buf = await sync.ctx.decodeAudioData(await t.blob.arrayBuffer());
     if (t !== track) return;
     sync.buf = buf; sync.stage = -1; sync.game = null;
-    syncNote.hidden = false;
+    syncBox.hidden = false;
     syncMusic();
   } catch (e) { /* no Web Audio: the track just loops as usual */ }
 }
 function stopSync() {
   for (const v of sync.voices) v.src.stop();
   sync.voices = []; sync.buf = null;
-  syncNote.hidden = true;
+  syncBox.hidden = true;
 }
 const syncPos = () => sync.offset + sync.ctx.currentTime - sync.at;
 // play the track from `pos` starting at context time `when`, crossfading out whatever is playing over `fade` seconds
@@ -265,7 +285,7 @@ function syncStage() {
   return 0;
 }
 function tickSync() {
-  if (!sync.buf || !S || S.phase === 'title') return;
+  if (!syncing() || !S || S.phase === 'title') return;
   if (sync.game !== S) { sync.game = S; sync.stage = -1; }   // new mission: back to the top
   const want = syncStage();
   if (want > sync.stage) {
