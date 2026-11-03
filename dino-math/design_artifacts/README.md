@@ -10,6 +10,7 @@ animated canvas mockups; open it in a browser.
 | File | Mockups |
 |---|---|
 | `round1-art-styles.html` | Saturday Cartoon, Papercraft, Pixel Arcade, Storybook Watercolor, Neon Jurassic |
+| `round2-art-styles.html` | Crayon Drawing, Felt Board, Clay Studio, Vintage Picture Book, Pop-up Book (world map), plus the oops sequence and a working grown-up settings mock |
 
 Each round-1 mockup also shows a different game mode, so the look and the play can be judged together:
 
@@ -38,11 +39,24 @@ One world per grade. Fluency goals are the standards that say "fluently"; they b
 
 - Any grade can be played at any time; stars are kept per skill.
 - Every problem is read aloud (browser speech), with a replay button.
-- K–2 answer by tapping one of three choices; grade 3+ can switch to a number pad.
-- A wrong answer draws the problem (dots, ten-frame, array, pie) and gives another try.
-- Calm mode has no timer; Blast mode speeds up with the streak.
+- Answer style is a grown-up setting at every grade, kindergarten included:
+  **pick from 3** or **type the number**. K–2 type on a big two-row pad (1–5 / 6–0);
+  grade 3+ get a calculator-style pad, and a real keyboard always works.
+- Very forgiving. A miss is "Oops, give it another try!":
+  1. the wrong choice wobbles and fades (fewer choices next time) or a typed answer clears,
+  2. the problem is drawn (dots, ten-frame, tens and ones, egg rows, pie),
+  3. after a second miss Rex works it through with him, and he still taps the answer.
+  Tries are unlimited. No lives, no game over, no streak that resets. Stars only go up.
+- No speed in K–2: meteors stop and wait (parachutes, clouds). **Calm** is the default
+  everywhere. **Zoom** (meteors drift down, faster with the streak) is opt-in, grade 3+ only,
+  and meant for keyboard typing.
 - Inside a level, 5 right in a row makes the numbers bigger and 2 misses makes them smaller.
+- Grown-up settings per world: answer style, pace, picture help (after a miss / always / off), read aloud.
 
 ## Decisions
 
-- Round 1 is out for review. No style picked yet.
+- **Round 1 favourites:** Storybook Watercolor, Papercraft, Saturday Cartoon.
+- Answer style is configurable from kindergarten (type or pick).
+- Mistakes never cost anything (see rules above).
+- No speed at the early levels; Zoom is opt-in from grade 3.
+- Round 2 (five more looks in the same soft, handmade family) is out for review.
