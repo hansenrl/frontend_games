@@ -30,3 +30,8 @@ Each mockup shows a different scene from the plan, drawn live with canvas code. 
   - The glow worms can become friends too, so the forest path can also reach the parade ending.
   - Mama T. rex gets her own "So THAT was the rumble!" page before the hatching.
   - The buddy shortcuts are one page each, so they're a bit quicker.
+- Round of feedback after the first build:
+  - No emoji anywhere in the game: text buttons, small drawn icons for the pouch, and the
+    endings sticker book shows a little picture of each ending.
+  - No sound effects. Read-aloud (the device's voice) stays.
+  - Pip's crest goes **HONK**, not "toot". Parasaurolophus crests probably made a low, horn-like honk.

@@ -135,11 +135,11 @@
       sunStick(P, t); clouds(P, t); smoke(P, t);
       const ta = ease(t / 2.2), ex = lerp(780, 470, ta), ey = lerp(350, 396, ta), roll = -(780 - ex) / 27;
       const wob = t > 2.2 ? Math.sin(t * 10) * 0.12 * Math.max(0, Math.sin((t - 2.2) * 1.3)) : 0;
-      const held = picked(A, (c) => c.sound === 'tap');
+      const held = picked(A, (c) => c.act === 'hug');
       if (!held) P.obj(place(eggShape(t), { x: ex, y: ey, s: 1.05, r: roll + wob, px: 0, py: -30 }));
       const jy = t > 2.15 && t < 2.6 ? -Math.sin(((t - 2.15) / 0.45) * Math.PI) * 24 : 0;
       const lookUp = picked(A, (c) => c.set === 'sawPrint');
-      drawPip(P, t, S, A, 330, 400 + jy, 0.95, { hold: held, lx: lookUp ? 1 : 1, ly: lookUp ? -0.8 : 0.25, look: 0.45, open: t > 2.1 && t < 3.4 ? 1 : undefined, mouth: picked(A, (c) => c.sound === 'toot') ? 1 : 0 });
+      drawPip(P, t, S, A, 330, 400 + jy, 0.95, { hold: held, lx: lookUp ? 1 : 1, ly: lookUp ? -0.8 : 0.25, look: 0.45, open: t > 2.1 && t < 3.4 ? 1 : undefined, mouth: picked(A, (c) => c.act === 'honk') ? 1 : 0 });
       const pop = ease((t - 2.25) / 0.3);
       if (pop > 0 && A.phase === 'read') P.obj(place([F(rr(-9, -62, 18, 42, 8), '#ef5350'), F(ell(0, -8, 9, 9), '#ef5350')], { x: 424, y: 206, s: pop * 1.1, r: Math.sin(t * 3) * 0.1, px: 0, py: -30 }));
       if (held) floaters(P, A.reactT, 400, 260, (x, y, s) => heart(x, y, s * 1.2), 3, 0.4);
@@ -238,7 +238,7 @@
         floaters(P, A.reactT, 560, 330, (x, y, s) => heart(x, y, s * 1.2), 3, 0.35);
       }
       P.obj(place(stego(t, { cry: !happy && !left, lx: -1 }), { x: left ? lerp(510, 860, ease(A.reactT / 2.5)) : 510, y: 414 + (happy ? -Math.abs(Math.sin(t * 5)) * 10 : 0), s: 0.95, flip: !left }));
-      drawPip(P, t, S, A, 290, 414, 0.78, { hold: true, lx: 1, ly: 0.2, look: 0.45, mouth: picked(A, (c) => c.sound === 'toot') ? 1 : 0 });
+      drawPip(P, t, S, A, 290, 414, 0.78, { hold: true, lx: 1, ly: 0.2, look: 0.45, mouth: picked(A, (c) => c.act === 'honk') ? 1 : 0 });
       drawBuddy(P, t, S, 130, 430, 0.66, { lx: 1 });
     },
     front(P) { frontFerns(P, false, false); },
@@ -259,9 +259,9 @@
     },
     fg(P, t, S, A) {
       for (let i = 0; i < 5; i++) P.glow(160 + i * 130, 120 + Math.sin(t + i) * 20, 70, '#fff3c0', 0.12);
-      const friends = fr(S, 'raptors'), tooted = picked(A, (c) => c.sound === 'toot');
+      const friends = fr(S, 'raptors'), honked = picked(A, (c) => c.act === 'honk');
       const pk = (s) => (friends ? 0 : (Math.sin(t * 1.3 + s) * 0.5 + 0.5) * 26);
-      const fall = tooted ? ease(A.reactT / 0.5) * -1.3 : 0;
+      const fall = honked ? ease(A.reactT / 0.5) * -1.3 : 0;
       const rap = (seed, x, y, s, flip) => P.obj(place(raptor(t, { seed, ly: 0.3, happy: friends, tilt: fall * 0.4 }), { x, y, s, flip, r: fall, px: 0, py: -40 }));
       rap(2, 592, 312, 0.72, true);
       rap(0, 146 + (friends ? 40 : 0), 392 + pk(0) - (friends ? 30 : 0), 0.9, false);
@@ -269,7 +269,7 @@
       rap(4, 694 - (friends ? 30 : 0), 396 + pk(2) - (friends ? 30 : 0), 0.92, true);
       if (!friends) P.obj(bush(690, 428, 1.35, '#4f8f3a', '#3f7a32'));
       const lk = Math.sin(t * 0.8) > 0 ? 1 : -1;
-      drawPip(P, t, S, A, 384, 414, 0.86, { hold: true, lx: friends ? 1 : lk, ly: 0.1, look: 0.5, mouth: tooted ? 1 : 0 });
+      drawPip(P, t, S, A, 384, 414, 0.86, { hold: true, lx: friends ? 1 : lk, ly: 0.1, look: 0.5, mouth: honked ? 1 : 0 });
       drawBuddy(P, t, S, 262, 432, 0.62, { lx: -1 });
       if (has(S, 'feather')) P.obj(place([F(blob([[0, 0], [8, -22], [6, -44], [0, -50], [-6, -40], [-6, -20]]), '#4fa3e8'), Ln(lp([[0, 0], [0, -46]]), '#2f6fb0', 1.6)], { x: 460, y: 340 - Math.sin(A.reactT * 2) * 6, r: 0.4 + Math.sin(t * 2) * 0.1 }));
     },
@@ -292,8 +292,8 @@
     fg(P, t, S, A) {
       for (let i = 0; i < 40; i++) { const a = 0.4 + 0.6 * Math.max(0, Math.sin(t * 1.8 + i * 1.3)); P.glow(hash(i) * 800, 16 + hash(i + 30) * 120, 10, '#9ff2d0', a); P.glow(hash(i) * 800, 16 + hash(i + 30) * 120, 2.5, '#eafff6', a); }
       if (fr(S, 'glow')) for (let i = 0; i < 12; i++) { const k = ease(A.reactT / 1.5 - i * 0.06), x = 330 + i * 30, y = 400 - Math.sin(i * 0.6) * 8; if (k > 0) P.glow(x, y, 16 * k, '#9ff2d0', 0.9); }
-      if (picked(A, (c) => c.sound === 'toot')) for (let i = 0; i < 3; i++) { const ph = (A.reactT * 0.8 + i / 3) % 1; P.obj([Ln(lp([[380 + ph * 300, 270], [400 + ph * 300, 300], [380 + ph * 300, 330]]), '#cfe8ff', 3)], { alpha: 1 - ph, border: false, shadow: false }); }
-      drawPip(P, t, S, A, 300, 412, 0.78, { hold: true, lx: 0.5, ly: -0.8, look: 0.5, mouth: picked(A, (c) => c.sound === 'toot') ? 1 : 0 });
+      if (picked(A, (c) => c.act === 'honk')) for (let i = 0; i < 3; i++) { const ph = (A.reactT * 0.8 + i / 3) % 1; P.obj([Ln(lp([[380 + ph * 300, 270], [400 + ph * 300, 300], [380 + ph * 300, 330]]), '#cfe8ff', 3)], { alpha: 1 - ph, border: false, shadow: false }); }
+      drawPip(P, t, S, A, 300, 412, 0.78, { hold: true, lx: 0.5, ly: -0.8, look: 0.5, mouth: picked(A, (c) => c.act === 'honk') ? 1 : 0 });
       drawBuddy(P, t, S, 160, 424, 0.66, { lx: 1, ly: -0.6 });
     },
   },
@@ -361,9 +361,9 @@
     },
     fg(P, t, S, A) {
       for (const [x, y] of [[200, 392], [560, 396], [640, 388]]) { P.glow(x, y - 18, 30, '#9fd8ff', 0.4 + 0.2 * Math.sin(t * 2 + x)); P.obj(place([F(rr(-3, -14, 6, 14, 2), '#e8f4ff'), F(blob([[-12, -12], [-8, -22], [0, -26], [8, -22], [12, -12]]), '#7ec8f0')], { x, y })); }
-      if (picked(A, (c) => c.sound === 'toot')) for (let i = 0; i < 4; i++) { const ph = (A.reactT * 0.7 + i / 4) % 1; P.obj([Ln(lp([[330 + ph * 120, 230 - ph * 40], [350 + ph * 140, 300], [330 + ph * 120, 370 + ph * 40]]), '#fff3c4', 3)], { alpha: 1 - ph, border: false, shadow: false }); }
+      if (picked(A, (c) => c.act === 'honk')) for (let i = 0; i < 4; i++) { const ph = (A.reactT * 0.7 + i / 4) % 1; P.obj([Ln(lp([[330 + ph * 120, 230 - ph * 40], [350 + ph * 140, 300], [330 + ph * 120, 370 + ph * 40]]), '#fff3c4', 3)], { alpha: 1 - ph, border: false, shadow: false }); }
       drawBuddy(P, t, S, 520, 424, 0.86, { flip: true, lx: 1 });
-      drawPip(P, t, S, A, 290, 414, 0.76, { hold: true, lx: 1, ly: -0.3, look: 0.45, mouth: picked(A, (c) => c.sound === 'toot') ? 1 : 0 });
+      drawPip(P, t, S, A, 290, 414, 0.76, { hold: true, lx: 1, ly: -0.3, look: 0.45, mouth: picked(A, (c) => c.act === 'honk') ? 1 : 0 });
     },
   },
 
@@ -437,7 +437,7 @@
       smoke(P, t, 640, 122, '#e9dcea', 4, 1.25);
       const climbed = picked(A, (c) => c.say === 'Climb the big rock.');
       if (climbed) drawPip(P, t, S, A, 108, 312, 0.6, { hold: true, lx: 1, ly: -0.2, look: 0.5 });
-      else drawPip(P, t, S, A, 200, 418, 0.72, { hold: true, lx: 1, ly: 0.4, look: 0.5, mouth: picked(A, (c) => c.sound === 'roar') ? 1 : 0 });
+      else drawPip(P, t, S, A, 200, 418, 0.72, { hold: true, lx: 1, ly: 0.4, look: 0.5, mouth: picked(A, (c) => c.act === 'honk') ? 1 : 0 });
       drawBuddy(P, t, S, 80, 432, 0.6, { lx: 1 });
     },
     front(P) { P.obj(fern(770, 470, 1, '#4f9e3c', '#6cb84f')); },
@@ -448,7 +448,7 @@
     bg(P) { mountainBg(P); },
     fg(P, t, S, A) {
       smoke(P, t, 720, 200, '#efe2d6', 4, 1.4);
-      const hid = !!S.flags.hid, song = picked(A, (c) => c.sound === 'hum');
+      const hid = !!S.flags.hid, song = picked(A, (c) => c.act === 'sing');
       const surprise = A.phase === 'react';
       P.obj(place(rex(t, { tilt: surprise ? 0.05 : 0.14, lean: surprise ? 0 : 8, ly: 0.6, look: 0.45, open: song ? 0 : undefined }), { x: 652, y: 452, s: 1.08, flip: true }));
       if (picked(A, (c) => c.take === 'feather')) P.obj(place([F(blob([[0, 0], [8, -22], [6, -44], [0, -50], [-6, -40], [-6, -20]]), '#4fa3e8'), Ln(lp([[0, 0], [0, -46]]), '#2f6fb0', 1.6)], { x: 440, y: 300, r: 0.6 }));
@@ -484,13 +484,13 @@
         P.obj(place(eggShape(t, { crack: 0.2 + 0.8 * k, moss: has(S, 'moss') }), { x: 430, y: 436, s: 1.6, r: w, px: 0, py: 0 }));
       } else {
         const k = ease((t - T0) / 0.5), cold = S.warm <= 0;
-        P.obj(place(babyRex(t, { hat: t > 2.4, lx: -1, mouth: (t % 3 < 0.8 && t > 2.6) || picked(A, (c) => c.sound === 'toot') ? 1 : 0, open: cold && t % 2 < 0.5 ? 0 : undefined }), { x: 426, y: 450 - k * 12, s: 0.95, flip: true }));
+        P.obj(place(babyRex(t, { hat: t > 2.4, lx: -1, mouth: (t % 3 < 0.8 && t > 2.6) || picked(A, (c) => c.act === 'honk') ? 1 : 0, open: cold && t % 2 < 0.5 ? 0 : undefined }), { x: 426, y: 450 - k * 12, s: 0.95, flip: true }));
         P.obj(place(shellBottom(), { x: 430, y: 438, s: 1.6 }));
         if (t < 2.4) { const f = (t - T0) / 0.6; P.obj(place(shellTop(), { x: 430 - f * 20, y: 360 - Math.sin(f * Math.PI) * 60, s: 1.4, r: f * 6 })); }
         if (t > T0 && t < T0 + 0.8) for (let i = 0; i < 6; i++) { const a = (i / 6) * TAU, d = (t - T0) * 120; P.obj(place(star(0, 0, 0.35, '#ffd54a'), { x: 430 + Math.cos(a) * d, y: 360 + Math.sin(a) * d * 0.7 }), { alpha: 1 - (t - T0) / 0.8 }); }
       }
       if (picked(A, (c) => c.star === 'kind')) floaters(P, A.reactT, 360, 300, (x, y, s) => heart(x, y, s * 1.3), 3, 0.4);
-      drawPip(P, t, S, A, 236, 430, 0.72, { lx: 1, ly: 0.3, look: 0.5, mouth: picked(A, (c) => c.sound === 'toot') ? 1 : 0 });
+      drawPip(P, t, S, A, 236, 430, 0.72, { lx: 1, ly: 0.3, look: 0.5, mouth: picked(A, (c) => c.act === 'honk') ? 1 : 0 });
       drawBuddy(P, t, S, 100, 440, 0.58, { lx: 1 });
     },
   },
@@ -557,7 +557,7 @@
     front(P) { frontFerns(P); },
   },
 
-  end_toot: {
+  end_song: {
     bg(P) { mountainBg(P, SKY_DUSK); },
     fg(P, t, S, A) {
       const sing = (o) => 0.5 + 0.5 * Math.sin(t * 5 + o);

@@ -50,12 +50,13 @@ html, body {
 .btn {
   font: inherit;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   color: var(--ink);
   background: var(--paper);
   border: 3px solid #fff;
   border-radius: 16px;
-  padding: 0.45em 0.9em;
+  min-height: 46px;
+  padding: 0.3em 0.9em;
   box-shadow: 2px 4px 0 var(--shadow);
   cursor: pointer;
   text-decoration: none;
@@ -67,20 +68,19 @@ html, body {
 }
 .btn:active { transform: translateY(2px); box-shadow: 1px 2px 0 var(--shadow); }
 .btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
-.btn.small { width: 46px; height: 46px; padding: 0; font-size: 1.25rem; }
 .btn[hidden] { display: none; }
-.btn.off { opacity: 0.55; }
 
 .pouch { display: flex; gap: 6px; min-height: 46px; align-items: center; }
 .pouch .item {
   width: 42px; height: 42px;
   display: grid; place-items: center;
-  font-size: 1.4rem;
   background: var(--paper);
   border: 3px solid #fff;
   border-radius: 50%;
   box-shadow: 2px 3px 0 var(--shadow);
 }
+.pouch .item svg { width: 28px; height: 28px; }
+.chip .mini svg { width: 20px; height: 20px; vertical-align: -4px; margin-right: 4px; }
 .pouch .item.new { animation: popin 0.6s cubic-bezier(.3, 1.6, .5, 1); }
 
 /* ---------- book: picture + words ---------- */
@@ -137,8 +137,8 @@ html, body {
   opacity: 0;
   transform: translate(-50%, 0) scale(0.5);
 }
-.pop.show { animation: tootpop 0.9s ease-out; }
-@keyframes tootpop {
+.pop.show { animation: honkpop 0.9s ease-out; }
+@keyframes honkpop {
   0% { opacity: 0; transform: translate(-50%, 10px) scale(0.5) rotate(-6deg); }
   20% { opacity: 1; transform: translate(-50%, 0) scale(1.1) rotate(3deg); }
   70% { opacity: 1; transform: translate(-50%, -6px) scale(1) rotate(-2deg); }
@@ -219,7 +219,6 @@ html, body {
 .choice:hover { transform: translateY(-2px) rotate(0) scale(1.01); }
 .choice:active { transform: translateY(2px); box-shadow: 1px 2px 0 var(--shadow); }
 .choice:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
-.choice .icon { font-size: 1.6em; line-height: 1; flex: none; width: 1.3em; text-align: center; }
 .choice .say { flex: 1; }
 .choice.secret { --c: var(--sun); background: #fff8dc; }
 .choice .tag {
@@ -233,6 +232,13 @@ html, body {
   white-space: nowrap;
 }
 .choice.next { --c: var(--sun); justify-content: center; font-family: var(--ui); }
+.choice.next .say { flex: none; }
+.choice.next::after {
+  content: "";
+  border-left: 14px solid currentColor;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+}
 
 /* title + end cards */
 .card-title {
@@ -259,19 +265,21 @@ html, body {
 }
 .stickers { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 4px; }
 .sticker {
-  width: 76px;
+  width: 100px;
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   font-size: 0.78rem; font-weight: 600; text-align: center; line-height: 1.1;
 }
 .sticker .disc {
-  width: 56px; height: 56px;
+  width: 88px; height: 50px;
   display: grid; place-items: center;
-  font-size: 1.8rem;
-  border-radius: 50%;
+  font-size: 1.5rem;
+  overflow: hidden;
+  border-radius: 10px;
   background: #fff;
   border: 3px solid #fff;
   box-shadow: 2px 3px 0 var(--shadow);
 }
+.sticker .disc img { width: 100%; height: 100%; display: block; }
 .sticker.missing .disc { background: rgba(255, 255, 255, 0.4); border-style: dashed; border-color: rgba(90, 60, 30, 0.35); box-shadow: none; color: rgba(90, 60, 30, 0.45); font-family: var(--ui); font-weight: 700; }
 .sticker.got .disc { animation: popin 0.6s cubic-bezier(.3, 1.6, .5, 1); }
 .sticker.missing { color: rgba(62, 48, 70, 0.55); }
@@ -295,4 +303,13 @@ html, body {
 
 @media (prefers-reduced-motion: reduce) {
   .turn, .pop.show, .chip, .pouch .item.new, .sticker.got .disc { animation: none !important; }
+}
+
+/* phones: keep the top bar on one screen width even with a full pouch */
+.top { flex-wrap: wrap; }
+@media (max-width: 520px) {
+  .top .btn { font-size: 0.95rem; padding: 0.2em 0.7em; }
+  .pouch { gap: 4px; }
+  .pouch .item { width: 34px; height: 34px; }
+  .pouch .item svg { width: 22px; height: 22px; }
 }

@@ -4,7 +4,7 @@ A choose-your-own dinosaur story for early readers (about ages 5–7), in the pa
 style of the rest of the Family Game Shelf.
 
 Rumble, rumble, BONK! An egg rolls down the hill and stops at Pip's feet. Pip (a young
-Parasaurolophus with a very loud crest) picks a buddy and sets off to take the egg home to
+Parasaurolophus whose hollow crest makes a big HONK) picks a buddy and sets off to take the egg home to
 Smoke Mountain. The surprise at the end: the rumbling was a worried T. rex mom stomping
 around looking for her egg.
 
@@ -12,7 +12,7 @@ Open `index.html` in a browser to play. No build step needed.
 
 ## How it plays
 
-- Each page has a picture, a few short lines, and 2–4 choices with a little picture on each.
+- Each page has a picture, a few short lines, and 2–4 choices.
 - After a choice, a character answers before the page turns (and Pip earns a Brave, Kind or
   Clever star).
 - A play-through is 12–13 pages. There are 22 pages in all, and 91,125 different ways through.
@@ -32,15 +32,16 @@ Open `index.html` in a browser to play. No build step needed.
   - Friends made along the way.
   - How warm the egg is.
   - What you did. Your buddy brings it up at camp.
-- **Secret choices** (gold, with a ⭐) only show up if you earned them earlier.
-- The endings you've found are saved as stickers on the title page.
+- **Secret choices** (gold, marked "Secret!") only show up if you earned them earlier.
+- The endings you've found are saved as little pictures on the title page.
+- No sound effects and no emoji, on purpose. The only sound is the optional read-aloud voice.
 
 ## Helping a new reader
 
 - **Big words** (dinosaur names and so on) are orange and underlined. Tap one to hear it.
-- 🗣️ reads the whole page out loud (uses the device's built-in voice).
-- ↩ goes back a page, or undoes a choice.
-- Tap the picture to make Pip TOOT.
+- **Read to me** reads the whole page out loud (uses the device's built-in voice).
+- **Back** goes back a page, or undoes a choice.
+- Tap the picture to make Pip honk.
 - The story is saved as you go. "Keep reading" on the title page picks up where you left off.
 
 ## Files
@@ -50,7 +51,7 @@ Open `index.html` in a browser to play. No build step needed.
 | `story.js` | Every page: words, choices, what each choice does, and how the ending is picked. Edit the story here. |
 | `scenes.js` | The picture for every page (which characters, where, and how they move). |
 | `art.js` | The paper-craft drawing kit: shapes, characters (Pip, the egg, T. rex, buddies...) and the paper cut-out painter. |
-| `game.js` | Pages, choices, saving, sound effects, read-aloud and the animation loop. |
+| `game.js` | Pages, choices, saving, read-aloud and the animation loop. |
 | `style.css` | Layout and paper styling. |
 | `design_artifacts/` | Story ideas and the art-style mockups made before building. |
 

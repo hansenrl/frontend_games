@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f3e2c0">
   <title>The Runaway Egg</title>
   <meta name="description" content="A choose-your-own dinosaur story for early readers. Help Pip take a runaway egg home to Smoke Mountain.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥚</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><ellipse cx='50' cy='54' rx='34' ry='42' fill='%23f7efd9' stroke='%23c9a77a' stroke-width='4'/><circle cx='38' cy='40' r='6' fill='%23c9a77a'/><circle cx='60' cy='62' r='7' fill='%23c9a77a'/><circle cx='42' cy='74' r='4' fill='%23c9a77a'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
@@ -15,19 +15,18 @@
 <body>
   <div id="app">
     <header class="top">
-      <a class="btn small" href="../" title="All games" aria-label="All games">🏠</a>
-      <button id="backBtn" class="btn small" type="button" title="Go back a page" aria-label="Go back a page">↩</button>
+      <a class="btn" href="../">All games</a>
+      <button id="backBtn" class="btn" type="button">Back</button>
       <div id="pouch" class="pouch" aria-label="Pip's pouch"></div>
       <div class="spacer"></div>
-      <button id="readBtn" class="btn small" type="button" title="Read it to me" aria-label="Read it to me">🗣️</button>
-      <button id="soundBtn" class="btn small" type="button" title="Sound on or off" aria-label="Sound on or off">🔊</button>
+      <button id="readBtn" class="btn" type="button">Read to me</button>
     </header>
 
     <main class="book">
       <div id="stage" class="stage">
         <canvas id="art" aria-label="Picture for this page" role="img"></canvas>
         <div id="pageTitle" class="page-title"></div>
-        <div id="pop" class="pop" aria-hidden="true">TOOT!</div>
+        <div id="pop" class="pop" aria-hidden="true">HONK!</div>
       </div>
       <section id="panel" class="panel">
         <div id="words" class="words" aria-live="polite"></div>

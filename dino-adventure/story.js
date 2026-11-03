@@ -8,7 +8,7 @@
  * {buddy} and {baby} are filled in with the buddy's name and the baby's name.
  *
  * A choice can have:
- *   icon, say         picture and words on the button (say can be a function of the state)
+ *   say               words on the button (can be a function of the state)
  *   react             lines shown after picking (a character answers), string[] or function
  *   next              id of the next page, or a function of the state
  *   if                function of the state; the choice only shows when it returns true
@@ -19,7 +19,7 @@
  *   set               a flag to remember
  *   warm              how much warmer the egg gets
  *   buddy, name       picks the buddy / the baby's name
- *   sound             sound effect to play
+ *   act               what the picture shows Pip doing: 'hug' | 'honk' | 'sing'
  *
  * Checked by tools/check-story.js (every path, every ending, line length).
  */
@@ -33,24 +33,24 @@
   };
 
   const ITEMS = {
-    berries: { icon: '🫐', name: 'Sweet berries' },
-    feather: { icon: '🪶', name: 'Blue feather' },
-    moss: { icon: '🌿', name: 'Soft moss' },
-    song: { icon: '🎵', name: 'The egg song' },
+    berries: { name: 'Sweet berries' },
+    feather: { name: 'Blue feather' },
+    moss: { name: 'Soft moss' },
+    song: { name: 'The egg song' },
   };
 
   const STARS = {
-    brave: { icon: '💪', name: 'Brave', badge: 'You were so BRAVE!' },
-    kind: { icon: '💚', name: 'Kind', badge: 'You were so KIND!' },
-    clever: { icon: '💡', name: 'Clever', badge: 'You were so CLEVER!' },
+    brave: { name: 'Brave', badge: 'You were so BRAVE!' },
+    kind: { name: 'Kind', badge: 'You were so KIND!' },
+    clever: { name: 'Clever', badge: 'You were so CLEVER!' },
   };
 
   const ENDINGS = [
-    { id: 'end_home', title: 'Home Sweet Home', icon: '🏡' },
-    { id: 'end_bff', title: 'Best Friends', icon: '💚' },
-    { id: 'end_parade', title: 'The Big Parade', icon: '🎉' },
-    { id: 'end_toot', title: 'The Big Song', icon: '🎵' },
-    { id: 'end_achoo', title: 'Achoo!', icon: '🤧' },
+    { id: 'end_home', title: 'Home Sweet Home' },
+    { id: 'end_bff', title: 'Best Friends' },
+    { id: 'end_parade', title: 'The Big Parade' },
+    { id: 'end_song', title: 'The Big Song' },
+    { id: 'end_achoo', title: 'Achoo!' },
   ];
 
   const FRIEND_LINES = {
@@ -86,7 +86,7 @@
 
   function pickEnding(s) {
     if (s.warm <= 0) return 'end_achoo';
-    if (s.flags.song) return 'end_toot';
+    if (s.flags.song) return 'end_song';
     if (s.friends.length >= 2) return 'end_parade';
     const { brave, kind, clever } = s.stars;
     if (kind >= brave && kind >= clever) return 'end_bff';
@@ -119,11 +119,11 @@
         'It stops at Pip\'s feet.',
       ],
       choices: [
-        { icon: '🥚', say: 'Pick it up.', star: 'kind', sound: 'tap',
+        { say: 'Pick it up.', star: 'kind', act: 'hug',
           react: ['Pip hugs the egg.', 'It is warm!', 'Tap, tap, tap. Something is inside!'], next: 's2_grandpa' },
-        { icon: '📯', say: 'Toot for help!', star: 'brave', sound: 'toot',
-          react: ['TOOOOT!', 'Pip has a big, loud crest.', 'Far away, Grandpa *Longneck* hears it.'], next: 's2_grandpa' },
-        { icon: '👀', say: 'Look up the hill.', star: 'clever', set: 'sawPrint',
+        { say: 'Honk for help!', star: 'brave', act: 'honk',
+          react: ['HOOONK!', 'Pip has a big, loud crest.', 'Far away, Grandpa *Longneck* hears it.'], next: 's2_grandpa' },
+        { say: 'Look up the hill.', star: 'clever', set: 'sawPrint',
           react: ['Pip looks up the hill.', 'There is a footprint. A BIG one!', 'Who made that?'], next: 's2_grandpa' },
       ],
     },
@@ -138,11 +138,11 @@
         '"Take it home. Who will go with you?"',
       ],
       choices: [
-        { icon: '💪', say: 'Tops. Tops is strong.', buddy: 'tops', give: 'berries',
+        { say: 'Tops. Tops is strong.', buddy: 'tops', give: 'berries',
           react: ['"Yes! A trip!" says Tops.', '"I am not scared of anything!"', 'Grandpa gives Pip berries for the trip.'], next: 's3_fork' },
-        { icon: '☁️', say: 'Zippy. Zippy can fly.', buddy: 'zippy', give: 'berries',
+        { say: 'Zippy. Zippy can fly.', buddy: 'zippy', give: 'berries',
           react: ['"Me? Me? Yay!" says Zippy.', '"I can fly up and find the way!"', 'Grandpa gives Pip berries for the trip.'], next: 's3_fork' },
-        { icon: '🛡️', say: 'Shelly. Shelly is wise.', buddy: 'shelly', give: 'berries',
+        { say: 'Shelly. Shelly is wise.', buddy: 'shelly', give: 'berries',
           react: ['Shelly nods. Slowly.', '"I know the old paths. Let\'s go."', 'Grandpa gives Pip berries for the trip.'], next: 's3_fork' },
       ],
     },
@@ -161,9 +161,9 @@
         }[s.buddy],
       ],
       choices: [
-        { icon: '🌊', say: 'Go to the river.', next: 'r1_river' },
-        { icon: '🌲', say: 'Go into the forest.', next: 'f1_forest' },
-        { icon: '⭐', say: (s) => ({ tops: 'Smash the thorns!', zippy: 'Fly up and look!', shelly: 'Take the tunnel.' }[s.buddy]),
+        { say: 'Go to the river.', next: 'r1_river' },
+        { say: 'Go into the forest.', next: 'f1_forest' },
+        { say: (s) => ({ tops: 'Smash the thorns!', zippy: 'Fly up and look!', shelly: 'Take the tunnel.' }[s.buddy]),
           next: (s) => 'b_' + s.buddy },
       ],
     },
@@ -179,11 +179,11 @@
         'Wait. Did that log just blink?',
       ],
       choices: [
-        { icon: '👣', say: 'Hop on the logs!', star: 'brave', set: 'hopped', sound: 'splash',
+        { say: 'Hop on the logs!', star: 'brave', set: 'hopped',
           react: ['Hop! Hop! A log opens one big eye.', '"Hey! I am having a nap!"', 'The logs are *crocodiles*!', '"Fine, hop on," it grumbles. "No more jumping."'], next: 'r2_stego' },
-        { icon: '🌉', say: 'Walk to the bridge.', star: 'clever',
+        { say: 'Walk to the bridge.', star: 'clever',
           react: ['Pip walks to a tree that fell down.', 'It makes a bridge. Slow, but safe!', 'On the other side, someone is crying.'], next: 'r2_stego' },
-        { icon: '🙏', say: 'Ask the logs nicely.', star: 'kind', friend: 'crocs',
+        { say: 'Ask the logs nicely.', star: 'kind', friend: 'crocs',
           react: ['"Excuse me, logs. Can you help us?"', 'The logs open their eyes. *Crocodiles*!', '"You asked so nicely," says the big one.', '"Hop on! We will take you across."'], next: 'r2_stego' },
       ],
     },
@@ -197,11 +197,11 @@
         'The egg wiggles. It wants to help too.',
       ],
       choices: [
-        { icon: '🤗', say: 'Help her look.', star: 'kind', friend: 'stego',
+        { say: 'Help her look.', star: 'kind', friend: 'stego',
           react: ['Pip and {buddy} look and look.', 'Behind a big bush... it is Mama Stego!', '"Thank you!" they say. "Come back and play!"'], next: 'j1_springs' },
-        { icon: '📯', say: 'Toot for her mama!', star: 'brave', friend: 'stego', sound: 'toot',
-          react: ['TOOOOT!', 'Far away, someone toots back.', 'Mama Stego runs to them. "My baby! Thank you!"'], next: 'j1_springs' },
-        { icon: '👋', say: 'Wave bye and go on.', star: 'clever',
+        { say: 'Honk for her mama!', star: 'brave', friend: 'stego', act: 'honk',
+          react: ['HOOONK!', 'Far away, someone honks back.', 'Mama Stego runs to them. "My baby! Thank you!"'], next: 'j1_springs' },
+        { say: 'Wave bye and go on.', star: 'clever',
           react: ['"Sorry, we have to go," says Pip.', '"Follow the big tracks to your mama."', 'The baby waves bye-bye.'], next: 'j1_springs' },
       ],
     },
@@ -217,12 +217,12 @@
         '"Ooh! An egg!" says the big one. "Can we have it?"',
       ],
       choices: [
-        { icon: '🫐', say: 'Share the berries.', if: (s) => has(s, 'berries'), take: 'berries', give: 'feather', friend: 'raptors', star: 'kind',
+        { say: 'Share the berries.', if: (s) => has(s, 'berries'), take: 'berries', give: 'feather', friend: 'raptors', star: 'kind',
           react: ['The *raptors* eat the berries. Yum, yum!', '"You are nice," they say.', 'They give Pip a blue feather.'], next: 'f2_cave' },
-        { icon: '🙈', say: 'Play hide and seek!', star: 'clever', friend: 'raptors',
+        { say: 'Play hide and seek!', star: 'clever', friend: 'raptors',
           react: ['Pip hides in a log.', 'The *raptors* look and look. They can\'t find Pip!', '"You win!" they say. "You can keep the egg."'], next: 'f2_cave' },
-        { icon: '📯', say: 'Stand tall. TOOT!', star: 'brave', sound: 'toot',
-          react: ['TOOOOOOT!', 'The *raptors* fall over. Bump, bump, bump!', '"Okay, okay! Keep your egg!"'], next: 'f2_cave' },
+        { say: 'Stand tall. HONK!', star: 'brave', act: 'honk',
+          react: ['HOOOOONK!', 'The *raptors* fall over. Bump, bump, bump!', '"Okay, okay! Keep your egg!"'], next: 'f2_cave' },
       ],
     },
 
@@ -235,10 +235,10 @@
         'They are glow worms!',
       ],
       choices: [
-        { icon: '✨', say: 'Follow the lights.', star: 'clever', friend: 'glow',
+        { say: 'Follow the lights.', star: 'clever', friend: 'glow',
           react: ['The glow worms make a path of light.', '"Thank you, glow worms!" says Pip.', 'They wiggle and glow even more.'], next: 'j1_springs' },
-        { icon: '📯', say: 'Toot and listen.', star: 'brave', sound: 'toot',
-          react: ['Toot... toot... toot...', 'The sound comes back from the way out.', 'Pip follows it. Out they go!'], next: 'j1_springs' },
+        { say: 'Honk and listen.', star: 'brave', act: 'honk',
+          react: ['Honk... honk... honk...', 'The sound comes back from the way out.', 'Pip follows it. Out they go!'], next: 'j1_springs' },
       ],
     },
 
@@ -252,9 +252,9 @@
         '"Stand back," says Tops. "I will smash it!"',
       ],
       choices: [
-        { icon: '💥', say: 'Go, Tops, go!', star: 'brave', set: 'smashed', sound: 'crash',
+        { say: 'Go, Tops, go!', star: 'brave', set: 'smashed',
           react: ['Tops runs. Stomp, stomp, stomp!', 'SMASH! CRASH!', 'Now there is a big hole. "Ta-da!" says Tops.'], next: 'j1_springs' },
-        { icon: '🔍', say: 'Look for a gap.', star: 'clever', set: 'gap',
+        { say: 'Look for a gap.', star: 'clever', set: 'gap',
           react: ['Pip finds a little gap.', 'But Tops is too big for it!', 'So they dig it bigger, together.'], next: 'j1_springs' },
       ],
     },
@@ -268,9 +268,9 @@
         '"And I can see Smoke Mountain!"',
       ],
       choices: [
-        { icon: '➡️', say: 'Show us the way!', star: 'clever',
+        { say: 'Show us the way!', star: 'clever',
           react: ['"Follow me!" says Zippy.', 'Zippy finds a fast way.', 'Zoom, zoom!'], next: 'j1_springs' },
-        { icon: '🔄', say: 'Do a loop!', star: 'brave', set: 'loop',
+        { say: 'Do a loop!', star: 'brave', set: 'loop',
           react: ['Zippy does a loop the loop!', 'Pip claps. Wheee!', 'Then Zippy shows the way.'], next: 'j1_springs' },
       ],
     },
@@ -284,10 +284,10 @@
         '"They are *fossils*," says Shelly. "Very, very old."',
       ],
       choices: [
-        { icon: '🔢', say: 'Count the bones.', star: 'clever', set: 'counted',
+        { say: 'Count the bones.', star: 'clever', set: 'counted',
           react: ['One, two, three... ten... one hundred!', 'Pip can\'t count them all.', 'Shelly laughs. "Me too."'], next: 'j1_springs' },
-        { icon: '📯', say: 'Toot in the tunnel!', star: 'brave', sound: 'toot',
-          react: ['TOOT! TOOT-OOT-OOT!', 'The tunnel toots back.', 'Pip and Shelly giggle all the way out.'], next: 'j1_springs' },
+        { say: 'Honk in the tunnel!', star: 'brave', act: 'honk',
+          react: ['HONK! HONK-ONK-ONK!', 'The tunnel honks back.', 'Pip and Shelly giggle all the way out.'], next: 'j1_springs' },
       ],
     },
 
@@ -302,11 +302,11 @@
         'The egg is cold.',
       ],
       choices: [
-        { icon: '♨️', say: 'Warm it in the steam.', star: 'clever', warm: 2, sound: 'tap',
+        { say: 'Warm it in the steam.', star: 'clever', warm: 2,
           react: ['Pip holds the egg in the warm steam.', 'Ahh. Nice and toasty!', 'Tap, tap! The egg says thank you.'], next: 'j2_camp' },
-        { icon: '🌿', say: 'Wrap it in moss.', star: 'kind', warm: 1, give: 'moss',
+        { say: 'Wrap it in moss.', star: 'kind', warm: 1, give: 'moss',
           react: ['Pip wraps the egg in soft moss.', 'Snug as a bug in a rug!'], next: 'j2_camp' },
-        { icon: '🏃', say: 'No time! Hurry on!', set: 'hurried',
+        { say: 'No time! Hurry on!', set: 'hurried',
           react: ['Pip runs fast. Puff, puff!', 'The egg is still a bit cold. Brrr.'], next: 'j2_camp' },
       ],
     },
@@ -321,11 +321,11 @@
         'The egg is moving!',
       ],
       choices: [
-        { icon: '🎵', say: 'Sing it a song.', star: 'kind', set: 'song', give: 'song', sound: 'hum',
+        { say: 'Sing it a song.', star: 'kind', set: 'song', give: 'song', act: 'sing',
           react: ['Pip sings a soft song. La, la, loo.', 'The egg stops wiggling.', 'Tap... tap... tap. It likes the song!', 'Now Pip knows the egg song.'], next: 'j3_prints' },
-        { icon: '🛏️', say: 'Tuck it in.', star: 'clever', warm: 1,
+        { say: 'Tuck it in.', star: 'clever', warm: 1,
           react: (s) => [has(s, 'moss') ? 'Pip tucks the egg in the soft moss.' : 'Pip tucks the egg in a bed of ferns.', 'Warm and cozy.', 'Night night, egg.'], next: 'j3_prints' },
-        { icon: '⏰', say: 'Wake up {buddy}!', set: 'woke', react: buddyMemory, next: 'j3_prints' },
+        { say: 'Wake up {buddy}!', set: 'woke', react: buddyMemory, next: 'j3_prints' },
       ],
     },
 
@@ -339,12 +339,12 @@
         s.flags.sawPrint ? 'Pip saw one like this at home!' : 'They go up, up Smoke Mountain.',
       ],
       choices: [
-        { icon: '👣', say: 'Follow the prints.', star: 'brave',
+        { say: 'Follow the prints.', star: 'brave',
           react: ['Stomp, stomp.', 'Pip steps in a footprint.', 'It is as big as a pond!'], next: 'a3_rex' },
-        { icon: '🧗', say: 'Climb the big rock.', star: 'clever',
+        { say: 'Climb the big rock.', star: 'clever',
           react: ['Pip climbs up high and looks.', 'Someone big is walking around and around.', 'VERY big.'], next: 'a3_rex' },
-        { icon: '📯', say: 'Toot and listen.', star: 'brave', sound: 'roar',
-          react: ['TOOT!', 'Far away, something says...', 'ROOOOAR!', 'Gulp.'], next: 'a3_rex' },
+        { say: 'Honk and listen.', star: 'brave', act: 'honk',
+          react: ['HONK!', 'Far away, something says...', 'ROOOOAR!', 'Gulp.'], next: 'a3_rex' },
       ],
     },
 
@@ -359,13 +359,13 @@
         'Sniff, sniff. She looks at the egg.',
       ],
       choices: [
-        { icon: '🥚', say: 'Hold up the egg.', star: 'brave',
+        { say: 'Hold up the egg.', star: 'brave',
           react: ['Pip holds the egg up high.', 'The *T. rex* gasps!'], next: 'a3_mama' },
-        { icon: '🙈', say: 'Hide behind a rock.', star: 'clever', set: 'hid',
+        { say: 'Hide behind a rock.', star: 'clever', set: 'hid',
           react: ['Pip hides behind a rock.', 'Sniff, sniff. "I can see your crest," says the *T. rex*.', 'Oops!'], next: 'a3_mama' },
-        { icon: '🎵', say: 'Sing the egg song.', secret: true, if: (s) => !!s.flags.song, star: 'kind', sound: 'hum',
+        { say: 'Sing the egg song.', secret: true, if: (s) => !!s.flags.song, star: 'kind', act: 'sing',
           react: ['Pip sings the egg song. La, la, loo.', 'The egg wiggles and taps.', 'The *T. rex* smiles. "That is MY song!"'], next: 'a3_mama' },
-        { icon: '🪶', say: 'Give her the feather.', secret: true, if: (s) => has(s, 'feather'), take: 'feather', star: 'kind',
+        { say: 'Give her the feather.', secret: true, if: (s) => has(s, 'feather'), take: 'feather', star: 'kind',
           react: ['Pip gives her the blue feather.', '"Oh! For me?" she says.', '"It is so pretty. Thank you."'], next: 'a3_mama' },
       ],
     },
@@ -392,12 +392,12 @@
         '"Mama?" it says to Pip.',
       ],
       choices: [
-        { icon: '🤗', say: 'Give it a hug.', star: 'kind',
+        { say: 'Give it a hug.', star: 'kind',
           react: ['Pip gives the baby a big hug.', '"I am not your mama. I am Pip!"', '"Pip!" says the baby. "Pip, Pip, Pip!"'], next: 'a3_name' },
-        { icon: '👆', say: 'Show it its mama.', star: 'clever',
+        { say: 'Show it its mama.', star: 'clever',
           react: ['Pip points up. "THAT is your mama!"', 'The baby looks up, up, up.', '"MAMA!" Mama gives it a big lick.'], next: 'a3_name' },
-        { icon: '📯', say: 'Toot hello!', star: 'brave', sound: 'toot',
-          react: ['"Toot!" says Pip.', '"Squeak!" says the baby.', 'It wants to toot too!'], next: 'a3_name' },
+        { say: 'Honk hello!', star: 'brave', act: 'honk',
+          react: ['"Honk!" says Pip.', '"Squeak!" says the baby.', 'It wants to honk too!'], next: 'a3_name' },
       ],
     },
 
@@ -410,11 +410,11 @@
         '"Will you pick a name for my baby?"',
       ],
       choices: [
-        { icon: '🦷', say: 'Chomp!', name: 'Chomp', sound: 'cheer',
+        { say: 'Chomp!', name: 'Chomp',
           react: ['"Chomp! I love it!" says Mama.', 'Chomp claps tiny hands.'], next: pickEnding },
-        { icon: '🥜', say: 'Peanut!', name: 'Peanut', sound: 'cheer',
+        { say: 'Peanut!', name: 'Peanut',
           react: ['"Peanut! I love it!" says Mama.', 'Peanut claps tiny hands.'], next: pickEnding },
-        { icon: '⚡', say: 'Rumble!', name: 'Rumble', sound: 'cheer',
+        { say: 'Rumble!', name: 'Rumble',
           react: ['"Rumble! I love it!" says Mama.', 'Rumble claps tiny hands.'], next: pickEnding },
       ],
     },
@@ -426,12 +426,12 @@
         'Oh no. {baby} has a cold.',
         'The egg got too chilly!',
         '"Ah... ah... ah..." ACHOO!',
-        'The sneeze blows Pip over. TOOOOT!',
+        'The sneeze blows Pip over. HOOONK!',
         'Everyone laughs. Then they keep {baby} warm and cozy.',
       ],
     },
-    end_toot: {
-      title: 'The Big Song', art: 'end_toot', end: true,
+    end_song: {
+      title: 'The Big Song', art: 'end_song', end: true,
       text: [
         'Pip sings the egg song. La, la, loo!',
         '{baby} sings too. Squeak, squeak!',
