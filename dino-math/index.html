@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#c98b58">
   <title>Dino Defenders</title>
-  <meta name="description" content="A pop-up book math game: help Rex stop the meteors by solving problems from kindergarten to grade 5.">
+  <meta name="description" content="A pop-up book math game: help Rex roar the egg-snatching pterodactyls away by solving problems, kindergarten to grade 5.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦖</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,11 +24,11 @@
         <h2 id="set-title">Grown-up settings</h2>
         <button type="button" class="close" id="set-close" aria-label="Close settings">✕</button>
       </div>
-      <p class="intro">Each world keeps its own settings. Changes are saved on this device.</p>
+      <p class="intro">Changes are saved on this device.</p>
 
       <fieldset class="row">
-        <legend>World</legend>
-        <div class="seg" id="set-world"></div>
+        <legend>Grade <span>The map shows this grade's stages, and Rex explores them one by one.</span></legend>
+        <div class="seg" id="set-grade"></div>
       </fieldset>
 
       <fieldset class="row">
@@ -40,10 +40,10 @@
       </fieldset>
 
       <fieldset class="row">
-        <legend>Pace <span>Calm: the meteors stop and wait. Zoom: they drift down, faster as the streak grows. Nothing is ever lost.</span></legend>
+        <legend>Pace <span>Timed works at any grade. Nothing is ever lost either way.</span></legend>
         <div class="seg">
-          <input type="radio" name="pace" id="pace-calm" value="calm"><label for="pace-calm">Calm</label>
-          <input type="radio" name="pace" id="pace-zoom" value="zoom"><label for="pace-zoom">Zoom</label>
+          <input type="radio" name="pace" id="pace-calm" value="calm"><label for="pace-calm">Calm (no clock)</label>
+          <input type="radio" name="pace" id="pace-timed" value="timed"><label for="pace-timed">Timed</label>
         </div>
         <p class="note" id="pace-note"></p>
       </fieldset>
@@ -66,7 +66,7 @@
       </fieldset>
 
       <fieldset class="row">
-        <legend>Sound effects <span>For every world</span></legend>
+        <legend>Sound effects</legend>
         <div class="seg">
           <input type="radio" name="sound" id="sound-on" value="on"><label for="sound-on">On</label>
           <input type="radio" name="sound" id="sound-off" value="off"><label for="sound-off">Off</label>

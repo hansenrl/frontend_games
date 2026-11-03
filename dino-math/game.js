@@ -37,22 +37,25 @@
 
   /* ---------- saved progress and settings ---------- */
   const KEY = 'dino-defenders-v1';
-  const defWorld = (i) => ({ answer: i < 3 ? 'pick' : 'type', pace: 'calm', pictures: 'miss', voice: 'on' });
-  const store = { progress: {}, jar: 0, rexWorld: 0, worlds: P.WORLDS.map((_, i) => defWorld(i)) };
+  const DEFAULTS = { grade: 0, answer: 'type', pace: 'calm', pictures: 'miss', voice: 'off' };
+  const store = { progress: {}, jar: 0, settings: Object.assign({}, DEFAULTS), rex: P.WORLDS.map(() => 0) };
   try {
     const s = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (s) {
-      store.progress = s.progress || {}; store.jar = s.jar | 0; store.rexWorld = clamp(s.rexWorld | 0, 0, P.WORLDS.length - 1);
-      if (Array.isArray(s.worlds)) store.worlds = store.worlds.map((w, i) => Object.assign(w, s.worlds[i] || {}));
+      store.progress = s.progress || {}; store.jar = s.jar | 0;
+      if (s.settings) Object.assign(store.settings, s.settings);
+      if (Array.isArray(s.rex)) store.rex = store.rex.map((v, i) => s.rex[i] | 0);
     }
   } catch (e) { /* storage unavailable: play without saving */ }
+  store.settings.grade = clamp(store.settings.grade | 0, 0, P.WORLDS.length - 1);
   function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { /* ignore */ } }
   const starsOf = (id) => (store.progress[id] || {}).stars || 0;
   const prog = (id) => store.progress[id] || (store.progress[id] = { stars: 0, plays: 0, d: 0 });
-  const worldStars = (wi) => P.WORLDS[wi].levels.reduce((s, l) => s + starsOf(l.id), 0);
-  const levelsDone = (wi) => P.WORLDS[wi].levels.filter((l) => starsOf(l.id) > 0).length;
-  const worldDone = (wi) => levelsDone(wi) === P.WORLDS[wi].levels.length;
-  const setting = (wi) => store.worlds[wi];
+  const setting = () => store.settings;
+  const grade = () => store.settings.grade;
+  const stagesDone = (g) => P.WORLDS[g].levels.filter((l) => starsOf(l.id) > 0).length;
+  const gradeDone = (g) => stagesDone(g) === P.WORLDS[g].levels.length;
+  const gradeLabel = (g) => (P.WORLDS[g].short === 'K' ? 'Kindergarten' : 'Grade ' + P.WORLDS[g].short);
 
   /* ---------- canvas size ---------- */
   let K = 1;
@@ -65,7 +68,7 @@
 
   /* ---------- screens and the pop-up transition ---------- */
   let now = 0;
-  const S = { screen: 'map', openAt: 0, closingAt: null, next: null, world: 0, walk: null, celebrate: null, celebAt: 0, play: null };
+  const S = { screen: 'map', openAt: 0, closingAt: null, next: null, walk: null, pending: null, banner: null, play: null };
   function go(fn) { if (S.closingAt !== null) return; S.closingAt = now; S.next = fn; sfx.flip(); A.hush(); }
   function rise(i = 0) {
     const open = reduce ? 1 : back((now - S.openAt - 0.04 - i * 0.06) / 0.42);
@@ -146,7 +149,8 @@
     c.drawImage(pages(theme), 0, 0, W, H);
   }
   function soundTab(x) { return [x, 64, '', '#8a7aa0', () => { A.setMuted(!A.muted); if (!A.muted) sfx.tap(); }, (ix, iy) => speakerIcon(ix + 12, iy - 6, !A.muted)]; }
-  function grownTab() { return [826, 112, 'Grown-ups', RED, () => openSettings(S.screen === 'play' && S.play ? S.play.wi : S.screen === 'world' ? S.world : store.rexWorld)]; }
+  function grownTab() { return [826, 112, 'Grown-ups', RED, () => openSettings()]; }
+  function gradeTab() { return [680, 128, gradeLabel(grade()), GREEN, () => openSettings()]; }
 
   /* ---------- pop-ups ---------- */
   // Something standing up off the page: its shadow falls back on the page, and it unfolds as rise goes 0 -> 1.
@@ -198,7 +202,7 @@
     c.restore();
   }
 
-  /* ---------- the world landmarks (map pop-ups), drawn at 1x around (0,0) ---------- */
+  /* ---------- landmarks for the map stops, drawn at 1x around (0,0) ---------- */
   const f = (sil, col) => { c.fillStyle = sil || col; c.fill(); };
   const LANDMARK = [
     (s) => { ell(0, -8, 22, 9); f(s, '#a86b3c'); for (const [dx, col] of [[-10, '#fff6e0'], [0, '#d9f0ff'], [10, '#ffe1ec']]) { ell(dx, -17, 7, 9); f(s, col); } ell(0, -5, 22, 5); f(s, '#b97a46'); },
@@ -207,87 +211,85 @@
     (s) => { c.beginPath(); c.moveTo(-28, 0); c.lineTo(-8, -46); c.lineTo(10, 0); c.closePath(); f(s, '#8e9fc2'); c.beginPath(); c.moveTo(-4, 0); c.lineTo(14, -36); c.lineTo(30, 0); c.closePath(); f(s, '#a7b5d6'); c.beginPath(); c.moveTo(-14, -32); c.lineTo(-8, -46); c.lineTo(-2, -32); c.lineTo(-6, -35); c.lineTo(-9, -30); c.closePath(); f(s, '#ffffff'); },
     (s) => { c.beginPath(); c.moveTo(-2, 0); c.quadraticCurveTo(-4, -30, 10, -42); c.lineTo(16, -38); c.quadraticCurveTo(6, -26, 8, 0); c.closePath(); f(s, '#5fa8a0'); ell(16, -42, 8, 5); f(s, '#5fa8a0'); if (!s) { ell(18, -43, 1.4, 1.4); c.fillStyle = INK; c.fill(); } },
     (s) => { c.beginPath(); c.moveTo(-28, 0); c.lineTo(-7, -40); c.lineTo(7, -40); c.lineTo(28, 0); c.closePath(); f(s, '#a57a5a'); c.beginPath(); c.moveTo(-7, -40); c.lineTo(7, -40); c.lineTo(4, -32); c.lineTo(0, -36); c.lineTo(-4, -30); c.closePath(); f(s, '#ff7043'); },
+    (s) => { c.beginPath(); c.moveTo(-3, 0); c.quadraticCurveTo(-7, -26, 1, -50); c.lineTo(6, -50); c.quadraticCurveTo(0, -26, 4, 0); c.closePath(); f(s, '#8a5a36'); for (const a of [-2.7, -2.1, -1.4, -0.7, -0.1]) { c.save(); c.translate(4, -50); c.rotate(a); ell(15, 0, 16, 5); f(s, '#3f9b5a'); c.restore(); } },
+    (s) => { c.beginPath(); c.moveTo(-26, 0); c.quadraticCurveTo(-28, -26, -6, -30); c.quadraticCurveTo(20, -34, 26, -10); c.quadraticCurveTo(28, 0, 24, 0); c.closePath(); f(s, '#b9b0a6'); if (!s) { ell(-8, -20, 8, 4, -0.3); c.fillStyle = 'rgba(255,255,255,.35)'; c.fill(); for (const [dx, col] of [[-19, '#ff8fb1'], [19, '#ffd54f']]) { ell(dx, -3, 4, 4); c.fillStyle = col; c.fill(); } } },
   ];
   // flat things printed on the page under some landmarks
-  function landmarkFloor(wi, x, y, s) {
-    if (wi === 2) { ell(x - 4 * s, y + 2 * s, 26 * s, 9 * s); c.fillStyle = '#3b2f45'; c.fill(); for (let j = 0; j < 3; j++) { const a = (now * 0.7 + j / 3) % 1; c.globalAlpha = 1 - a; ell(x + (-14 + j * 10) * s, y - a * 6 * s, (2 + a * 3) * s, (2 + a * 3) * s); c.strokeStyle = '#6a5a80'; c.lineWidth = 1.2; c.stroke(); } c.globalAlpha = 1; }
-    if (wi === 4) { ell(x + 2 * s, y + 3 * s, 32 * s, 10 * s); c.fillStyle = '#8bc6e0'; c.fill(); }
-    if (wi === 5) { for (let j = 0; j < 3; j++) { const a = (now * 0.35 + j / 3) % 1; c.globalAlpha = (1 - a) * 0.8; ell(x + (2 + a * 10) * s, y - (44 + a * 30) * s, (4 + a * 6) * s, (4 + a * 6) * s); c.fillStyle = '#d9d3dc'; c.fill(); } c.globalAlpha = 1; }
+  function landmarkFloor(type, x, y, s) {
+    if (type === 2) { ell(x - 4 * s, y + 2 * s, 26 * s, 9 * s); c.fillStyle = '#3b2f45'; c.fill(); for (let j = 0; j < 3; j++) { const a = (now * 0.7 + j / 3) % 1; c.globalAlpha = 1 - a; ell(x + (-14 + j * 10) * s, y - a * 6 * s, (2 + a * 3) * s, (2 + a * 3) * s); c.strokeStyle = '#6a5a80'; c.lineWidth = 1.2; c.stroke(); } c.globalAlpha = 1; }
+    if (type === 4) { ell(x + 2 * s, y + 3 * s, 32 * s, 10 * s); c.fillStyle = '#8bc6e0'; c.fill(); }
+    if (type === 5) { for (let j = 0; j < 3; j++) { const a = (now * 0.35 + j / 3) % 1; c.globalAlpha = (1 - a) * 0.8; ell(x + (2 + a * 10) * s, y - (44 + a * 30) * s, (4 + a * 6) * s, (4 + a * 6) * s); c.fillStyle = '#d9d3dc'; c.fill(); } c.globalAlpha = 1; }
   }
+  const stageLandmark = (g, i) => (g * 3 + i) % LANDMARK.length;
 
-  /* ================= MAP ================= */
-  const STOPS = [[152, 464], [360, 396], [240, 236], [608, 220], [752, 408], [864, 236]];
-  const CTRL = [[260, 524], [452, 300], [428, 108], [580, 392], [904, 392]];
-  const seg = (j, u) => { const a = STOPS[j], b = STOPS[j + 1], q = CTRL[j], v = 1 - u; return [v * v * a[0] + 2 * v * u * q[0] + u * u * b[0], v * v * a[1] + 2 * v * u * q[1] + u * u * b[1]]; };
-  function startWalk(from, to, done) {
-    if (from === to) { done(); return; }
-    S.walk = { from, to, start: now, per: 0.55, done }; sfx.pop();
+  /* ================= MAP: the stages of the chosen grade ================= */
+  function stopsFor(g) { const n = P.WORLDS[g].levels.length; return Array.from({ length: n }, (_, i) => [Math.round(100 + 770 * i / (n - 1)), i % 2 ? 300 : 478]); }
+  function segPoint(pts, j, u) { // a smooth (Catmull-Rom) curve between pts[j] and pts[j+1]
+    const p0 = pts[Math.max(0, j - 1)], p1 = pts[j], p2 = pts[j + 1], p3 = pts[Math.min(pts.length - 1, j + 2)], v = 1 - u;
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    const b = (a, q1, q2, d) => v * v * v * a + 3 * v * v * u * q1 + 3 * v * u * u * q2 + u * u * u * d;
+    return [b(p1[0], c1[0], c2[0], p2[0]), b(p1[1], c1[1], c2[1], p2[1])];
   }
-  function walkPos() {
-    const w = S.walk; if (!w) return STOPS[store.rexWorld];
+  function startWalk(to, done) {
+    const g = grade(), from = clamp(store.rex[g], 0, P.WORLDS[g].levels.length - 1);
+    if (from === to) { done(); return; }
+    S.walk = { g, from, to, start: now, per: 0.5, done }; sfx.pop();
+  }
+  function walkPos(pts) {
+    const w = S.walk; if (!w) return pts[clamp(store.rex[grade()], 0, pts.length - 1)];
     const n = Math.abs(w.to - w.from), t = (now - w.start) / w.per;
-    if (t >= n) { const d = w.done; S.walk = null; store.rexWorld = w.to; save(); d(); return STOPS[w.to]; }
+    if (t >= n) { const d = w.done; S.walk = null; store.rex[w.g] = w.to; save(); d(); return pts[w.to]; }
     const k = Math.floor(t), u = easeIO(t - k), dir = Math.sign(w.to - w.from), j = dir > 0 ? w.from + k : w.from - k - 1;
-    const p = seg(j, dir > 0 ? u : 1 - u);
+    const p = segPoint(pts, j, dir > 0 ? u : 1 - u);
     return [p[0], p[1] - Math.abs(Math.sin(u * Math.PI * 3)) * 10];
   }
-  function openWorld(wi) {
-    if (busy()) return;
-    sfx.tap();
-    startWalk(store.rexWorld, wi, () => go(() => { S.screen = 'world'; S.world = wi; }));
-  }
+  function playLevel(g, li) { if (S.closingAt !== null) return; go(() => { S.screen = 'play'; startLevel(g, li); }); }
+  function tapStage(i) { if (busy()) return; sfx.tap(); startWalk(i, () => playLevel(grade(), i)); }
   function drawMap() {
-    drawBook(null, [[40, 92, 'Shelf', '#8a7aa0', () => { location.href = '../'; }], soundTab(660), grownTab()]);
+    const g = grade(), w = P.WORLDS[g], L = w.levels, pts = stopsFor(g), here = clamp(store.rex[g], 0, L.length - 1);
+    drawBook(g, [[40, 92, 'Shelf', '#8a7aa0', () => { location.href = '../'; }], soundTab(600), gradeTab(), grownTab()]);
     const r0 = rise(0);
-    text('Dino Valley', 56, 100, F(700, 38), INK);
-    text('Tap any world to play', 58, 134, F(500, 19), SOFT);
-    drawJar(430, 112, rise(1));
-    // path: walked part in red, the rest pencil grey
+    text(w.name, 56, 100, F(700, 38), INK);
+    text(`${gradeLabel(g)} · ${stagesDone(g)} of ${L.length} stages explored`, 58, 134, F(500, 19), SOFT);
+    drawJar(878, 118, rise(1));
+    // the path: where Rex has walked is red, the rest is pencil grey
     c.lineCap = 'round'; c.lineWidth = 6; c.setLineDash([3, 14]);
-    for (let j = 0; j < STOPS.length - 1; j++) {
-      c.strokeStyle = j < store.rexWorld ? RED : 'rgba(74,59,82,.28)';
-      c.beginPath(); c.moveTo(STOPS[j][0], STOPS[j][1]); c.quadraticCurveTo(CTRL[j][0], CTRL[j][1], STOPS[j + 1][0], STOPS[j + 1][1]); c.stroke();
+    for (let j = 0; j < pts.length - 1; j++) {
+      c.strokeStyle = j < here ? RED : 'rgba(74,59,82,.28)';
+      c.beginPath(); c.moveTo(pts[j][0], pts[j][1]); for (let s = 1; s <= 20; s++) { const q = segPoint(pts, j, s / 20); c.lineTo(q[0], q[1]); } c.stroke();
     }
     c.setLineDash([]);
-    P.WORLDS.forEach((w, i) => {
-      const [x, y] = STOPS[i], r = rise(i + 1);
-      if (r > 0.02) landmarkFloor(i, x, y, 2);
-      popup(x, y, r, (sil) => LANDMARK[i](sil), 2);
-      if (i === 3 && r > 0.05) { // the pterodactyl on its wire
-        const px = x + 44 + Math.sin(now * 1.4) * 10, py = y - 118 * r + Math.sin(now * 2) * 5;
-        c.strokeStyle = 'rgba(74,59,82,.4)'; c.lineWidth = 1; c.beginPath(); c.moveTo(x + 28, y - 60 * r); c.lineTo(px, py); c.stroke();
-        c.fillStyle = '#c8554d'; c.beginPath(); c.moveTo(px - 24, py - 8 + Math.sin(now * 8) * 8); c.lineTo(px, py); c.lineTo(px + 24, py - 8 + Math.sin(now * 8) * 8); c.lineTo(px, py + 6); c.closePath(); c.fill(); c.beginPath(); c.moveTo(px, py); c.lineTo(px + 16, py + 2); c.lineTo(px, py + 6); c.fill();
-      }
+    L.forEach((l, i) => {
+      const [x, y] = pts[i], r = rise(i * 0.5 + 1), type = stageLandmark(g, i);
+      if (r > 0.02) landmarkFloor(type, x, y, 1.7);
+      popup(x, y, r, (sil) => LANDMARK[type](sil), 1.7);
     });
-    // labels
-    P.WORLDS.forEach((w, i) => {
-      const [x, y] = STOPS[i], a = Math.min(clamp((now - S.openAt - 0.5 - i * 0.08) / 0.3, 0, 1), rise(0));
+    L.forEach((l, i) => {
+      const [x, y] = pts[i], a = Math.min(clamp((now - S.openAt - 0.45 - i * 0.06) / 0.3, 0, 1), r0);
       if (a <= 0) return;
       c.save(); c.globalAlpha = a;
-      c.font = F(700, 19); const lw = Math.max(c.measureText(w.name).width, 120) + 28, lx = clamp(x - lw / 2, 34, 926 - lw), ly = y + 14;
-      const here = i === store.rexWorld && !S.walk;
-      shadow(4, 2, 'rgba(60,30,10,.18)'); rr(lx, ly, lw, 58, 10); c.fillStyle = here ? '#ffe08a' : '#fff'; c.fill(); noShadow();
-      text(w.name, lx + lw / 2, ly + 17, F(700, 19), INK, 'center');
-      const got = worldStars(i), max = w.levels.length * 3, fill = got === 0 ? 0 : got >= max ? 3 : Math.max(1, Math.floor(3 * got / max));
-      for (let q = 0; q < 3; q++) { starPath(lx + lw / 2 - 52 + q * 20, ly + 40, 8, 3.6); c.fillStyle = q < fill ? GOLD : 'rgba(74,59,82,.16)'; c.fill(); }
-      text(`${w.short === 'K' ? 'K' : 'Gr ' + w.short} · ${levelsDone(i)}/${w.levels.length}`, lx + lw / 2 + 4, ly + 41, F(600, 13), SOFT, 'left');
+      c.font = F(600, 15); const lw = Math.max(c.measureText(l.name).width, 96) + 26, lx = clamp(x - lw / 2, 32, 928 - lw), ly = y + 12;
+      shadow(4, 2, 'rgba(60,30,10,.18)'); rr(lx, ly, lw, 50, 10); c.fillStyle = i === here && !S.walk ? '#ffe08a' : '#fff'; c.fill(); noShadow();
+      text(l.name, lx + lw / 2, ly + 16, F(600, 15), INK, 'center');
+      for (let q = 0; q < 3; q++) { starPath(lx + lw / 2 - 20 + q * 20, ly + 36, 8, 3.6); c.fillStyle = q < starsOf(l.id) ? GOLD : 'rgba(74,59,82,.16)'; c.fill(); }
       c.restore();
-      hit(lx, ly, lw, 58, () => openWorld(i));
-      hit(x - 64, y - 104, 128, 112, () => openWorld(i));
+      hit(lx, ly, lw, 50, () => tapStage(i));
+      hit(x - 52, y - 90, 104, 96, () => tapStage(i));
     });
     // Rex
-    const [rx, ry] = walkPos();
-    if (r0 > 0.05) { ell(rx, ry - 2, 22, 6); c.fillStyle = 'rgba(70,45,25,.2)'; c.fill(); drawRex(rx - 4, ry - 6, 0.72 * r0, { w: Math.sin(now * 5), blink: (now % 3.4) < 0.12 }); }
-    // celebration
-    if (S.celebrate !== null) {
-      const wi = S.celebrate, t = now - S.celebAt, nextW = P.WORLDS[wi + 1];
-      if (t > 1 && !S.walk && wi < P.WORLDS.length - 1 && store.rexWorld === wi) startWalk(wi, wi + 1, () => {});
-      const k = Math.min(back(t / 0.4), t > 5 ? 1 - ease((t - 5) / 0.4) : 1);
+    const [rx, ry] = walkPos(pts);
+    if (r0 > 0.05) { ell(rx, ry - 2, 20, 5); c.fillStyle = 'rgba(70,45,25,.2)'; c.fill(); drawRex(rx - 4, ry - 6, 0.62 * r0, { w: Math.sin(now * 5), blink: (now % 3.4) < 0.12 }); }
+    // "Next stage" from the end of a level: walk on, then play
+    if (S.pending && !S.walk && S.closingAt === null && now - S.openAt > 0.7) { const pd = S.pending; S.pending = null; startWalk(pd.to, () => { if (pd.play) playLevel(g, pd.to); }); }
+    // the whole grade explored
+    if (S.banner) {
+      if (S.banner.t === null) S.banner.t = now;
+      const t = now - S.banner.t, k = Math.min(back(t / 0.4), t > 5 ? 1 - ease((t - 5) / 0.4) : 1);
       if (k > 0.01) popCard(262, 156, 436, 112, k, '#ffe08a', () => {
-        text(`${P.WORLDS[wi].name} is done!`, 480, 192, F(700, 28), INK, 'center');
-        text(nextW ? `Rex is off to ${nextW.name}!` : 'Every world is done. Hooray!', 480, 232, F(500, 20), INK, 'center');
+        text(S.banner.title, 480, 192, F(700, 27), INK, 'center');
+        text(S.banner.sub, 480, 232, F(500, 18), INK, 'center');
       });
-      if (t > 5.4) S.celebrate = null;
+      if (t > 5.4) S.banner = null;
     }
   }
   function drawJar(x, y, r) {
@@ -303,80 +305,48 @@
     text(String(store.jar), x, y + 46 * r, F(700, 17), INK, 'center');
   }
 
-  /* ================= WORLD PAGE ================= */
-  function nextLevel(wi) {
-    const L = P.WORLDS[wi].levels;
-    let i = L.findIndex((l) => starsOf(l.id) === 0); if (i >= 0) return i;
-    i = L.findIndex((l) => starsOf(l.id) < 3); return i >= 0 ? i : 0;
-  }
-  function playLevel(wi, li) { if (busy()) return; sfx.tap(); go(() => { S.screen = 'play'; startLevel(wi, li); }); }
-  function drawWorld() {
-    const wi = S.world, w = P.WORLDS[wi];
-    drawBook(wi, [[40, 104, '◀ Map', '#8a7aa0', () => go(() => { S.screen = 'map'; })], soundTab(660), grownTab()]);
-    const nl = nextLevel(wi);
-    ell(86, 106, 32, 32); c.fillStyle = RED; c.fill(); text(w.short, 86, 108, F(700, w.short === 'K' ? 34 : 32), '#fff', 'center');
-    text(w.name, 132, 96, F(700, 32), INK); text(w.grade + ' · tap a level to play', 134, 128, F(500, 17), SOFT);
-    const n = w.levels.length, gap = n > 7 ? 50 : 54;
-    w.levels.forEach((l, i) => {
-      const r = rise(i * 0.6 + 1), x = 60 + (i % 2) * 16, y = 156 + i * gap, tw = 374, th = 42;
-      popCard(x, y, tw, th, r, i === nl ? '#ffe08a' : PAPER, () => {
-        ell(x + 24, y + th / 2, 15, 15); c.fillStyle = starsOf(l.id) ? GREEN : 'rgba(74,59,82,.15)'; c.fill();
-        text(String(i + 1), x + 24, y + th / 2 + 1, F(700, 16), starsOf(l.id) ? '#fff' : INK, 'center');
-        text(l.name, x + 48, y + 16, F(600, 18), INK); text(l.std, x + 48, y + 33, F(500, 12), SOFT);
-        for (let q = 0; q < 3; q++) { starPath(x + tw - 70 + q * 22, y + th / 2, 9, 4); c.fillStyle = q < starsOf(l.id) ? GOLD : 'rgba(74,59,82,.15)'; c.fill(); }
-      }, 10);
-      hit(x, y, tw, th, () => playLevel(wi, i));
-    });
-    // right page: the landmark, Rex and a big play button
-    const r1 = rise(2);
-    landmarkFloor(wi, 734, 400, 3.4);
-    popup(734, 400, r1, (sil) => LANDMARK[wi](sil), 3.4);
-    popup(590, 420, rise(3), (sil) => drawRex(0, 0, 1.35, { sil, w: Math.sin(now * 3), blink: (now % 3.2) < 0.12 }), 1);
-    popCard(560, 446, 340, 116, rise(4), PAPER, () => {
-      text('Speed-round goal', 580, 470, F(600, 13), SOFT); text(w.goal, 580, 492, F(600, 18), INK);
-      button(580, 510, 300, 44, '▶  Play: ' + w.levels[nl].name, GREEN, () => playLevel(wi, nl), w.levels[nl].name.length > 18 ? 16 : 18);
-    });
-  }
-
   /* ================= PLAY ================= */
+  // Sneaky pterodactyls want the eggs in Rex's nest. Each one carries an answer.
+  // Pick (or type) the right answer and Rex roars it away.
   const OOPS = ['Oops! Give it another try!', 'Oops! Try again, you can do it!', 'So close! Give it another try!'];
-  const PRAISE = ['Yes! Great job!', 'You got it!', 'Roar-some!', 'Yes! Meteor stopped!', 'Super!'];
-  function startLevel(wi, li) {
-    const L = P.WORLDS[wi].levels[li];
-    S.play = { wi, li, L, idx: 0, d: prog(L.id).d || 0, streak: 0, firsts: 0, recent: [], phase: 'ask', prob: null, end: null, visAt: null };
+  const PRAISE = ['Shoo! Away it flies!', 'Yes! Great job!', 'You got it!', 'Roar-some!', 'Super! The eggs are safe!'];
+  const voiceOn = () => setting().voice === 'on';
+  function startLevel(g, li) {
+    const L = P.WORLDS[g].levels[li];
+    S.play = { g, li, L, idx: 0, d: prog(L.id).d || 0, streak: 0, firsts: 0, recent: [], phase: 'ask', prob: null, end: null, visAt: null };
     newProblem();
+    S.play.bubble = { text: S.play.mode === 'type' ? 'Pterodactyls want our eggs! Type the answer and Rex will roar them away.' : 'Pterodactyls want our eggs! Tap the one with the right answer and Rex will roar it away.', kind: 'intro', t: now + 0.5 };
   }
-  function modeFor(pl) { return setting(pl.wi).answer === 'type' && !pl.prob.pickOnly ? 'type' : 'pick'; }
-  const zoomOn = (pl) => pl.wi >= 3 && setting(pl.wi).pace === 'zoom';
+  const modeFor = (pl) => (setting().answer === 'type' && !pl.prob.pickOnly ? 'type' : 'pick');
+  const timedOn = () => setting().pace === 'timed';
   function newProblem() {
     const pl = S.play; let p, n = 0;
     do { p = pl.L.gen(pl.d, Math.random); n++; } while (n < 15 && pl.recent.includes(JSON.stringify(p.q)));
     pl.recent.push(JSON.stringify(p.q)); if (pl.recent.length > 6) pl.recent.shift();
-    Object.assign(pl, { prob: p, phase: 'ask', misses: 0, helped: false, entry: ['', ''], field: 0, off: new Set(), wob: {}, shake: -9, t0: now, tRight: null, bubble: null, focus: 0, zoomY: 0, zoomBack: null, visAt: null, target: 0 });
+    Object.assign(pl, { prob: p, phase: 'ask', misses: 0, helped: false, entry: ['', ''], field: 0, off: new Set(), wob: {}, away: {}, shake: -9, t0: now, tRight: null, bubble: null, focus: 0, swoop: 0, swoopBack: null, visAt: null, target: 0, starred: false });
     pl.mode = modeFor(pl);
-    pl.focus = 0;
-    if (setting(pl.wi).voice === 'on') setTimeout(() => { if (S.play === pl && pl.prob === p) A.say(p.say); }, 350);
+    if (voiceOn()) setTimeout(() => { if (S.play === pl && pl.prob === p) A.say(p.say); }, 350);
     announce(p.say);
   }
   function feedback(textS, kind) {
     const pl = S.play; pl.bubble = { text: textS, kind, t: now };
-    if (setting(pl.wi).voice === 'on') A.say(textS);
+    if (voiceOn()) A.say(textS);
     announce(textS);
   }
   function right(idx) {
     const pl = S.play; pl.phase = 'right'; pl.tRight = now; pl.target = idx;
     const first = pl.misses === 0;
     if (first) { pl.firsts++; pl.streak++; if (pl.streak >= 5) { pl.d = Math.min(2, pl.d + 1); pl.streak = 0; } } else pl.streak = 0;
-    store.jar++; save(); sfx.yay(); setTimeout(() => sfx.roar(), 60);
+    store.jar++; save(); sfx.roar(); setTimeout(() => sfx.yay(), 250);
     feedback(pickOne(PRAISE), 'yay');
   }
   function wrong(idx) {
     const pl = S.play; pl.misses++; sfx.oops();
-    if (idx !== null) { pl.off.add(idx); pl.wob[idx] = now; } else { pl.shake = now; pl.entry = ['', '']; pl.field = 0; }
+    if (idx !== null) { pl.off.add(idx); pl.wob[idx] = now; pl.away[idx] = now + 0.5; } else { pl.shake = now; pl.entry = ['', '']; pl.field = 0; }
     if (pl.misses >= 2) {
-      if (!pl.helped && pl.misses === 2) pl.d = Math.max(0, pl.d - 1);
+      if (!pl.helped) pl.d = Math.max(0, pl.d - 1);
       pl.helped = true; pl.streak = 0;
-      pl.prob.choices.forEach((ch, j) => { if (!ch.ok) pl.off.add(j); });
+      pl.prob.choices.forEach((ch, j) => { if (!ch.ok && !pl.off.has(j)) { pl.off.add(j); pl.away[j] = now + 0.2; } });
       feedback(/^Let's/.test(pl.prob.hint) ? pl.prob.hint : "Let's do it together. " + pl.prob.hint, 'help');
     } else feedback(pickOne(OOPS), 'oops');
     const ok = pl.prob.choices.findIndex((ch, j) => !pl.off.has(j)); if (ok >= 0) pl.focus = ok;
@@ -405,17 +375,17 @@
     pl.entry[pl.field] = v + k;
   }
   function finishLevel() {
-    const pl = S.play, pr = prog(pl.L.id), before = pr.stars, wasDone = worldDone(pl.wi);
+    const pl = S.play, pr = prog(pl.L.id), before = pr.stars, wasDone = gradeDone(pl.g);
     const stars = 1 + (pl.firsts >= 7 ? 1 : 0) + (pl.firsts >= 9 ? 1 : 0);
-    pr.stars = Math.max(pr.stars, stars); pr.plays++; pr.d = pl.d; save();
-    const worldNow = !wasDone && worldDone(pl.wi);
-    if (worldNow) { S.celebrate = pl.wi; }
-    pl.phase = 'done'; pl.end = { stars, newBest: stars > before, worldNow, t: now };
+    pr.stars = Math.max(pr.stars, stars); pr.plays++; pr.d = pl.d; store.rex[pl.g] = pl.li; save();
+    const gradeNow = !wasDone && gradeDone(pl.g);
+    if (gradeNow) S.banner = { title: `${P.WORLDS[pl.g].name} is all explored!`, sub: pl.g < P.WORLDS.length - 1 ? 'A grown-up can pick the next grade in Grown-ups.' : 'Every stage of every grade. Hooray!', t: null };
+    pl.phase = 'done'; pl.end = { stars, newBest: stars > before, gradeNow, t: now };
     sfx.fanfare(); A.hush();
-    if (setting(pl.wi).voice === 'on') setTimeout(() => A.say(worldNow ? `You finished ${P.WORLDS[pl.wi].name}!` : 'Level done! Hooray!'), 300);
-    announce(`Level done. ${stars} star${stars > 1 ? 's' : ''}.`);
+    if (voiceOn()) setTimeout(() => A.say(gradeNow ? `You explored all of ${P.WORLDS[pl.g].name}!` : 'Stage done! Hooray!'), 300);
+    announce(`Stage done. ${stars} star${stars > 1 ? 's' : ''}.`);
   }
-  function toMap() { go(() => { S.screen = 'map'; S.celebAt = now; }); }
+  function toMap(pending) { go(() => { S.screen = 'map'; S.pending = pending || null; }); }
 
   // the answer slot inside the problem card
   function slotFor(pl) {
@@ -428,6 +398,7 @@
       const active = typing && !solved && pl.field === i && P.fieldCount(p) === 2;
       rr(x, y, w, h, Math.min(12, h / 4)); c.fillStyle = solved ? '#e3f4da' : '#fff'; c.fill();
       c.strokeStyle = solved ? GREEN : active ? GOLD : 'rgba(74,59,82,.35)'; c.lineWidth = active ? 3 : 2; c.setLineDash(typing || solved ? [] : [6, 5]); c.stroke(); c.setLineDash([]);
+      if (!s && solved && typing) s = P.answerFields(p)[i];
       if (s) text(s, x + w / 2, y + h / 2 + 2, F(700, size), solved ? '#2e7d32' : INK, 'center');
       else if (ghost(i)) text(ghost(i), x + w / 2, y + h / 2 + 2, F(700, size), 'rgba(74,59,82,.28)', 'center');
       else if (!typing && !solved) text('?', x + w / 2, y + h / 2 + 2, F(700, size), RED, 'center');
@@ -626,29 +597,44 @@
     }
   }
 
-  /* ---------- meteors ---------- */
-  function meteorXs(n, pl) { if (pl.mode === 'type') return [740]; return n === 2 ? [636, 812] : [590, 720, 850]; }
-  function meteorY(pl) {
-    const base = pl.mode === 'type' ? 268 : 300;
-    if (!zoomOn(pl)) return base;
-    const top = pl.mode === 'type' ? 200 : 210;
-    if (pl.zoomBack !== null) { const k = (now - pl.zoomBack) / 0.7; if (k >= 1) { pl.zoomBack = null; pl.zoomY = 0; } else return lerp(top + pl.zoomYMax, top, easeIO(k)); }
-    return top + pl.zoomY;
+  /* ---------- pterodactyls ---------- */
+  const PT_COLS = [['#e07a5f', '#f6c3a8', '#b35a44'], ['#4fa39a', '#ade0d8', '#347a72'], ['#8e7cc3', '#d3c9f3', '#6a58a2']];
+  const NEST = [262, 580];
+  function homeXs(n, pl) { if (pl.mode === 'type') return [760]; return n === 2 ? [650, 830] : [600, 728, 856]; }
+  const homeY = (pl) => (pl.mode === 'type' ? 250 : 284);
+  // 0 = hovering at home, 1 = right over the nest (timed mode only)
+  function swoopK(pl) {
+    if (!timedOn()) return 0;
+    if (pl.swoopBack !== null) { const k = (now - pl.swoopBack) / 0.8; if (k >= 1) { pl.swoopBack = null; pl.swoop = 0; return 0; } return 1 - easeIO(k); }
+    return easeIO(pl.swoop);
   }
-  function drawMeteor(x, y, R, label, o) {
-    c.save();
-    if (o.alpha !== undefined) c.globalAlpha = o.alpha;
-    c.strokeStyle = 'rgba(74,59,82,.35)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(x, 56); c.lineTo(x, y - R); c.stroke();
-    // paper flames
-    const fl = Math.sin(now * 9 + x) * 3;
-    c.beginPath(); c.moveTo(x - R * 0.85, y - R * 0.2); c.quadraticCurveTo(x - R * 0.7, y - R * 1.6 + fl, x - R * 0.1, y - R * 2.0 - fl); c.quadraticCurveTo(x + R * 0.1, y - R * 1.4, x + R * 0.4, y - R * 1.85 + fl); c.quadraticCurveTo(x + R * 0.9, y - R * 1.2, x + R * 0.85, y - R * 0.2); c.closePath();
-    shadow(6, 3); c.fillStyle = o.grey ? '#d8cfc6' : '#ffb03a'; c.fill(); noShadow();
-    c.beginPath(); c.moveTo(x - R * 0.5, y - R * 0.4); c.quadraticCurveTo(x - R * 0.3, y - R * 1.3 - fl, x, y - R * 1.45); c.quadraticCurveTo(x + R * 0.4, y - R * 1.1 + fl, x + R * 0.5, y - R * 0.4); c.closePath(); c.fillStyle = o.grey ? '#e6dfd8' : '#ffe066'; c.fill();
-    shadow(8, 4); ell(x, y, R, R); c.fillStyle = o.grey ? '#b9ada3' : '#c8754a'; c.fill(); noShadow();
-    c.fillStyle = o.grey ? 'rgba(120,110,100,.3)' : 'rgba(120,60,30,.35)'; for (const q of [[-0.5, -0.45, 0.16], [0.52, 0.42, 0.13], [-0.45, 0.5, 0.11], [0.4, -0.55, 0.09]]) { ell(x + q[0] * R, y + q[1] * R, q[2] * R, q[2] * R * 0.85); c.fill(); }
-    ell(x - R * 0.35, y - R * 0.4, R * 0.3, R * 0.16, -0.6); c.fillStyle = 'rgba(255,255,255,.18)'; c.fill();
-    if (label) { const size = fitSize(label, R * 1.7, R * 0.8); const lw = measureTokens(label, size); c.save(); c.shadowColor = 'rgba(60,20,10,.6)'; c.shadowBlur = 3 * K; drawTokens(label, x - lw / 2, y + 1, size, '#fff'); c.restore(); }
-    if (o.focus) { c.strokeStyle = GOLD; c.lineWidth = 4; c.setLineDash([8, 6]); ell(x, y, R + 9, R + 9); c.stroke(); c.setLineDash([]); }
+  // A paper pterodactyl facing left (at the nest), wings out, holding a sign in its feet.
+  function drawPtero(x, y, s, o) {
+    const up = Math.sin(o.flap), [col, light, dark] = o.col;
+    c.save(); c.translate(x, y); if (o.rot) c.rotate(o.rot); c.scale(s, s); if (o.alpha !== undefined) c.globalAlpha = o.alpha;
+    if (o.label) {
+      c.strokeStyle = 'rgba(74,59,82,.55)'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(-7, 27); c.lineTo(-34, 46); c.moveTo(7, 27); c.lineTo(34, 46); c.stroke();
+      shadow(6, 3); rr(-52, 44, 104, 64, 12); c.fillStyle = o.grey ? '#ece6dc' : PAPER; c.fill(); noShadow();
+      c.strokeStyle = o.focus ? GOLD : 'rgba(74,59,82,.2)'; c.lineWidth = o.focus ? 4 : 1.5; if (o.focus) c.setLineDash([7, 5]); c.stroke(); c.setLineDash([]);
+      const size = fitSize(o.label, 88, 40), lw = measureTokens(o.label, size); drawTokens(o.label, -lw / 2, 77, size, o.grey ? 'rgba(74,59,82,.35)' : INK);
+    }
+    for (const sd of [-1, 1]) {
+      const tipY = -30 - up * 34;
+      c.beginPath(); c.moveTo(sd * 8, -9); c.quadraticCurveTo(sd * 40, -30 - up * 26, sd * 80, tipY); c.lineTo(sd * 60, -8 - up * 14); c.quadraticCurveTo(sd * 46, 6 - up * 6, sd * 30, 2); c.quadraticCurveTo(sd * 20, 11, sd * 8, 9); c.closePath();
+      shadow(5, 3); c.fillStyle = col; c.fill(); noShadow();
+      c.strokeStyle = dark; c.lineWidth = 3.2; c.lineCap = 'round'; c.beginPath(); c.moveTo(sd * 8, -9); c.quadraticCurveTo(sd * 40, -30 - up * 26, sd * 80, tipY); c.stroke();
+      c.strokeStyle = 'rgba(255,255,255,.4)'; c.lineWidth = 1.3; c.beginPath(); c.moveTo(sd * 30, -19 - up * 16); c.lineTo(sd * 36, 2); c.moveTo(sd * 52, -22 - up * 23); c.lineTo(sd * 50, -4 - up * 10); c.stroke();
+    }
+    c.strokeStyle = dark; c.lineWidth = 3; c.lineCap = 'round'; c.beginPath(); c.moveTo(-5, 14); c.lineTo(-7, 27); c.moveTo(5, 14); c.lineTo(7, 27); c.stroke();
+    ell(0, 0, 13, 20); c.fillStyle = col; c.fill(); ell(0, 5, 8, 13); c.fillStyle = light; c.fill();
+    c.beginPath(); c.moveTo(0, -30); c.lineTo(26, -47); c.lineTo(6, -23); c.closePath(); c.fillStyle = dark; c.fill();
+    ell(-4, -27, 12, 9.5); c.fillStyle = col; c.fill();
+    const open = o.scared ? 7 : 0;
+    c.beginPath(); c.moveTo(-12, -31); c.lineTo(-50, -25 - open * 0.4); c.lineTo(-12, -24); c.closePath(); c.fillStyle = '#f2c14e'; c.fill();
+    if (open) { c.beginPath(); c.moveTo(-12, -24); c.lineTo(-40, -15 + open); c.lineTo(-12, -20); c.closePath(); c.fill(); }
+    const er = o.scared ? 4.8 : 3.6; ell(-6, -29, er, er); c.fillStyle = '#fff'; c.fill(); ell(o.scared ? -6 : -7.5, -29, 1.9, 1.9); c.fillStyle = INK; c.fill();
+    c.strokeStyle = INK; c.lineWidth = 2; c.beginPath(); if (o.scared) { c.moveTo(-11, -38); c.lineTo(-1, -37); } else { c.moveTo(-12, -34); c.lineTo(0, -37.5); } c.stroke();
+    if (o.scared) { ell(11, -38, 2.4, 3.6); c.fillStyle = '#7fc8f0'; c.fill(); }
     c.restore();
   }
 
@@ -682,47 +668,35 @@
 
   /* ---------- the play screen ---------- */
   let lastT = 0;
+  const REX_X = 100, REX_Y = 566, REX_S = 1.4;
   function drawPlay(dt) {
-    const pl = S.play, p = pl.prob, w = P.WORLDS[pl.wi];
-    drawBook(pl.wi, [[40, 120, '◀ Levels', '#8a7aa0', () => go(() => { S.screen = 'world'; S.world = pl.wi; })], soundTab(660), grownTab()]);
+    const pl = S.play, p = pl.prob, w = P.WORLDS[pl.g];
+    drawBook(pl.g, [[40, 104, '◀ Map', '#8a7aa0', () => toMap()], soundTab(600), grownTab()]);
     // header
     text(`${w.name} · ${pl.L.name}`, 58, 86, F(700, 20), INK);
     for (let i = 0; i < LEVEL_LEN; i++) { const x = 66 + i * 19, y = 118, done = i < pl.idx || (i === pl.idx && pl.phase !== 'ask'); if (done) { starPath(x, y, 9, 4); c.fillStyle = GOLD; c.fill(); } else { ell(x, y, 6, 6); c.fillStyle = i === pl.idx ? 'rgba(239,83,80,.3)' : 'rgba(74,59,82,.14)'; c.fill(); } }
     drawJar(882, 118, rise(1));
-    const zoom = zoomOn(pl);
-    if (zoom) { rr(274, 106, 64, 24, 12); c.fillStyle = 'rgba(74,59,82,.12)'; c.fill(); text('Zoom', 306, 119, F(600, 13), INK, 'center'); }
+    const timed = timedOn();
+    if (timed) { rr(266, 106, 70, 24, 12); c.fillStyle = 'rgba(74,59,82,.12)'; c.fill(); text('Timed', 301, 119, F(600, 13), INK, 'center'); }
 
-    // zoom: the meteors drift down; if they reach the grass they float back up. Nothing is lost.
-    if (zoom && pl.phase === 'ask' && pl.zoomBack === null && S.closingAt === null) {
-      pl.zoomY += (12 + Math.min(pl.streak, 8) * 5) * dt;
-      pl.zoomYMax = 470 - 60 - (pl.mode === 'type' ? 200 : 210);
-      if (pl.zoomY >= pl.zoomYMax) { pl.zoomY = pl.zoomYMax; pl.zoomBack = now; sfx.whoosh(); pl.bubble = { text: 'Whoosh! Up it goes. Take your time.', kind: 'oops', t: now }; }
+    // timed: the pterodactyls swoop toward the nest. If they get there, Rex chases them back up. Nothing is lost.
+    if (timed && pl.phase === 'ask' && pl.swoopBack === null && S.closingAt === null && now - pl.t0 > 0.6) {
+      pl.swoop += dt / (24 - Math.min(pl.streak, 8) * 1.6);
+      if (pl.swoop >= 1) { pl.swoop = 1; pl.swoopBack = now; sfx.whoosh(); pl.bubble = { text: 'Shoo! Rex chased them back up. Take your time.', kind: 'oops', t: now }; }
     }
-
-    // meteors
-    const ch = p.choices, xs = meteorXs(ch.length, pl), my = meteorY(pl), R = pl.mode === 'type' ? 58 : 50, mr = rise(2);
     const tR = pl.tRight !== null ? now - pl.tRight : -1;
-    const targetX = pl.mode === 'type' ? xs[0] : xs[pl.target];
-    if (pl.mode === 'pick') {
-      ch.forEach((choice, i) => {
-        const x = xs[i] + Math.sin(now * 1.3 + i * 2) * 3, y = lerp(40, my, mr) + Math.sin(now * 1.7 + i) * 3;
-        if (pl.phase !== 'ask' && i === pl.target && tR > 0.34) return;
-        let wx = 0; if (pl.wob[i] !== undefined && now - pl.wob[i] < 0.6) wx = Math.sin((now - pl.wob[i]) * 40) * 9 * (1 - (now - pl.wob[i]) / 0.6);
-        const off = pl.off.has(i), fade = off ? clamp((now - (pl.wob[i] !== undefined ? pl.wob[i] : now - 1) - 0.3) / 0.4, 0, 1) : 0;
-        drawMeteor(x + wx, y, R, choice.label, { alpha: pl.phase !== 'ask' && i !== pl.target ? 1 - clamp(tR / 0.4, 0, 1) : 1 - fade * 0.62, grey: fade > 0.3, focus: pl.phase === 'ask' && pl.focus === i && kbUsed && !off });
-        if (!off && pl.phase === 'ask') hitCircle(x, y, R + 6, () => choose(i));
-      });
-    } else if (!(pl.phase !== 'ask' && tR > 0.34)) {
-      drawMeteor(xs[0] + Math.sin(now * 1.3) * 3, lerp(40, my, mr) + Math.sin(now * 1.7) * 3, R, ['?'], {});
-    }
+
+    // the nest Rex is guarding
+    popup(NEST[0], NEST[1], rise(1), (sil) => { ell(0, -8, 30, 10); f(sil, '#a86b3c'); for (const [dx, col] of [[-12, '#fff6e0'], [0, '#d9f0ff'], [12, '#ffe1ec']]) { ell(dx, -19, 8, 10); f(sil, col); } ell(0, -5, 30, 6); f(sil, '#b97a46'); }, 1.5);
 
     // Rex
-    const roar = pl.phase === 'right' && tR < 0.6, sad = pl.bubble && pl.bubble.kind === 'oops' && now - pl.bubble.t < 1.2;
-    const hop = pl.phase === 'right' && tR > 0.35 && tR < 0.95 ? Math.sin((tR - 0.35) / 0.6 * Math.PI) * 18 : 0;
-    popup(112, 566 - hop, rise(1), (sil) => drawRex(0, 0, 1.4, { sil, w: Math.sin(now * 3), roar, sad, blink: (now % 3.3) < 0.12, look: pl.helped }), 1);
+    const roar = (pl.phase === 'right' && tR < 0.7) || (pl.swoopBack !== null && now - pl.swoopBack < 0.6);
+    const sad = pl.bubble && pl.bubble.kind === 'oops' && pl.swoopBack === null && now - pl.bubble.t < 1.2;
+    const hop = pl.phase === 'right' && tR > 0.5 && tR < 1.1 ? Math.sin((tR - 0.5) / 0.6 * Math.PI) * 16 : 0;
+    popup(REX_X, REX_Y - hop, rise(1), (sil) => drawRex(0, 0, REX_S, { sil, w: Math.sin(now * 3), roar, sad, blink: (now % 3.3) < 0.12, look: pl.helped }), 1);
 
     // picture help
-    const pics = setting(pl.wi).pictures, show = p.visual && (p.showVisual || pics === 'always' || (pics === 'miss' && pl.misses >= 1) || (pl.helped && pics !== 'off'));
+    const pics = setting().pictures, show = p.visual && (p.showVisual || pics === 'always' || (pics === 'miss' && pl.misses >= 1) || (pl.helped && pics !== 'off'));
     if (show && pl.visAt === null) pl.visAt = now;
     if (show) popCard(52, 246, 404, 180, Math.min(reduce ? 1 : back((now - pl.visAt) / 0.42), rise(2)), PAPER, () => drawVisual(p.visual, 62, 254, 384, 164, pl.helped), 16);
 
@@ -738,49 +712,74 @@
 
     if (pl.mode === 'type') drawKeypad(pl, rise(3));
 
-    // the shot: a paper fireball, then a burst and a star flying to the jar
+    // the pterodactyls
+    const xs = homeXs(p.choices.length, pl), hy = homeY(pl), sk = swoopK(pl), pr = rise(2), s = pl.mode === 'type' ? 0.95 : 0.8;
+    const birds = pl.mode === 'type' ? [{ label: ['?'], i: 0 }] : p.choices.map((ch, i) => ({ label: ch.label, i }));
+    let targetPos = null;
+    birds.forEach(({ label, i }) => {
+      let x = xs[i] + Math.sin(now * 1.1 + i * 2) * 7, y = hy + Math.sin(now * 2 + i) * 7;
+      x = lerp(x, 312 + i * 64, sk); y = lerp(y, 432, sk);
+      y = lerp(-90, y, pr);
+      const isTarget = pl.mode === 'type' || i === pl.target, off = pl.off.has(i);
+      let rot = 0, alpha = 1, scared = false;
+      if (pl.phase !== 'ask') {
+        if (isTarget) { if (!targetPos) targetPos = [x, y]; const tf = tR - 0.22; if (tf > 0) { x += tf * 260 + tf * tf * 520; y -= tf * 400; rot = -0.5 * Math.min(1, tf * 2); } scared = tR > 0.12; }
+        else { const tf = tR - 0.45; if (tf > 0) { x += tf * 300; y -= tf * 320; alpha = Math.max(0, 1 - tf * 1.3); } }
+      }
+      if (off && pl.away[i] !== undefined) { const tf = now - pl.away[i]; if (tf > 0) { x += tf * 300; y -= tf * 360; rot = -0.3; alpha = Math.min(alpha, Math.max(0, 1 - tf * 1.6)); } }
+      if (alpha <= 0.01 || x > 1060 || y < -160) return;
+      let wx = 0; if (pl.wob[i] !== undefined && now - pl.wob[i] < 0.5) wx = Math.sin((now - pl.wob[i]) * 40) * 10 * (1 - (now - pl.wob[i]) / 0.5);
+      if (pl.phase === 'ask' && !off && sk < 0.05) { c.strokeStyle = 'rgba(74,59,82,.2)'; c.lineWidth = 1; c.beginPath(); c.moveTo(x, 56); c.lineTo(x + wx, y - 28 * s); c.stroke(); }
+      drawPtero(x + wx, y, s, { flap: now * (scared ? 16 : 7) + i * 1.7, col: PT_COLS[i % 3], label, rot, alpha, scared, grey: off, focus: pl.phase === 'ask' && pl.focus === i && kbUsed && !off });
+      if (scared && tR < 1.3) text('Eek!', x + 30, y - 60 * s, F(700, 22), RED, 'center');
+      if (!off && pl.phase === 'ask' && pl.mode === 'pick') { hitCircle(x, y - 6 * s, 50 * s, () => choose(i)); hit(x - 54 * s, y + 42 * s, 108 * s, 68 * s, () => choose(i)); }
+    });
+
+    // Rex's roar, then a star flies to the jar
     if (pl.phase !== 'ask' && pl.tRight !== null) {
-      const mx = 112 + 52 * 1.4, myy = 566 - 52 * 1.4 - hop, tx = targetX, ty = lerp(40, my, mr);
-      if (tR > 0.04 && tR < 0.34) { const k = (tR - 0.04) / 0.3, fx = lerp(mx, tx, k), fy = lerp(myy, ty, k) - Math.sin(k * Math.PI) * 40; for (let j = 4; j >= 0; j--) { const kk = clamp(k - j * 0.06, 0, 1); ell(lerp(mx, tx, kk), lerp(myy, ty, kk) - Math.sin(kk * Math.PI) * 40, 14 - j * 2, 14 - j * 2); c.fillStyle = j ? 'rgba(255,160,60,.6)' : '#ff8a3d'; c.fill(); } ell(fx - 3, fy - 3, 7, 7); c.fillStyle = '#ffe066'; c.fill(); }
-      if (tR > 0.34 && tR < 1.4) {
-        if (!pl.burst) { pl.burst = true; sfx.burst(); }
-        const k = (tR - 0.34) / 1.06, cols = [RED, GOLD, '#5aa9e6', GREEN, '#b07cd6', '#ff8a3d'];
-        for (let j = 0; j < 22; j++) { const a = j * TAU / 22 + j, d = ease(k) * (60 + (j % 5) * 22), px = tx + Math.cos(a) * d, py = ty + Math.sin(a) * d + k * k * 90; c.save(); c.globalAlpha = 1 - k; c.translate(px, py); c.rotate(k * 8 + j); c.fillStyle = cols[j % 6]; c.fillRect(-6, -3.5, 12, 7); c.restore(); }
-        const sk = ease((tR - 0.34) / 0.8), sx = lerp(tx, 882, sk), sy = lerp(ty, 118, sk) - Math.sin(sk * Math.PI) * 80;
-        if (sk < 1) { starPath(sx, sy, 22 - sk * 10, 10 - sk * 5); c.fillStyle = GOLD; c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 2; c.stroke(); }
+      const mx = REX_X + 52 * REX_S, my = REX_Y - 52 * REX_S - hop;
+      if (tR < 0.8) {
+        c.save(); c.strokeStyle = RED; c.lineCap = 'round'; c.lineWidth = 5;
+        for (let k = 0; k < 3; k++) { const r = 22 + ((tR * 280 + k * 34) % 110); c.globalAlpha = Math.max(0, 1 - r / 135) * (1 - tR / 0.8); c.beginPath(); c.arc(mx + 4, my, r, -0.6, 0.6); c.stroke(); }
+        c.restore();
+        const s2 = back(tR / 0.25) * (tR > 0.6 ? 1 - (tR - 0.6) / 0.2 : 1); c.save(); c.translate(mx + 36, my - 52); c.rotate(-0.12); c.scale(Math.max(0.01, s2), Math.max(0.01, s2)); text('ROAR!', 0, 0, F(700, 30), RED, 'center'); c.restore();
+      }
+      const from = targetPos || [xs[0], hy];
+      if (tR > 0.35 && tR < 1.4) {
+        const k2 = ease((tR - 0.35) / 0.8), sx = lerp(from[0], 882, k2), sy = lerp(from[1], 118, k2) - Math.sin(k2 * Math.PI) * 70;
+        if (k2 < 1) { starPath(sx, sy, 22 - k2 * 10, 10 - k2 * 5); c.fillStyle = GOLD; c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 2; c.stroke(); }
         else if (!pl.starred) { pl.starred = true; sfx.star(); }
       }
-      if (tR > 1.9 && pl.phase === 'right') { pl.burst = false; pl.starred = false; pl.idx++; if (pl.idx >= LEVEL_LEN) finishLevel(); else newProblem(); }
+      if (tR > 1.9 && pl.phase === 'right') { pl.idx++; if (pl.idx >= LEVEL_LEN) finishLevel(); else newProblem(); }
     }
 
     // Rex's speech bubble
     if (pl.bubble && pl.phase !== 'done') {
-      const b = pl.bubble, age = now - b.t, life = b.kind === 'help' ? 999 : b.kind === 'yay' ? 1.9 : 3.2;
-      if (age < life) {
-        const s = back(age / 0.28), fs = b.text.length > 150 ? 15 : 17, lines = wrap(b.text, 236, F(600, fs)), bh = lines.length * (fs + 4) + 22, bx = 204, by = 548 - bh;
-        c.save(); c.translate(bx, 548); c.scale(s, s); c.translate(-bx, -548);
-        shadow(6, 3, 'rgba(60,30,10,.22)'); rr(bx, by, 260, bh, 16); c.moveTo(bx + 10, by + bh - 26); c.lineTo(bx - 14, by + bh - 6); c.lineTo(bx + 26, by + bh - 8);
-        c.fillStyle = b.kind === 'yay' ? '#e3f4da' : b.kind === 'help' ? '#fff3c4' : '#fff'; c.fill(); noShadow();
+      const b = pl.bubble, age = now - b.t, life = b.kind === 'help' ? 999 : b.kind === 'yay' ? 1.9 : b.kind === 'intro' ? 4.5 : 3.2;
+      if (age > 0 && age < life) {
+        const s3 = back(age / 0.28), fs = b.text.length > 150 ? 15 : 17, lines = wrap(b.text, 236, F(600, fs)), bh = lines.length * (fs + 4) + 22, bx = 192, bb = 532, by = bb - bh;
+        c.save(); c.translate(bx, bb); c.scale(s3, s3); c.translate(-bx, -bb);
+        shadow(6, 3, 'rgba(60,30,10,.22)'); rr(bx, by, 264, bh, 16); c.moveTo(bx + 8, by + bh - 24); c.lineTo(bx - 14, by + bh + 4); c.lineTo(bx + 26, by + bh - 1);
+        c.fillStyle = b.kind === 'yay' ? '#e3f4da' : b.kind === 'help' || b.kind === 'intro' ? '#fff3c4' : '#fff'; c.fill(); noShadow();
         lines.forEach((ln, i) => text(ln, bx + 14, by + 14 + i * (fs + 4) + fs / 2, F(600, fs), b.kind === 'oops' ? '#d84340' : b.kind === 'yay' ? '#2e7d32' : INK));
         c.restore();
       }
     }
 
-    // level done
+    // stage done
     if (pl.phase === 'done') {
       const e = pl.end, k = back((now - e.t) / 0.45);
       c.fillStyle = `rgba(60,35,20,${0.25 * clamp((now - e.t) / 0.3, 0, 1)})`; c.fillRect(0, 0, W, H);
       popCard(270, 112, 420, 368, Math.min(k, rise(0)), '#fffaf0', () => {
-        text(e.worldNow ? 'World complete!' : 'Level done!', 480, 160, F(700, 38), RED, 'center');
-        text(pl.L.name, 480, 198, F(600, 19), SOFT, 'center');
-        for (let q = 0; q < 3; q++) { const sk = back((now - e.t - 0.4 - q * 0.25) / 0.35), sx = 400 + q * 80; if (sk > 0) { starPath(sx, 262, 30 * sk, 13 * sk); c.fillStyle = q < e.stars ? GOLD : 'rgba(74,59,82,.14)'; c.fill(); } }
+        text(e.gradeNow ? 'All explored!' : 'Stage done!', 480, 160, F(700, 38), RED, 'center');
+        text(pl.L.name + ' · the eggs are safe', 480, 198, F(600, 18), SOFT, 'center');
+        for (let q = 0; q < 3; q++) { const sk2 = back((now - e.t - 0.4 - q * 0.25) / 0.35), sx = 400 + q * 80; if (sk2 > 0) { starPath(sx, 262, 30 * sk2, 13 * sk2); c.fillStyle = q < e.stars ? GOLD : 'rgba(74,59,82,.14)'; c.fill(); } }
         text(`You put ${LEVEL_LEN} stars in the jar!`, 480, 320, F(600, 19), INK, 'center');
         text(`${pl.firsts} right on the first try`, 480, 348, F(500, 16), SOFT, 'center');
         const hasNext = pl.li + 1 < w.levels.length;
-        button(296, 384, 116, 50, 'Again', '#8a7aa0', () => go(() => startLevel(pl.wi, pl.li)), 19);
-        if (e.worldNow) button(424, 384, 240, 50, 'Back to the map', GREEN, () => toMap(), 19);
-        else if (hasNext) button(424, 384, 240, 50, 'Next: ' + w.levels[pl.li + 1].name, GREEN, () => go(() => startLevel(pl.wi, pl.li + 1)), w.levels[pl.li + 1].name.length > 14 ? 15 : 18);
-        else button(424, 384, 240, 50, 'All levels', GREEN, () => go(() => { S.screen = 'world'; S.world = pl.wi; }), 19);
+        button(296, 384, 116, 50, 'Again', '#8a7aa0', () => go(() => startLevel(pl.g, pl.li)), 19);
+        if (hasNext) button(424, 384, 240, 50, 'Next stage ▶', GREEN, () => toMap({ to: pl.li + 1, play: true }), 19);
+        else button(424, 384, 240, 50, 'Back to the map', GREEN, () => toMap(), 19);
         text(e.newBest ? 'New best!' : ' ', 480, 452, F(600, 15), GREEN, 'center');
       }, 22);
     }
@@ -789,11 +788,11 @@
   /* ---------- main loop ---------- */
   function frame(ts) {
     const t = ts / 1000, dt = Math.min(0.05, Math.max(0, t - lastT)); lastT = t; now += dt;
-    if (S.closingAt !== null && now - S.closingAt > 0.42) { const fnext = S.next; S.next = null; S.closingAt = null; fnext(); S.openAt = now; if (S.screen === 'map' && S.celebrate !== null) S.celebAt = now; }
+    if (S.closingAt !== null && now - S.closingAt > 0.42) { const fnext = S.next; S.next = null; S.closingAt = null; fnext(); S.openAt = now; }
     hits = [];
     c.setTransform(K, 0, 0, K, 0, 0); c.clearRect(0, 0, W, H);
     try {
-      if (S.screen === 'map') drawMap(); else if (S.screen === 'world') drawWorld(); else if (S.screen === 'play' && S.play) drawPlay(dt);
+      if (S.screen === 'map') drawMap(); else if (S.screen === 'play' && S.play) drawPlay(dt);
     } catch (err) { console.error(err); }
     requestAnimationFrame(frame);
   }
@@ -806,7 +805,6 @@
     if (S.closingAt !== null) return;
     const [x, y] = toLogical(e), h = findHit(x, y);
     if (h) { e.preventDefault(); h.fn(); }
-    else if (S.screen === 'map' && S.celebrate !== null && now - S.celebAt > 1.5) S.celebrate = null;
   });
   cv.addEventListener('pointermove', (e) => { const [x, y] = toLogical(e); cv.style.cursor = findHit(x, y) ? 'pointer' : 'default'; });
   addEventListener('keydown', (e) => {
@@ -835,36 +833,34 @@
   });
 
   /* ---------- grown-up settings panel ---------- */
-  const panel = document.getElementById('settings'), form = document.getElementById('set-form'), worldSeg = document.getElementById('set-world'), paceNote = document.getElementById('pace-note');
-  let setWorld = 0, lastFocus = null;
+  const panel = document.getElementById('settings'), form = document.getElementById('set-form'), gradeSeg = document.getElementById('set-grade'), paceNote = document.getElementById('pace-note');
+  let lastFocus = null, gradeAtOpen = 0;
   P.WORLDS.forEach((w, i) => {
-    const id = 'sw-' + i;
-    worldSeg.insertAdjacentHTML('beforeend', `<input type="radio" name="world" id="${id}" value="${i}"><label for="${id}" title="${w.name}">${w.short === 'K' ? 'K' : 'Grade ' + w.short}</label>`);
+    const id = 'sg-' + i;
+    gradeSeg.insertAdjacentHTML('beforeend', `<input type="radio" name="grade" id="${id}" value="${i}"><label for="${id}" title="${w.name}">${w.short === 'K' ? 'K' : 'Grade ' + w.short}</label>`);
   });
   function fill() {
-    const s = setting(setWorld);
-    form.world.value = String(setWorld); form.answer.value = s.answer; form.pace.value = s.pace; form.pictures.value = s.pictures; form.voice.value = s.voice; form.sound.value = A.muted ? 'off' : 'on';
-    const zoomOk = setWorld >= 3;
-    document.getElementById('pace-zoom').disabled = !zoomOk;
-    if (!zoomOk && s.pace === 'zoom') { s.pace = 'calm'; form.pace.value = 'calm'; save(); }
-    paceNote.textContent = zoomOk ? `${P.WORLDS[setWorld].name}: Zoom is ${s.pace === 'zoom' ? 'on. The meteors float back up if they reach the grass.' : 'off.'}` : 'Zoom starts at grade 3. Kindergarten to grade 2 is always calm.';
+    const s = setting();
+    form.grade.value = String(s.grade); form.answer.value = s.answer; form.pace.value = s.pace; form.pictures.value = s.pictures; form.voice.value = s.voice; form.sound.value = A.muted ? 'off' : 'on';
+    paceNote.textContent = s.pace === 'timed' ? 'The pterodactyls swoop toward the nest, faster as the streak grows. If one gets there, Rex just chases it back up.' : 'No clock. The pterodactyls hover and wait for as long as it takes.';
     document.getElementById('reset-confirm').hidden = true; document.getElementById('reset').hidden = false;
   }
-  function openSettings(wi) {
+  function openSettings() {
     if (busy()) return;
-    setWorld = wi; fill(); lastFocus = document.activeElement; panel.hidden = false; A.hush();
-    const first = form.querySelector('input[name="world"]:checked'); if (first) first.focus();
+    fill(); gradeAtOpen = grade(); lastFocus = document.activeElement; panel.hidden = false; A.hush();
+    const first = form.querySelector('input[name="grade"]:checked'); if (first) first.focus();
   }
   function closeSettings() {
     panel.hidden = true;
     if (S.play) { const m = modeFor(S.play); if (m !== S.play.mode) { S.play.mode = m; S.play.entry = ['', '']; S.play.field = 0; } }
+    if (grade() !== gradeAtOpen && S.screen === 'map') go(() => { S.screen = 'map'; });
     (lastFocus && lastFocus.focus ? lastFocus : cv).focus();
   }
   form.addEventListener('change', (e) => {
     const n = e.target.name;
-    if (n === 'world') { setWorld = Number(e.target.value); fill(); return; }
-    if (n === 'sound') { A.setMuted(e.target.value === 'off'); return; }
-    if (['answer', 'pace', 'pictures', 'voice'].includes(n)) { setting(setWorld)[n] = e.target.value; save(); fill(); }
+    if (n === 'sound') { A.setMuted(e.target.value === 'off'); if (!A.muted) sfx.tap(); return; }
+    if (n === 'grade') { setting().grade = Number(e.target.value); save(); fill(); return; }
+    if (['answer', 'pace', 'pictures', 'voice'].includes(n)) { setting()[n] = e.target.value; save(); fill(); }
   });
   form.addEventListener('submit', (e) => { e.preventDefault(); closeSettings(); });
   document.getElementById('set-close').addEventListener('click', closeSettings);
@@ -872,15 +868,15 @@
   document.getElementById('reset').addEventListener('click', () => { document.getElementById('reset').hidden = true; document.getElementById('reset-confirm').hidden = false; document.getElementById('reset-no').focus(); });
   document.getElementById('reset-no').addEventListener('click', () => { document.getElementById('reset').hidden = false; document.getElementById('reset-confirm').hidden = true; });
   document.getElementById('reset-yes').addEventListener('click', () => {
-    store.progress = {}; store.jar = 0; store.rexWorld = 0; S.celebrate = null; save(); closeSettings();
-    if (S.screen !== 'map') go(() => { S.screen = 'map'; });
+    store.progress = {}; store.jar = 0; store.rex = P.WORLDS.map(() => 0); S.banner = null; S.pending = null; save(); closeSettings();
+    go(() => { S.screen = 'map'; });
   });
 
   /* ---------- start ---------- */
-  // ?world=2 opens that world's page, ?play=2.3 opens grade 2's third level (handy for testing).
+  // ?grade=2 shows grade 2's map, ?play=2.3 opens grade 2's third stage (handy for testing).
   const qs = new URLSearchParams(location.search);
-  if (qs.has('play')) { const [a, b] = qs.get('play').split('.').map(Number); if (P.WORLDS[a] && P.WORLDS[a].levels[b - 1]) { S.screen = 'play'; startLevel(a, b - 1); } }
-  else if (qs.has('world')) { const a = Number(qs.get('world')); if (P.WORLDS[a]) { S.screen = 'world'; S.world = a; } }
+  if (qs.has('grade')) { const a = Number(qs.get('grade')); if (P.WORLDS[a]) { setting().grade = a; save(); } }
+  if (qs.has('play')) { const [a, b] = qs.get('play').split('.').map(Number); if (P.WORLDS[a] && P.WORLDS[a].levels[b - 1]) { setting().grade = a; S.screen = 'play'; startLevel(a, b - 1); } }
   if (qs.has('debug')) window.__dino = { S, store, choose, typeKey, P };
   addEventListener('resize', fit);
   fit();

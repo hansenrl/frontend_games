@@ -1,8 +1,9 @@
 /* Dino Defenders: little paper sounds (made with Web Audio, no files) and read-aloud speech. */
 window.DinoAudio = (() => {
   'use strict';
-  let ac = null, muted = false, voice = null;
-  try { muted = localStorage.getItem('dino-defenders-muted') === '1'; } catch (e) { /* storage unavailable */ }
+  // Sound effects are off until a grown-up turns them on.
+  let ac = null, muted = true, voice = null;
+  try { muted = localStorage.getItem('dino-defenders-sound') !== 'on'; } catch (e) { /* storage unavailable */ }
 
   function ctx() {
     if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
@@ -59,6 +60,6 @@ window.DinoAudio = (() => {
   return {
     sfx, say, hush, unlock: ctx,
     get muted() { return muted; },
-    setMuted(m) { muted = m; try { localStorage.setItem('dino-defenders-muted', m ? '1' : '0'); } catch (e) { /* ignore */ } },
+    setMuted(m) { muted = m; try { localStorage.setItem('dino-defenders-sound', m ? 'off' : 'on'); } catch (e) { /* ignore */ } },
   };
 })();

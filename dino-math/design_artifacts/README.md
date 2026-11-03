@@ -64,3 +64,12 @@ One world per grade. Fluency goals are the standards that say "fluently"; they b
   runner-up for gameplay.
 - First build (`../index.html`): pop-up book map, world pages and gameplay. Meteors hang from paper
   strings; cards, Rex and the number pad fold up off the page.
+- **After playing the first build:**
+  - Hanging meteors didn't read as meteors when they weren't moving. **New conceit: egg-snatching
+    pterodactyls.** They hover over Rex's nest holding answer signs, and Rex roars the right one away.
+    Flying creatures hover naturally, so this works with no clock.
+  - The grade is a grown-up setting. The map shows the stages (levels) of that one grade, and
+    Rex explores them along the path.
+  - Defaults: sound effects and read-aloud off, answers typed.
+  - Timed mode can be switched on at any grade (it was grade 3+ only). It never costs anything.
+  - Settings are now one set for the whole game, not one per world.
