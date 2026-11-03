@@ -1,0 +1,992 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Runaway Egg Storyboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Baloo+2:wght@600;800&family=Patrick+Hand&family=Lora:ital,wght@0,500;1,500&family=Chewy&family=Pixelify+Sans:wght@500;700&display=swap">
+<style>
+/* Layout: a storyboard binder. Kraft-paper page from the Family Game Shelf, story planning first, then a wall of six live mockup "game screens", each in its own art style. */
+:root{
+  --bg:#f3e2c0;
+  --paper:#fffaf0;
+  --ink:#43344a;
+  --muted:#7b6a70;
+  --accent:#e2533f;
+  --leaf:#4f8f38;
+  --sun:#f2b33d;
+  --rule:rgba(110,75,40,.2);
+  --shadow:rgba(90,60,30,.22);
+  --display:"Fredoka","Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1f1a21;--paper:#2b2430;--ink:#f1e6d6;--muted:#b9aab0;--accent:#ff7d62;--leaf:#93d06e;--sun:#ffc85a;
+  --rule:rgba(255,236,210,.14);--shadow:rgba(0,0,0,.45);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1f1a21;--paper:#2b2430;--ink:#f1e6d6;--muted:#b9aab0;--accent:#ff7d62;--leaf:#93d06e;--sun:#ffc85a;
+  --rule:rgba(255,236,210,.14);--shadow:rgba(0,0,0,.45);color-scheme:dark}
+*{box-sizing:border-box}
+body{
+  background-color:var(--bg);
+  background-image:radial-gradient(var(--rule) 1px,transparent 1.6px);
+  background-size:22px 22px;
+  color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:28px 64px;
+}
+main{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+
+/* hero */
+.hero{display:flex;flex-direction:column;gap:14px;padding-top:12px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hero h1{font-size:clamp(2.6rem,8vw,4.4rem);color:var(--accent);font-weight:700;transform:rotate(-1.5deg);transform-origin:left;text-shadow:3px 3px 0 var(--paper),6px 6px 0 var(--shadow)}
+.hero .lede{font-size:1.15rem;max-width:62ch}
+.jump{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.jump a{font-family:var(--display);font-weight:600;text-decoration:none;background:var(--paper);border-radius:999px;padding:6px 14px;box-shadow:2px 3px 0 var(--shadow)}
+.jump a:hover{background:var(--sun);color:#3a2a20}
+
+section{display:flex;flex-direction:column;gap:22px}
+.sec-head{display:flex;flex-direction:column;gap:6px;max-width:70ch}
+.sec-head h2{font-size:clamp(1.7rem,4.5vw,2.4rem)}
+.sec-head p{color:var(--muted)}
+.card{background:var(--paper);border-radius:18px;padding:20px 22px;box-shadow:3px 5px 0 var(--shadow)}
+
+/* pitches */
+.pitches{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.pitch{display:flex;flex-direction:column;gap:8px;min-width:0}
+.pitch h3{font-size:1.35rem}
+.pitch .tone{font-size:.85rem;font-weight:700;color:var(--muted);letter-spacing:.03em}
+.pitch.pick{outline:3px solid var(--sun);outline-offset:-3px}
+.chip{align-self:flex-start;font-family:var(--display);font-weight:600;font-size:.8rem;background:var(--sun);color:#3a2a20;border-radius:999px;padding:2px 10px}
+
+/* scene map */
+.acts{display:grid;grid-template-columns:1fr 1.6fr 1fr;gap:18px;align-items:start}
+@media (max-width:900px){.acts{grid-template-columns:1fr}}
+.act{display:flex;flex-direction:column;gap:12px;min-width:0}
+.act > h3{font-size:1.15rem;display:flex;gap:8px;align-items:baseline}
+.act > h3 small{font-family:var(--body);font-weight:600;font-size:.85rem;color:var(--muted)}
+.scene{background:var(--paper);border-radius:14px;padding:12px 14px;box-shadow:2px 3px 0 var(--shadow);display:flex;flex-direction:column;gap:6px;min-width:0}
+.scene h4{font-size:1.02rem;display:flex;gap:8px;align-items:baseline}
+.scene h4 .n{font-family:var(--body);font-size:.8rem;font-weight:800;color:var(--paper);background:var(--ink);border-radius:999px;min-width:1.7em;text-align:center;padding:0 6px;flex:none}
+.scene p{font-size:.92rem}
+.opts{display:flex;flex-wrap:wrap;gap:6px;padding:0;margin:0;list-style:none}
+.opts li{font-size:.82rem;font-weight:700;border:2px solid var(--rule);border-radius:8px;padding:1px 8px}
+.opts li.secret{border-style:dashed;border-color:var(--accent);color:var(--accent)}
+.lanes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:640px){.lanes{grid-template-columns:1fr}}
+.lane{display:flex;flex-direction:column;gap:10px;min-width:0}
+.lane h5{margin:0;font-family:var(--display);font-size:.9rem;color:var(--leaf)}
+.meet{font-family:var(--display);font-weight:600;font-size:.9rem;color:var(--muted);text-align:center;border-top:2px dashed var(--rule);padding-top:8px}
+.runline{font-size:.95rem;color:var(--muted)}
+
+/* cast & lists */
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.cast{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.who{display:flex;flex-direction:column;gap:2px;min-width:0}
+.who b{font-family:var(--display);font-size:1.08rem}
+.who i{font-style:normal;font-size:.82rem;font-weight:700;color:var(--leaf)}
+.who span{font-size:.92rem}
+.card h3{font-size:1.25rem;margin-bottom:10px}
+.card ul,.card ol{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:7px}
+.card li b{font-family:var(--display);font-weight:600}
+
+/* art style wall */
+.styles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:28px}
+.style{display:flex;flex-direction:column;gap:12px;min-width:0}
+.style > header{display:flex;flex-direction:column;gap:4px}
+.style > header h3{font-size:1.5rem}
+.style > header .where{font-size:.85rem;font-weight:700;color:var(--muted)}
+.notes{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:.92rem}
+.notes dt{font-weight:800}
+.notes dd{margin:0}
+.effort{display:inline-flex;gap:3px;vertical-align:middle}
+.effort i{width:10px;height:10px;border-radius:3px;background:var(--rule)}
+.effort i.on{background:var(--accent)}
+
+.frame{border-radius:16px;overflow:hidden;box-shadow:3px 6px 0 var(--shadow);display:flex;flex-direction:column}
+.stage{position:relative;aspect-ratio:16/9;max-width:100%}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tale{display:flex;flex-direction:column;gap:12px;padding:16px 18px 18px}
+.say{min-height:4.6em;font-size:1.05rem;line-height:1.45}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choices button{font:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;justify-content:space-between}
+.choices button .tag{font-size:.72rem;white-space:nowrap}
+.bubble{position:absolute;max-width:40%;font-size:clamp(.7rem,1.8vw,.95rem);line-height:1.2;padding:6px 10px;pointer-events:none}
+
+/* 1 paper */
+.f-paper{background:#e7cf9f;background-image:radial-gradient(rgba(150,105,55,.18) 1px,transparent 1.5px);background-size:14px 14px;color:#3c2d3a}
+.f-paper .tale{font-family:"Fredoka",var(--display);font-weight:500}
+.f-paper .say{background:#fffdf6;border-radius:12px;padding:10px 14px;box-shadow:3px 5px 0 rgba(90,60,30,.25);transform:rotate(-.6deg)}
+.f-paper .choices button{background:#fffdf6;color:#3c2d3a;border:0;border-left:12px solid var(--c);border-radius:6px 12px 12px 6px;padding:8px 12px;box-shadow:3px 4px 0 rgba(90,60,30,.25);font-weight:600;transition:transform .15s}
+.f-paper .choices button:nth-child(1){--c:#ef5350;transform:rotate(.5deg)}
+.f-paper .choices button:nth-child(2){--c:#42a5f5;transform:rotate(-.4deg)}
+.f-paper .choices button:nth-child(3){--c:#66bb6a;transform:rotate(.3deg)}
+.f-paper .choices button:hover,.f-paper .choices button[aria-pressed="true"]{transform:translateY(-2px) rotate(0) scale(1.02)}
+
+/* 2 cel */
+.f-cel{background:#262055;color:#211a35}
+.f-cel .tale{font-family:"Baloo 2",var(--display);font-weight:600}
+.f-cel .say{background:#fff;border:4px solid #211a35;border-radius:18px;padding:10px 14px;box-shadow:0 5px 0 #120e24}
+.f-cel .choices button{font-weight:800;color:#211a35;background:var(--c);border:4px solid #211a35;border-radius:14px;padding:6px 14px;box-shadow:0 4px 0 #120e24;transition:transform .1s}
+.f-cel .choices button:nth-child(1){--c:#ffd84a}
+.f-cel .choices button:nth-child(2){--c:#6fe0ff}
+.f-cel .choices button:nth-child(3){--c:#ff9ccf}
+.f-cel .choices button:hover,.f-cel .choices button[aria-pressed="true"]{transform:translateY(-3px)}
+.f-cel .bubble{background:#fff;border:3px solid #211a35;border-radius:16px;font-family:"Baloo 2",sans-serif;font-weight:800;color:#211a35}
+.f-cel .bubble::after{content:"";position:absolute;left:22%;bottom:-11px;width:14px;height:14px;background:#fff;border:3px solid #211a35;border-top:0;border-left:0;transform:rotate(45deg)}
+
+/* 3 ink */
+.f-ink{background:#efe3c8;color:#2b2024}
+.f-ink .tale{font-family:"Patrick Hand",cursive;font-size:1.12rem}
+.f-ink .say{border:2px solid #2b2024;background:#f7ecd4;padding:10px 14px;border-radius:3px;box-shadow:3px 3px 0 #2b2024}
+.f-ink .choices button{font-family:inherit;font-size:1.08rem;color:#2b2024;background:#f3e4c4;border:2px solid #2b2024;padding:6px 14px;border-radius:255px 15px 225px 15px/15px 225px 15px 255px}
+.f-ink .choices button:hover,.f-ink .choices button[aria-pressed="true"]{background:#e9c27d}
+.f-ink .choices .tag{font-size:.85rem;background:#2f5d62;color:#f7ecd4;padding:0 8px;border-radius:3px}
+.f-ink .cap{position:absolute;background:#f7ecd4;border:2px solid #2b2024;font-family:"Patrick Hand",cursive;color:#2b2024;font-size:clamp(.66rem,1.7vw,.95rem);line-height:1.15;padding:4px 8px;pointer-events:none}
+
+/* 4 watercolor */
+.f-water{background:#f6f1e7;background-image:radial-gradient(circle at 20% 10%,rgba(150,140,220,.18),transparent 45%),radial-gradient(circle at 90% 90%,rgba(230,150,170,.16),transparent 40%);color:#33304a}
+.f-water .tale{font-family:"Lora",Georgia,serif}
+.f-water .say{font-style:italic;padding:2px 4px}
+.f-water .choices button{font-family:"Lora",Georgia,serif;color:#2f2b47;border:0;border-radius:40px 34px 44px 30px;padding:9px 18px;background:radial-gradient(ellipse at 30% 40%,var(--c),transparent 75%),rgba(255,255,255,.55);box-shadow:inset 0 0 0 1.5px rgba(80,70,120,.25);transition:filter .2s}
+.f-water .choices button:nth-child(1){--c:rgba(160,150,230,.55)}
+.f-water .choices button:nth-child(2){--c:rgba(140,200,150,.55)}
+.f-water .choices button:nth-child(3){--c:rgba(240,170,150,.55)}
+.f-water .choices button:hover,.f-water .choices button[aria-pressed="true"]{filter:saturate(1.8) brightness(.97)}
+
+/* 5 clay */
+.f-clay{background:#3b2f2b;color:#3a2618}
+.f-clay .tale{font-family:"Chewy",var(--display);letter-spacing:.02em;font-size:1.08rem}
+.f-clay .say{background:#f1dbb6;border-radius:22px;padding:12px 16px;box-shadow:inset -4px -6px 0 rgba(120,80,40,.25),inset 3px 4px 0 rgba(255,255,255,.5),0 5px 10px rgba(0,0,0,.35)}
+.f-clay .choices button{font-family:inherit;font-size:1.05rem;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25);border:0;border-radius:20px;padding:9px 16px;background:var(--c);box-shadow:inset -4px -6px 0 rgba(0,0,0,.2),inset 3px 4px 0 rgba(255,255,255,.35),0 4px 8px rgba(0,0,0,.35);transition:transform .12s}
+.f-clay .choices button:nth-child(1){--c:#d9603b}
+.f-clay .choices button:nth-child(2){--c:#3c9a8e}
+.f-clay .choices button:nth-child(3){--c:#8a5bb0}
+.f-clay .choices button:hover,.f-clay .choices button[aria-pressed="true"]{transform:scale(1.03) rotate(-.6deg)}
+.f-clay .bubble{background:#f1dbb6;border-radius:18px;font-family:"Chewy",sans-serif;color:#3a2618;box-shadow:0 3px 6px rgba(0,0,0,.35)}
+
+/* 6 pixel */
+.f-pixel{background:#14102a;color:#f4f0ff;border-radius:4px}
+.f-pixel .stage canvas{image-rendering:pixelated;image-rendering:crisp-edges}
+.f-pixel .tale{font-family:"Pixelify Sans",ui-monospace,monospace;font-weight:500}
+.f-pixel .say{background:#241c4a;padding:12px 14px;box-shadow:0 0 0 4px #f4f0ff,0 0 0 8px #241c4a,0 0 0 12px #8e7cff}
+.f-pixel .say::after{content:"\25BC";display:inline-block;margin-left:6px;font-size:.7em;animation:blinky 1s steps(2) infinite;color:#ffd84a}
+.f-pixel .choices{margin-top:10px}
+.f-pixel .choices button{font-family:inherit;color:#f4f0ff;background:transparent;border:0;padding:4px 6px 4px 28px;position:relative;font-size:1.05rem}
+.f-pixel .choices button::before{content:"\25B6";position:absolute;left:6px;color:#ffd84a;opacity:0}
+.f-pixel .choices button:hover::before,.f-pixel .choices button:focus-visible::before,.f-pixel .choices button[aria-pressed="true"]::before{opacity:1;animation:blinky 1s steps(2) infinite}
+.f-pixel .choices button:hover,.f-pixel .choices button[aria-pressed="true"]{color:#ffd84a}
+@keyframes blinky{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.f-pixel .say::after,.f-pixel .choices button::before{animation:none!important}}
+
+.react{display:block}
+.react em{font-style:normal;font-size:.8em;opacity:.7;display:block;margin-top:4px}
+
+/* next */
+.next ol{display:flex;flex-direction:column;gap:8px}
+.foot{color:var(--muted);font-size:.9rem}
+</style>
+
+<main>
+  <header class="hero">
+    <span class="eyebrow">Family Game Shelf &middot; new game idea</span>
+    <h1>The Runaway Egg</h1>
+    <p class="lede">A choose-your-own dinosaur adventure. Each page is one illustrated scene, a few lines of story and 2&ndash;3 choices. The characters answer whatever you pick, and the story changes as you go. Below: four story ideas, the full plan for my favourite, and six art styles to choose from.</p>
+    <nav class="jump" aria-label="Jump to">
+      <a href="#ideas">Story ideas</a>
+      <a href="#plan">Scene-by-scene plan</a>
+      <a href="#styles">Art style mockups</a>
+      <a href="#next">What I need from you</a>
+    </nav>
+  </header>
+
+  <section id="ideas">
+    <div class="sec-head">
+      <h2>Four story ideas</h2>
+      <p>Each one fits 7&ndash;20 scenes per play and has room for real branching. I'd build the first one, but any of them works with the same engine and art.</p>
+    </div>
+    <div class="pitches">
+      <article class="card pitch pick">
+        <span class="chip">My pick</span>
+        <h3>The Runaway Egg</h3>
+        <span class="tone">Cozy adventure &middot; ages 4&ndash;9</span>
+        <p>A rumble shakes Fern Valley and a big speckled egg rolls right up to Pip, a young Parasaurolophus. Pip sets off to Smoke Mountain to find where it belongs. The twist at the end: the rumbling was never the volcano. It was a very worried T.&nbsp;rex mom stomping around looking for her egg.</p>
+        <p><b>Why it works:</b> the goal is instantly clear (take the baby home), the egg wiggles more each scene so time feels like it's passing, the T.&nbsp;rex is scary-then-sweet, and the hatching is a big payoff.</p>
+      </article>
+      <article class="card pitch">
+        <h3>The Volcano Wakes Up</h3>
+        <span class="tone">Hero journey &middot; a little more exciting</span>
+        <p>Smoke Mountain starts puffing. Pip has to warn the herds and lead everyone to Crystal Lake. Choices are about who to help and which way to go, and the ending changes with who made it there with you.</p>
+        <p><b>Good if</b> you want more stakes and a "rescue everyone" feeling. Needs care so it stays fun rather than scary.</p>
+      </article>
+      <article class="card pitch">
+        <h3>Who Ate the Moonberries?</h3>
+        <span class="tone">Mystery &middot; ages 6&ndash;10</span>
+        <p>The valley's Moonberry bush has been picked clean overnight. You question suspects (sneaky raptors, a hungry Ankylosaurus, a sleepy Brachiosaurus), collect clues and pick who you think did it. The culprit is a surprise.</p>
+        <p><b>Good for</b> older kids who like solving things. More reading per page, and branching mostly comes in which clues you find.</p>
+      </article>
+      <article class="card pitch">
+        <h3>The Museum Time Slip</h3>
+        <span class="tone">Time travel &middot; real dino facts</span>
+        <p>Your kid touches a glowing fossil at the museum and wakes up in the Cretaceous as a tiny dinosaur. To get home they need three glowing stones, each guarded by a different dino. Fact cards unlock as you meet each species.</p>
+        <p><b>Good if</b> you want the player to be the hero (their name in the story) and sneak in some learning.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="plan">
+    <div class="sec-head">
+      <h2>The Runaway Egg, scene by scene</h2>
+      <p>The story branches and then meets up again, so about 22 scenes get written but each play is 11&ndash;12 of them. Dashed red choices are secret ones that only show up if you earned them earlier.</p>
+    </div>
+
+    <div class="acts">
+      <div class="act">
+        <h3>Act 1 <small>Fern Valley</small></h3>
+        <div class="scene"><h4><span class="n">1</span>The Runaway Egg</h4><p>Rumble, rumble, BONK! An egg rolls down the hill and stops at Pip's toes.</p><ul class="opts"><li>Scoop it up gently</li><li>Toot your crest for help</li><li>Follow the trail uphill</li></ul></div>
+        <div class="scene"><h4><span class="n">2</span>Grandpa Longneck</h4><p>The old Brachiosaurus can see for miles: "That egg came from Smoke Mountain. Who will go with you?"</p><ul class="opts"><li>Tops</li><li>Zippy</li><li>Shelly</li></ul></div>
+        <div class="scene"><h4><span class="n">3</span>The Fork in the Path</h4><p>Two trails leave the valley. Your buddy knows a third.</p><ul class="opts"><li>River path</li><li>Forest path</li><li>Buddy's shortcut</li></ul></div>
+      </div>
+
+      <div class="act">
+        <h3>Act 2 <small>The journey</small></h3>
+        <div class="lanes">
+          <div class="lane">
+            <h5>River path</h5>
+            <div class="scene"><h4><span class="n">4</span>Wobbly River</h4><p>Three "logs" float like stepping stones. They blink.</p><ul class="opts"><li>Hop the logs</li><li>Fallen-tree bridge</li><li>Ask nicely</li></ul></div>
+            <div class="scene"><h4><span class="n">5</span>Lost Baby Stego</h4><p>A little Stegosaurus can't find its mom.</p><ul class="opts"><li>Help look</li><li>Point the way, keep going</li></ul></div>
+          </div>
+          <div class="lane">
+            <h5>Forest path</h5>
+            <div class="scene"><h4><span class="n">4</span>Whispering Forest</h4><p>Three raptors want the shiny egg. "Finders keepers?"</p><ul class="opts"><li>Share berries</li><li>Hide-and-seek</li><li>Stand tall, TOOT</li></ul></div>
+            <div class="scene"><h4><span class="n">5</span>Glow-worm Cave</h4><p>Pitch dark, except for tiny lights.</p><ul class="opts"><li>Toot and listen for the echo</li><li>Follow the glow</li></ul></div>
+          </div>
+          <div class="lane">
+            <h5>Buddy's shortcut</h5>
+            <div class="scene"><h4><span class="n">4</span>Tops: Bramble Wall</h4><p>Tops bashes a tunnel through the thorns.</p></div>
+            <div class="scene"><h4><span class="n">4</span>Zippy: Sky Scout</h4><p>Zippy flies ahead and spots the best way.</p></div>
+            <div class="scene"><h4><span class="n">4</span>Shelly: Old Tunnel</h4><p>A forgotten tunnel full of fossils and fun echoes.</p></div>
+          </div>
+        </div>
+        <p class="meet">Every path meets up here</p>
+        <div class="scene"><h4><span class="n">6</span>Steamy Hot Springs</h4><p>The egg feels a bit cold.</p><ul class="opts"><li>Warm it in the steam</li><li>Wrap it in moss</li><li>Hurry on</li></ul></div>
+        <div class="scene"><h4><span class="n">7</span>Firefly Camp</h4><p>Night. The egg starts to wiggle!</p><ul class="opts"><li>Hum a sleepy song</li><li>Tuck it in warm moss</li><li>Wake your buddy</li></ul></div>
+        <div class="scene"><h4><span class="n">8</span>Giant Footprints</h4><p>Footprints bigger than Grandpa Longneck's, leading up the mountain.</p><ul class="opts"><li>Follow them</li><li>Climb the lookout rock</li><li>Toot and listen</li></ul></div>
+      </div>
+
+      <div class="act">
+        <h3>Act 3 <small>Smoke Mountain</small></h3>
+        <div class="scene"><h4><span class="n">9</span>Mama Rexie</h4><p>The "volcano rumble" was her footsteps! She leans down and sniffs.</p><ul class="opts"><li>Hold up the egg</li><li>Hide behind a boulder</li><li class="secret">Toot the lullaby</li><li class="secret">Give the blue feather</li></ul></div>
+        <div class="scene"><h4><span class="n">10</span>Crack, Crack!</h4><p>The egg hatches. The baby sees Pip first and says, "Mama?"</p><ul class="opts"><li>Give it a hug</li><li>Introduce its real mama</li><li>Help name it: Chomp, Peanut or Rumble</li></ul></div>
+        <div class="scene"><h4><span class="n">11</span>One of five endings</h4><p>Picked by what you did along the way (see below), then a badge for the kind of hero you were.</p></div>
+      </div>
+    </div>
+    <p class="runline">A typical play: scenes 1, 2, 3, two scenes from one path, 6, 7, 8, 9, 10 and an ending. That's 11 pages, about 10&ndash;15 minutes read aloud.</p>
+
+    <h3 style="font-size:1.4rem;margin-top:8px">Cast</h3>
+    <div class="cast">
+      <div class="card who"><b>Pip</b><i>Young Parasaurolophus &middot; the hero</i><span>Curious and a little nervous. Pip's hollow crest makes a big TOOT, and tooting is a choice that keeps coming back.</span></div>
+      <div class="card who"><b>The Egg</b><i>Big, speckled, mysterious</i><span>Wobbles more every scene. Taps back when you're kind to it. Its warmth changes how it hatches.</span></div>
+      <div class="card who"><b>Grandpa Longneck</b><i>Brachiosaurus &middot; the wise one</i><span>Slow-talking, sees everything from up high, gives you the quest.</span></div>
+      <div class="card who"><b>Tops</b><i>Triceratops buddy</i><span>Brave and grumpy-funny. "If anything is scary, I'll bonk it." Can push and bash things.</span></div>
+      <div class="card who"><b>Zippy</b><i>Pteranodon buddy</i><span>Fast and never stops talking. Flies ahead to scout, which unlocks sky-view scenes.</span></div>
+      <div class="card who"><b>Shelly</b><i>Ankylosaurus buddy</i><span>Slow, calm and wise. Knows old paths nobody else remembers.</span></div>
+      <div class="card who"><b>Nib, Flick and Boss</b><i>Raptor trio</i><span>Mischievous, not mean. Can end up as friends who come back to help.</span></div>
+      <div class="card who"><b>The Log Crocs</b><i>Grumpy river crocodiles</i><span>Pretend to be logs so nobody bothers their nap. Polite dinos get a ride.</span></div>
+      <div class="card who"><b>Mama Rexie</b><i>T. rex</i><span>Huge, loud and frantic with worry. Turns soft the second she sees the egg is safe.</span></div>
+    </div>
+
+    <div class="two">
+      <div class="card">
+        <h3>What the story remembers</h3>
+        <ul>
+          <li><b>Brave, Kind and Clever stars.</b> Each choice adds one. The ending gives a badge for your biggest one.</li>
+          <li><b>Pip's pouch.</b> Sweet berries, a blue raptor feather, warm moss, a croc tooth. Some later choices only appear if you're carrying the right thing.</li>
+          <li><b>Egg warmth.</b> Warm choices make a giggly baby. A chilly egg hatches with the sneezes (a funny ending, not a bad one).</li>
+          <li><b>Buddy memory.</b> Your buddy brings up what you did: "You asked a crocodile <i>nicely</i>? You're braver than me."</li>
+          <li><b>Friends made.</b> The Stego family, the raptors, the crocs. Friends can turn up at the end.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Five happy endings</h3>
+        <ol>
+          <li><b>Home Sweet Nest.</b> Mama Rexie carries Pip home on her head. The valley never rumbles again, because now she tiptoes.</li>
+          <li><b>Best Friends Forever.</b> The baby follows Pip home for playdates. (Mostly kind choices.)</li>
+          <li><b>The Valley Parade.</b> Everyone you helped shows up to cheer. (Two or more friends made.)</li>
+          <li><b>The Big Toot.</b> Pip and the baby sing the lullaby and Mama joins in with a ROAR. (Learned the lullaby at camp.)</li>
+          <li><b>Achoo!</b> The chilly egg hatches with a sneeze so big it blows Pip's crest backwards. (Egg got cold.)</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>How choices should feel</h3>
+        <ul>
+          <li><b>Short and pictured.</b> 2&ndash;3 choices, each a short action with a little picture so kids who can't read yet can still pick. A read-aloud button on every page.</li>
+          <li><b>The characters answer first.</b> Every choice gets a quick reaction before the page turns (try clicking the choices in the mockups below).</li>
+          <li><b>No game over.</b> A "wrong" turn is a funny detour that loops back.</li>
+          <li><b>Things come back.</b> The berries, the feather and the lullaby all pay off later.</li>
+          <li><b>Secrets for replay.</b> Hidden choices plus a sticker page showing which of the five endings you've found.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Small animations</h3>
+        <ul>
+          <li>Everyone blinks and breathes. Tails swish.</li>
+          <li>The egg wobbles a bit more every scene, then cracks start to show.</li>
+          <li>The ground shakes now and then. At the end you find out it was footsteps.</li>
+          <li>Little things move in each scene: smoke, river shimmer, fireflies, leaves.</li>
+          <li>After you pick, the character reacts: a hop, a gasp, a happy wiggle.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="styles">
+    <div class="sec-head">
+      <h2>Six art styles</h2>
+      <p>Each mockup is drawn and animated live in the browser and shows a different scene from the plan, so you can see the story and the look at the same time. Click a choice to see how a character might answer.</p>
+    </div>
+
+    <div class="styles">
+
+      <article class="style">
+        <header><span class="where">Scene 1 &middot; The Runaway Egg</span><h3>1. Papercraft</h3><p>Flat paper cut-outs with white edges standing in a layered diorama. Clouds hang on strings and the sun is on a stick.</p></header>
+        <div class="frame f-paper">
+          <div class="stage"><canvas data-scene="paper" role="img" aria-label="Papercraft mockup: Pip the green Parasaurolophus jumps as a speckled egg rolls down a kraft-paper trail, with a smoking paper volcano and clouds on strings behind"></canvas></div>
+          <div class="tale">
+            <p class="say" aria-live="polite">Rumble, rumble... BONK! A big speckled egg rolls down the hill and stops right at Pip's toes.</p>
+            <div class="choices">
+              <button type="button" data-react="Pip hugs the egg. It's warm, and something inside goes tap, tap, tap.">Scoop it up gently</button>
+              <button type="button" data-react="TOOOT! The sound echoes across the valley. Far away, Grandpa Longneck lifts his head.">Toot your crest for help</button>
+              <button type="button" data-react="Squished ferns lead up the hill... next to a footprint bigger than Pip!">Follow the trail uphill</button>
+            </div>
+          </div>
+        </div>
+        <dl class="notes">
+          <dt>Feels like</dt><dd>A pop-up book on the kitchen table.</dd>
+          <dt>Good for</dt><dd>Matches the shelf's kraft-paper home page and Choo-Choo Junction. Cut-outs are easy to animate (wobble, flip, bob).</dd>
+          <dt>Watch out</dt><dd>Big dramatic moments, like the T.&nbsp;rex reveal, need extra staging to not look flat.</dd>
+          <dt>Effort</dt><dd><span class="effort" aria-label="Low effort"><i class="on"></i><i></i><i></i></span> Low. Everything can be drawn in code like this.</dd>
+        </dl>
+      </article>
+
+      <article class="style">
+        <header><span class="where">Scene 4 &middot; Wobbly River</span><h3>2. Cel-shaded</h3><p>Bold dark outlines, one flat shadow tone and a rim of light on every shape. Bright, saturated cartoon colour.</p></header>
+        <div class="frame f-cel">
+          <div class="stage"><canvas data-scene="cel" role="img" aria-label="Cel-shaded mockup: Pip and Tops the Triceratops on a riverbank looking at three floating logs that are really crocodiles opening their eyes"></canvas>
+            <div class="bubble" style="left:30%;top:38%">Pip... do logs usually blink?</div></div>
+          <div class="tale">
+            <p class="say" aria-live="polite">The river is too deep to wade. Three bumpy logs float in a row, just like stepping stones.</p>
+            <div class="choices">
+              <button type="button" data-react="Hop! Hop! The third log opens one big yellow eye. &ldquo;Excuse me. I'm napping.&rdquo;">Hop across the logs</button>
+              <button type="button" data-react="It takes longer, but the bridge is safe. On the other side, someone small is crying...">Walk to the fallen-tree bridge</button>
+              <button type="button" data-react="&ldquo;Well, since you asked so nicely,&rdquo; grumbles the biggest log. &ldquo;Climb aboard.&rdquo;">Ask the logs, very politely</button>
+            </div>
+          </div>
+        </div>
+        <dl class="notes">
+          <dt>Feels like</dt><dd>A Saturday-morning cartoon, or a toon-shaded console adventure.</dd>
+          <dt>Good for</dt><dd>Reads clearly on a phone. Faces are very expressive, and action scenes pop.</dd>
+          <dt>Watch out</dt><dd>Busy scenes get loud, so backgrounds need softer colours than characters.</dd>
+          <dt>Effort</dt><dd><span class="effort" aria-label="Low to medium effort"><i class="on"></i><i class="on"></i><i></i></span> Low to medium.</dd>
+        </dl>
+      </article>
+
+      <article class="style">
+        <header><span class="where">Scene 9 &middot; Mama Rexie</span><h3>3. Ink &amp; wash folklore</h3><p>Fine ink lines, cross-hatched shadows, a muted print palette of teal, ochre and rust, and comic panels with hand-lettered captions. Inspired by Joe Todd-Stanton's Brownstone's Mythical Collection books.</p></header>
+        <div class="frame f-ink">
+          <div class="stage"><canvas data-scene="ink" role="img" aria-label="Ink and wash mockup in two comic panels: a close-up of Pip trembling and holding the egg, and a wide shot of a huge T. rex leaning down over tiny Pip on Smoke Mountain"></canvas>
+            <div class="cap" style="left:3%;top:5%;width:27%">At the top of Smoke Mountain, the rumbling stopped.</div>
+            <div class="cap" style="right:3.5%;bottom:6%;width:36%">It was never the mountain. It was FOOTSTEPS.</div></div>
+          <div class="tale">
+            <p class="say" aria-live="polite">A huge T. rex leans down and sniffs. Her nose is as big as Pip! And she is staring right at the egg.</p>
+            <div class="choices">
+              <button type="button" data-react="Mama Rexie gasps. &ldquo;My baby! I looked everywhere. I stomped so hard the whole valley shook.&rdquo;">Hold the egg up high</button>
+              <button type="button" data-react="Sniff. Sniff. SNIFF. &ldquo;I can see your crest sticking out, little one,&rdquo; says a very big voice.">Hide behind the boulder</button>
+              <button type="button" data-react="Toot-toot-tooo. The egg wiggles happily, and the giant's scary face goes soft.">Toot the egg's lullaby <span class="tag">Learned at camp</span></button>
+            </div>
+          </div>
+        </div>
+        <dl class="notes">
+          <dt>Feels like</dt><dd>A real storybook. The most dramatic and the most "classic" of the six.</dd>
+          <dt>Good for</dt><dd>Panels let one scene show a close-up and a wide shot. Great for big moments and quiet ones.</dd>
+          <dt>Watch out</dt><dd>The real look comes from lots of hand-drawn detail. Code gets maybe 60% of the way. For the full game I'd suggest hand-drawn or painted scenes, with code only for the small animations.</dd>
+          <dt>Effort</dt><dd><span class="effort" aria-label="High effort"><i class="on"></i><i class="on"></i><i class="on"></i></span> High.</dd>
+        </dl>
+      </article>
+
+      <article class="style">
+        <header><span class="where">Scene 7 &middot; Firefly Camp</span><h3>4. Watercolour picture book</h3><p>Soft washes that pool darker at the edges, light pencil lines, paper texture and glowing fireflies.</p></header>
+        <div class="frame f-water">
+          <div class="stage"><canvas data-scene="water" role="img" aria-label="Watercolour mockup: night camp under a big moon, Pip watching the egg wiggle in a mossy nest while Zippy the Pteranodon sleeps on a rock and fireflies drift"></canvas></div>
+          <div class="tale">
+            <p class="say" aria-live="polite">Night falls. Zippy is snoring on a rock. Then, wiggle, wiggle... the egg starts to move!</p>
+            <div class="choices">
+              <button type="button" data-react="Pip hums softly. The egg stops wiggling and taps along in time. You learned the egg's lullaby!">Hum a sleepy song</button>
+              <button type="button" data-react="Pip pats moss around the egg like a blanket. Snug as a bug. It stays toasty all night.">Tuck it in warm moss</button>
+              <button type="button" data-react="&ldquo;Whuzzat?&rdquo; Zippy flaps awake. &ldquo;Pip! You're gonna be a babysitter!&rdquo; &ldquo;Shhh, Zippy!&rdquo;">Wake up Zippy!</button>
+            </div>
+          </div>
+        </div>
+        <dl class="notes">
+          <dt>Feels like</dt><dd>A bedtime picture book.</dd>
+          <dt>Good for</dt><dd>Gentle, cozy scenes and reading aloud at night.</dd>
+          <dt>Watch out</dt><dd>Low contrast. Fast or scary scenes feel less punchy.</dd>
+          <dt>Effort</dt><dd><span class="effort" aria-label="Medium effort"><i class="on"></i><i class="on"></i><i></i></span> Medium.</dd>
+        </dl>
+      </article>
+
+      <article class="style">
+        <header><span class="where">Scene 4 &middot; Whispering Forest</span><h3>5. Clay stop-motion</h3><p>Chunky clay shapes with soft shadows and a thumbprint texture, animated at 12 frames a second with a little jitter, like stop-motion.</p></header>
+        <div class="frame f-clay">
+          <div class="stage"><canvas data-scene="clay" role="img" aria-label="Clay mockup: Pip holding the egg in a dark forest while three purple feathered raptors peek out from bushes and a log"></canvas>
+            <div class="bubble" style="right:6%;top:24%">Ooh, a shiny egg!</div></div>
+          <div class="tale">
+            <p class="say" aria-live="polite">Snap! Rustle! Three feathery raptors pop out of the bushes. &ldquo;Finders keepers?&rdquo; asks the biggest one.</p>
+            <div class="choices">
+              <button type="button" data-react="The raptors gobble the berries and grin. &ldquo;You're okay, crest-head.&rdquo; They give you a shiny blue feather.">Share your sweet berries</button>
+              <button type="button" data-react="Pip hides in a hollow log. The raptors never find it! They grumble, then show you a secret shortcut.">Play hide-and-seek for it</button>
+              <button type="button" data-react="TOOOOT! The raptors tumble over each other. &ldquo;Okay, okay! Keep your egg!&rdquo;">Stand tall and TOOT!</button>
+            </div>
+          </div>
+        </div>
+        <dl class="notes">
+          <dt>Feels like</dt><dd>A claymation short. Very touchable.</dd>
+          <dt>Good for</dt><dd>Funny characters and comic timing. The jitter makes even still scenes feel alive.</dd>
+          <dt>Watch out</dt><dd>Dark scenes get murky. Needs bright lighting choices.</dd>
+          <dt>Effort</dt><dd><span class="effort" aria-label="Medium effort"><i class="on"></i><i class="on"></i><i></i></span> Medium.</dd>
+        </dl>
+      </article>
+
+      <article class="style">
+        <header><span class="where">Scene 2 &middot; Grandpa Longneck</span><h3>6. Pixel adventure</h3><p>Chunky pixels, a small fixed palette and a retro dialog box with a blinking arrow.</p></header>
+        <div class="frame f-pixel">
+          <div class="stage"><canvas data-scene="pixel" role="img" aria-label="Pixel art mockup: Grandpa Longneck the Brachiosaurus lowers his head toward Pip and the egg, with Tops, Shelly and a flying Zippy waiting to be picked as a buddy"></canvas></div>
+          <div class="tale">
+            <p class="say" aria-live="polite">Grandpa Longneck peers at the egg. &ldquo;That came from Smoke Mountain. It's a long walk. Who will go with you?&rdquo;</p>
+            <div class="choices">
+              <button type="button" data-react="&ldquo;Finally, an adventure!&rdquo; Tops stomps. &ldquo;If anything is scary, I'll bonk it.&rdquo;">Tops: strong and brave</button>
+              <button type="button" data-react="&ldquo;Ooh ooh ooh! I can fly ahead and look! And talk! Mostly talk!&rdquo;">Zippy: fast and chatty</button>
+              <button type="button" data-react="Shelly blinks slowly. &ldquo;I know an old tunnel nobody remembers. Except me.&rdquo;">Shelly: slow and wise</button>
+            </div>
+          </div>
+        </div>
+        <dl class="notes">
+          <dt>Feels like</dt><dd>A classic handheld adventure game.</dd>
+          <dt>Good for</dt><dd>Crisp, tidy and quick to make lots of scenes in.</dd>
+          <dt>Watch out</dt><dd>Less "storybook". Small details and faces are hard to read at low resolution.</dd>
+          <dt>Effort</dt><dd><span class="effort" aria-label="Low effort"><i class="on"></i><i></i><i></i></span> Low.</dd>
+        </dl>
+      </article>
+
+    </div>
+  </section>
+
+  <section id="next" class="next">
+    <div class="sec-head"><h2>What I need from you</h2></div>
+    <div class="card">
+      <ol>
+        <li><b>A story.</b> The Runaway Egg as planned, a tweak to it, or one of the other three ideas.</li>
+        <li><b>An art style.</b> One of the six, or a mix (for example, papercraft characters with ink-and-wash panels for the big moments).</li>
+        <li><b>Who's reading.</b> Will a grown-up read it aloud, or should kids be able to play alone? That decides how much text goes on each page and whether to add a read-aloud voice.</li>
+      </ol>
+      <p style="margin-top:12px">Then I'll build a playable first chapter (scenes 1&ndash;4 with real choices and reactions) so you can try it with the kids before I write the rest.</p>
+    </div>
+    <p class="foot">Mockups are drawn with canvas code, no image files. All characters are original.</p>
+  </section>
+</main>
+
+<script>
+(()=>{
+const W=800,H=450,TAU=Math.PI*2;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>1-Math.pow(1-clamp(t,0,1),3);
+const hash=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)};
+const hx=c=>{c=c.replace('#','');return[parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16)]};
+const toHex=a=>'#'+a.map(v=>clamp(Math.round(v),0,255).toString(16).padStart(2,'0')).join('');
+const mix=(a,b,t)=>{const A=hx(a),B=hx(b);return toHex(A.map((v,i)=>v+(B[i]-v)*t))};
+const dk=(c,t)=>mix(c,'#1c1530',t), lt=(c,t)=>mix(c,'#ffffff',t);
+const rgba=(c,a)=>{const v=hx(c);return`rgba(${v[0]},${v[1]},${v[2]},${a})`};
+const blink=(t,seed=0,per=3.7)=>{const ph=((t+seed*1.37)%per+per)%per;return ph<0.16?Math.abs(ph-0.08)/0.08:1};
+
+/* ---------- geometry ---------- */
+const bbPts=pts=>{let a=1e9,b=1e9,c=-1e9,d=-1e9;for(const[x,y]of pts){a=Math.min(a,x);b=Math.min(b,y);c=Math.max(c,x);d=Math.max(d,y)}return[a,b,c,d]};
+function blob(pts){const p=new Path2D(),n=pts.length;p.moveTo(pts[0][0],pts[0][1]);
+  for(let i=0;i<n;i++){const p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];
+    p.bezierCurveTo(p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6,p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6,p2[0],p2[1])}
+  p.closePath();p._b=bbPts(pts);return p}
+function ell(cx,cy,rx,ry,r=0){const p=new Path2D();p.ellipse(cx,cy,rx,ry,r,0,TAU);const m=Math.max(rx,ry);p._b=r?[cx-m,cy-m,cx+m,cy+m]:[cx-rx,cy-ry,cx+rx,cy+ry];return p}
+function poly(pts){const p=new Path2D();p.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)p.lineTo(pts[i][0],pts[i][1]);p.closePath();p._b=bbPts(pts);return p}
+function rr(x,y,w,h,r){const p=new Path2D();p.moveTo(x+r,y);p.arcTo(x+w,y,x+w,y+h,r);p.arcTo(x+w,y+h,x,y+h,r);p.arcTo(x,y+h,x,y,r);p.arcTo(x,y,x+w,y,r);p.closePath();p._b=[x,y,x+w,y+h];return p}
+function tube(pts,w0,w1){const n=pts.length,L=[],R=[];
+  for(let i=0;i<n;i++){const a=pts[Math.max(0,i-1)],b=pts[Math.min(n-1,i+1)];let dx=b[0]-a[0],dy=b[1]-a[1];const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
+    const w=lerp(w0,w1,i/(n-1))/2;L.push([pts[i][0]-dy*w,pts[i][1]+dx*w]);R.push([pts[i][0]+dy*w,pts[i][1]-dx*w])}
+  return blob([...L,...R.reverse()])}
+function lp(pts){const p=new Path2D();p.moveTo(pts[0][0],pts[0][1]);if(pts.length===2){p.lineTo(pts[1][0],pts[1][1]);return p}
+  for(let i=1;i<pts.length-1;i++){const last=i===pts.length-2;p.quadraticCurveTo(pts[i][0],pts[i][1],last?pts[i+1][0]:(pts[i][0]+pts[i+1][0])/2,last?pts[i+1][1]:(pts[i][1]+pts[i+1][1])/2)}return p}
+function pl(pts){const p=new Path2D();p.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)p.lineTo(pts[i][0],pts[i][1]);return p}
+function M(o={}){let m=new DOMMatrix();m=m.translate(o.x||0,o.y||0);const s=o.s??1;m=m.scale(s*(o.flip?-1:1),s*(o.sy??1));
+  if(o.r){m=m.translate(o.px||0,o.py||0).rotate(o.r*180/Math.PI).translate(-(o.px||0),-(o.py||0))}return m}
+const T=(x,y)=>new DOMMatrix([1,0,0,1,x,y]);
+function tp(path,m){const q=new Path2D();q.addPath(path,m);if(path._b){const[a,b,c,d]=path._b;const P=[[a,b],[c,b],[a,d],[c,d]].map(([x,y])=>{const r=m.transformPoint({x,y});return[r.x,r.y]});q._b=bbPts(P)}return q}
+const F=(p,c,k='fill')=>({p,c,k});
+const E=(x,y,r,open=1,lx=1,ly=0,look=.35)=>({k:'eye',x,y,r,open,lx,ly,look});
+const Ln=(p,c,w)=>({k:'line',p,c,w});
+function place(parts,o){const m=M(o),s=Math.hypot(m.a,m.b);return parts.map(pt=>{const q={...pt};if(pt.p)q.p=tp(pt.p,m);
+  if(pt.k==='eye'){const A=m.transformPoint({x:pt.x,y:pt.y}),B=m.transformPoint({x:pt.x+pt.lx,y:pt.y+pt.ly});q.x=A.x;q.y=A.y;q.r=pt.r*s;const dx=B.x-A.x,dy=B.y-A.y,l=Math.hypot(dx,dy)||1;q.lx=dx/l;q.ly=dy/l}
+  if(pt.w)q.w=pt.w*s;return q})}
+const eyeAt=(m,x,y,r,open,lx,ly,look)=>{const p=m.transformPoint({x,y});return E(p.x,p.y,r,open,lx,ly,look)};
+
+/* ---------- characters (local coords, facing right, feet at y=0) ---------- */
+function pip(t,o={}){
+  const C=Object.assign({body:'#7cc35a',belly:'#f4e38e',crest:'#ef7b5a',spot:'#5ea545',far:'#5c9a43',blush:'#f6a28c',line:'#3b2b3f'},o.c||{});
+  const br=Math.sin(t*2.4)*1.6,bob=Math.sin(t*2.4+.6)*2.2,wag=Math.sin(t*1.8)*.08;
+  const open=o.open??blink(t,o.seed||0);
+  const hm=M({y:bob,r:o.tilt||0,px:30,py:-100}),Hd=p=>tp(p,hm);
+  return[
+    F(ell(20,-30,13,22,.12),C.far),F(ell(28,-6,16,6.5),C.far),
+    F(tp(blob([[-28,-92],[-72,-82],[-116,-60],[-142,-48],[-114,-44],[-66,-46],[-26,-50]]),M({r:wag,px:-30,py:-66})),C.body),
+    F(ell(0,-68-br*.4,48,40+br*.6,-.15),C.body),
+    F(ell(16,-58,26,24,-.3),C.belly),
+    F(ell(-22,-94,7,4.5,-.3),C.spot,'flat'),F(ell(-2,-103,6,4),C.spot,'flat'),F(ell(-40,-82,5,3.5,-.4),C.spot,'flat'),
+    F(Hd(blob([[12,-90],[22,-122],[46,-134],[56,-110],[42,-78]])),C.body),
+    F(Hd(blob([[34,-150],[8,-168],[-22,-182],[-31,-175],[-8,-158],[24,-136]])),C.crest),
+    F(Hd(ell(48,-136,28,23,-.1)),C.body),
+    F(Hd(ell(74,-127,19,12,.15)),C.body),
+    F(Hd(ell(60,-122,6,3.5)),C.blush,'flat'),
+    eyeAt(hm,54,-142,7.2,open,o.lx??1,o.ly??0,o.look??.35),
+    Ln(Hd(lp([[66,-121],[77,-114],[88,-122]])),C.line,2.4),
+    F(ell(-14,-44,22,28,.15),C.body),F(ell(-6,-6,19,7),C.body),
+    F(blob([[32,-82],[47,-72],[53,-60],[44,-58],[29,-72]]),C.body)
+  ]}
+function egg(t,o={}){
+  const C=Object.assign({shell:'#f7efd9',spot:'#c9a77a',crack:'#5a4636'},o.c||{});
+  const P=[F(ell(0,-30,23,30),C.shell)];
+  [[-8,-40,4,3],[7,-22,5,3.5],[-10,-16,3,2.5],[10,-44,3,2],[1,-52,2.5,2],[-3,-28,2.5,2]].forEach(([x,y,a,b])=>P.push(F(ell(x,y,a,b,.4),C.spot,'flat')));
+  if(o.crack){const z=[[-21,-36],[-13,-30],[-6,-38],[2,-31],[9,-39],[16,-32],[21,-36]];const n=Math.max(2,Math.round(z.length*o.crack));P.push(Ln(pl(z.slice(0,n)),C.crack,2.2))}
+  return P}
+function rex(t,o={}){
+  const C=Object.assign({body:'#5f8a6e',belly:'#e0c38a',far:'#486e57',stripe:'#3f604c',tooth:'#fbf5e6',line:'#2a1f22'},o.c||{});
+  const br=Math.sin(t*1.3)*2.4,bob=Math.sin(t*1.3+.7)*3.5,wag=Math.sin(t*1.1)*.05;
+  const hm=M({y:bob+(o.lean||0),r:o.tilt||0,px:90,py:-200}),Hd=p=>tp(p,hm);
+  const P=[
+    F(ell(28,-98,30,42,.1),C.far),
+    F(blob([[12,-72],[38,-72],[40,-14],[66,-8],[66,0],[16,0],[18,-24]]),C.far),
+    F(tp(blob([[-48,-176],[-150,-164],[-250,-128],[-292,-112],[-252,-106],[-150,-114],[-48,-120]]),M({r:wag,px:-50,py:-145})),C.body),
+    F(ell(0,-150-br*.4,92,62+br*.5,-.3),C.body),
+    F(ell(34,-128,52,34,-.55),C.belly),
+    F(ell(-40,-196,14,6,-.5),C.stripe,'flat'),F(ell(-8,-207,13,6,-.3),C.stripe,'flat'),F(ell(-74,-178,12,5,-.6),C.stripe,'flat'),
+    F(Hd(blob([[46,-186],[76,-236],[122,-236],[118,-178],[80,-138]])),C.body),
+    F(Hd(tp(blob([[96,-224],[198,-232],[194,-212],[150,-202],[100,-206]]),M({r:o.jaw||0,px:100,py:-218}))),C.body)];
+  for(let x=118;x<=186;x+=15)P.push(F(Hd(poly([[x,-230],[x+7,-230],[x+3.5,-219]])),C.tooth,'flat'));
+  P.push(
+    F(Hd(blob([[60,-262],[112,-282],[172,-276],[206,-256],[206,-234],[160,-226],[100,-222],[62,-234]])),C.body),
+    F(Hd(blob([[112,-274],[150,-280],[155,-268],[116,-265]])),C.stripe,'flat'),
+    F(Hd(ell(196,-254,3.5,2.2)),C.line,'flat'),
+    eyeAt(hm,132,-259,8.5,o.open??blink(t,3,4.6),o.lx??1,o.ly??.3,o.look??.35),
+    F(ell(-14,-100,38,52,.12),C.body),
+    F(blob([[-34,-70],[-4,-70],[0,-14],[30,-7],[30,0],[-36,0],[-30,-22]]),C.body),
+    F(blob([[88,-152],[110,-140],[118,-128],[108,-127],[84,-140]]),C.body));
+  return P}
+function tops(t,o={}){
+  const C=Object.assign({body:'#6aa6d6',belly:'#bfe0f2',frill:'#f2b24b',fspot:'#e0883a',horn:'#fff2d6',far:'#4f87b8',beak:'#5b6d8a',line:'#2a2040'},o.c||{});
+  const br=Math.sin(t*2)*1.2,nod=Math.sin(t*1.6)*.06;
+  const hm=M({r:nod,px:48,py:-58}),Hd=p=>tp(p,hm);
+  return[
+    F(ell(-30,-22,11,22),C.far),F(ell(34,-22,11,22),C.far),
+    F(blob([[-48,-62],[-92,-40],[-100,-32],[-50,-34]]),C.body),
+    F(ell(0,-55-br*.3,60,38+br*.4),C.body),
+    F(ell(6,-34,40,13),C.belly),
+    F(ell(-40,-20,13,22),C.body),F(ell(22,-20,13,22),C.body),
+    F(Hd(ell(48,-84,32,38,-.35)),C.frill),
+    F(Hd(ell(36,-104,5,5)),C.fspot,'flat'),F(Hd(ell(54,-112,4.5,4.5)),C.fspot,'flat'),F(Hd(ell(28,-84,4.5,4.5)),C.fspot,'flat'),
+    F(Hd(poly([[56,-80],[86,-124],[74,-77]])),C.horn),F(Hd(poly([[66,-79],[102,-114],[82,-75]])),C.horn),
+    F(Hd(ell(72,-58,30,25,.1)),C.body),
+    F(Hd(poly([[94,-62],[112,-44],[90,-38]])),C.beak),
+    F(Hd(poly([[88,-75],[99,-93],[98,-70]])),C.horn),
+    eyeAt(hm,76,-66,6.2,o.open??blink(t,1.4),o.lx??1,o.ly??0,o.look??.35),
+    Ln(Hd(lp([[76,-47],[85,-43],[92,-47]])),C.line,2.2)
+  ]}
+function zippy(t,o={}){
+  const C=Object.assign({body:'#b58ad8',wing:'#9468c0',crest:'#f27d9b',beak:'#f6c55a',belly:'#e8d4f2'},o.c||{});
+  if(o.perched){const b=Math.sin(t*1.2)*1.5;const hm=T(0,b);const Hd=p=>tp(p,hm);return[
+    F(ell(-6,-4,4,6),C.beak),F(ell(6,-4,4,6),C.beak),
+    F(ell(-15,-26,10,24,.25),C.wing),
+    F(ell(0,-28+b*.3,16,24),C.body),F(ell(3,-22,9,15),C.belly),
+    F(ell(14,-26,9,22,-.2),C.wing),
+    F(Hd(poly([[-4,-60],[-34,-74],[-1,-51]])),C.crest),
+    F(Hd(ell(4,-56,13,11)),C.body),
+    F(Hd(poly([[12,-60],[46,-53],[12,-50]])),C.beak),
+    eyeAt(hm,8,-58,4,o.open??0,1,0,.3)]}
+  const f=Math.sin(t*7);
+  return[
+    F(blob([[-6,-6],[-40,-22-26*f],[-92,-14-40*f],[-58,4-12*f],[-14,10]]),C.wing),
+    F(blob([[6,-6],[40,-22-26*f],[92,-14-40*f],[58,4-12*f],[14,10]]),C.wing),
+    F(ell(-5,20,3,5),C.beak),F(ell(5,20,3,5),C.beak),
+    F(ell(0,0,13,20),C.body),F(ell(2,4,7,12),C.belly),
+    F(poly([[4,-30],[-24,-46],[6,-22]]),C.crest),
+    F(ell(12,-24,13,11),C.body),
+    F(poly([[20,-28],[56,-21],[20,-18]]),C.beak),
+    E(16,-27,4,blink(t,2.2))]}
+function raptor(t,o={}){
+  const C=Object.assign({body:'#8d6bb8',belly:'#efd6a6',feather:'#ea6a45',far:'#6f539a',line:'#2a1f30'},o.c||{});
+  const bob=Math.sin(t*3+(o.seed||0))*2.5;
+  const hm=M({y:bob,r:o.tilt||0,px:30,py:-90}),Hd=p=>tp(p,hm);
+  return[
+    F(ell(8,-50,12,18),C.far),F(tube([[10,-38],[20,-20],[12,0]],8,6),C.far),
+    F(tube([[-24,-74],[-70,-82],[-120,-80],[-150,-86]],22,4),C.body),
+    F(poly([[-138,-88],[-170,-98],[-150,-80]]),C.feather),
+    F(ell(0,-70,40,24,-.12),C.body),F(ell(10,-60,24,12,-.2),C.belly),
+    F(Hd(poly([[40,-130],[22,-152],[46,-126]])),C.feather),F(Hd(poly([[46,-134],[34,-158],[52,-130]])),C.feather),
+    F(Hd(tube([[26,-80],[42,-104],[50,-122]],18,14)),C.body),
+    F(Hd(blob([[38,-130],[64,-138],[94,-128],[94,-116],[60,-112],[40,-118]])),C.body),
+    eyeAt(hm,62,-127,5.4,o.open??Math.min(.62,blink(t,o.seed||0)),o.lx??1,o.ly??.2,.4),
+    Ln(Hd(lp([[66,-117],[80,-114],[92,-120]])),C.line,2),
+    F(tube([[30,-68],[44,-58],[52,-50]],9,6),C.body),F(poly([[30,-64],[38,-44],[47,-58]]),C.feather),
+    F(ell(-6,-52,14,20),C.body),F(tube([[-4,-38],[8,-20],[0,0]],9,7),C.body),F(ell(6,-2,12,4),C.body)
+  ]}
+function longneck(t,o={}){
+  const C=Object.assign({body:'#8fa9b8',belly:'#c9d8de',far:'#6f8a9a',spot:'#7690a0',line:'#2a2a3a'},o.c||{});
+  const bob=Math.sin(t*1.2)*5,br=Math.sin(t*1.2+1)*2;
+  const hm=T(0,bob),Hd=p=>tp(p,hm);
+  return[
+    F(ell(-60,-75,20,75),C.far),F(ell(70,-75,20,75),C.far),
+    F(tube([[-100,-200],[-170,-180],[-230,-140],[-262,-108]],46,8),C.body),
+    F(ell(0,-185-br,125,75+br,-.08),C.body),
+    F(ell(14,-142,90,28),C.belly),
+    F(ell(-30,-226,12,7),C.spot,'flat'),F(ell(10,-238,10,6),C.spot,'flat'),F(ell(-66,-210,9,6),C.spot,'flat'),
+    F(tube([[80,-222],[120,-300],[168,-350],[228,-352],[272,-314],[292,-268+bob*.6]],52,30),C.body),
+    F(Hd(ell(300,-245,32,22,.5)),C.body),F(Hd(ell(316,-226,18,13,.5)),C.body),
+    eyeAt(hm,298,-254,5.5,blink(t,.7,4.2),-.3,1,.4),
+    Ln(Hd(lp([[306,-218],[316,-214],[326,-220]])),C.line,2.2),
+    F(ell(-82,-70,22,74),C.body),F(ell(54,-68,22,72),C.body),
+    F(ell(-82,-6,26,8),C.body),F(ell(54,-6,26,8),C.body)
+  ]}
+function shelly(t,o={}){
+  const C=Object.assign({body:'#c99a5c',plate:'#a57a45',spike:'#f3e2c0',far:'#a8804a',belly:'#e3c38f',line:'#2a2030'},o.c||{});
+  const br=Math.sin(t*1.5)*1;
+  return[
+    F(ell(-25,-14,10,15),C.far),F(ell(25,-14,10,15),C.far),
+    F(tube([[-40,-30],[-75,-28],[-100,-26]],16,8),C.body),F(ell(-110,-26,14,10),C.plate),
+    F(ell(0,-36-br,54,31+br),C.body),
+    F(ell(-28,-52,7,7),C.plate,'flat'),F(ell(-6,-60,7,7),C.plate,'flat'),F(ell(16,-56,7,7),C.plate,'flat'),F(ell(-16,-40,6,6),C.plate,'flat'),F(ell(8,-42,6,6),C.plate,'flat'),
+    F(poly([[-44,-26],[-54,-40],[-36,-34]]),C.spike),F(poly([[-14,-10],[-18,-24],[-4,-16]]),C.spike),F(poly([[22,-10],[22,-24],[34,-14]]),C.spike),
+    F(ell(54,-28,17,13),C.body),
+    eyeAt(new DOMMatrix(),58,-32,4.2,blink(t,2.9),1,0,.35),
+    Ln(lp([[60,-22],[66,-20],[70,-23]]),C.line,2),
+    F(ell(-30,-12,11,14),C.body),F(ell(28,-12,11,14),C.body)
+  ]}
+function croc(t,o={}){
+  const C=Object.assign({log:'#8c7a3a',bark:'#6b5a2a'},o.c||{});
+  const P=[F(blob([[-80,-8],[-60,-18],[0,-20],[60,-18],[92,-12],[102,-2],[92,8],[0,14],[-70,12],[-88,4]]),C.log)];
+  for(let x=-60;x<=40;x+=20)P.push(F(ell(x,-19,6,4),C.bark));
+  P.push(Ln(lp([[-52,-4],[-12,-7],[20,-2]]),C.bark,2.5),Ln(lp([[-30,5],[12,4]]),C.bark,2),F(ell(-40,-7,6,4),C.bark,'flat'),
+    F(ell(58,-22,9,8),C.log),F(ell(76,-20,8,7),C.log),E(58,-24,4.6,o.open??0,1,0,.3),E(76,-22,4.2,o.open??0,1,0,.3),F(ell(97,-10,2,1.5),C.bark,'flat'));
+  return P}
+
+/* ---------- scenery ---------- */
+function hill(y,amp,seed,c){const pts=[];for(let i=0;i<=8;i++)pts.push([-60+i*115,y-amp*(.5+.5*Math.sin(i*1.7+seed))]);pts.push([900,540],[-100,540]);return[F(blob(pts),c)]}
+function tree(x,y,s,C){return place([F(tube([[0,0],[3,-50],[-2,-100]],18,11),C.trunk),F(ell(-38,-100,34,28),C.leaf2),F(ell(40,-104,36,28),C.leaf2),F(ell(0,-128,52,42),C.leaf),F(ell(-14,-142,18,11),C.hi,'flat')],{x,y,s})}
+function palm(x,y,s,C,bend=0){const P=[F(tube([[0,0],[6+bend,-60],[10+bend*2,-120]],16,10),C.trunk)];const tx=10+bend*2,ty=-120;
+  for(let i=0;i<7;i++){const a=-3.3+i*.58;P.push(F(ell(tx+Math.cos(a)*36,ty+Math.sin(a)*28,40,9,a),i%2?C.leaf:C.leaf2))}return place(P,{x,y,s})}
+function fern(x,y,s,c,c2){const P=[];for(let i=0;i<7;i++){const a=-1.25+i*(2.5/6);P.push(F(tp(ell(0,-34,7,34),M({r:a})),i%2?c:c2))}return place(P,{x,y,s})}
+function cloud(x,y,s,c){return place([F(ell(-34,8,28,18),c),F(ell(34,8,30,18),c),F(ell(0,0,42,26),c),F(ell(10,-14,24,18),c)],{x,y,s})}
+function rock(x,y,s,c){return place([F(blob([[-40,0],[-36,-24],[-10,-40],[22,-36],[42,-14],[40,0]]),c)],{x,y,s})}
+function bush(x,y,s,c,c2){return place([F(ell(-42,-20,40,30),c2),F(ell(34,-24,42,34),c2),F(ell(-6,-44,42,34),c),F(ell(-18,-56,10,6),lt(c,.3),'flat'),F(ell(26,-40,8,5),lt(c,.3),'flat')],{x,y,s})}
+function mush(x,y,s){return place([F(rr(-6,-24,12,24,5),'#f2e6cf'),F(blob([[-24,-20],[-17,-38],[0,-45],[17,-38],[24,-20]]),'#e0533d'),F(ell(-8,-32,3.5,3),'#fff6e6','flat'),F(ell(7,-36,3,2.5),'#fff6e6','flat'),F(ell(12,-25,2.5,2),'#fff6e6','flat')],{x,y,s})}
+
+/* ---------- textures ---------- */
+let NOISE=null,HATCH=null,HATCH2=null;
+function noiseCanvas(){if(NOISE)return NOISE;const c=document.createElement('canvas');c.width=c.height=180;const x=c.getContext('2d'),d=x.createImageData(180,180);
+  for(let i=0;i<d.data.length;i+=4){const v=150+Math.floor(hash(i*.37)*105);d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=255}x.putImageData(d,0,0);
+  x.strokeStyle='rgba(120,100,80,.25)';x.lineWidth=.6;for(let i=0;i<60;i++){const a=hash(i+3)*TAU,px=hash(i+7)*180,py=hash(i+11)*180;x.beginPath();x.moveTo(px,py);x.lineTo(px+Math.cos(a)*9,py+Math.sin(a)*9);x.stroke()}
+  return NOISE=c}
+function hatchCanvas(cross){const c=document.createElement('canvas');c.width=c.height=14;const x=c.getContext('2d');x.strokeStyle='rgba(43,32,36,.62)';x.lineWidth=1.3;
+  x.beginPath();x.moveTo(0,14);x.lineTo(14,0);x.moveTo(-7,7);x.lineTo(7,-7);x.moveTo(7,21);x.lineTo(21,7);
+  if(cross){x.moveTo(0,0);x.lineTo(14,14);x.moveTo(-7,7);x.lineTo(7,21);x.moveTo(7,-7);x.lineTo(21,7)}x.stroke();return c}
+
+/* ---------- painter: one renderer per art style ---------- */
+const INK='#2b2024';
+class Painter{
+  constructor(style,ctx,k,stage){this.s=style;this.c=ctx;this.k=k;this.stage=stage;this.pn=0;this.on=0;this.frame=0;this.pats={}}
+  rec(c){if(this.s==='pixel')this.stage.pal.add(c);return c}
+  pat(name){if(this.pats[name])return this.pats[name];let src,sc=.5;
+    if(name==='noise'){src=noiseCanvas();sc=1}else if(name==='hatch')src=HATCH||(HATCH=hatchCanvas(false));else src=HATCH2||(HATCH2=hatchCanvas(true));
+    const p=this.c.createPattern(src,'repeat');p.setTransform(new DOMMatrix().scale(sc));return this.pats[name]=p}
+  clip(r,fn){const c=this.c;c.save();c.beginPath();c.rect(r[0],r[1],r[2],r[3]);c.clip();fn();c.restore()}
+  sky(stops){const c=this.c,g=c.createLinearGradient(0,0,0,H);stops.forEach(([o,col])=>g.addColorStop(o,this.rec(col)));c.fillStyle=g;c.fillRect(-60,-60,W+120,H+120);
+    if(this.s==='water'){c.save();for(let i=0;i<16;i++){const x=hash(i)*W,y=hash(i+40)*H*.8,r=60+hash(i+9)*110,col=stops[i%stops.length][1];const rg=c.createRadialGradient(x,y,0,x,y,r);rg.addColorStop(0,rgba(lt(col,.25),.22));rg.addColorStop(1,rgba(col,0));c.fillStyle=rg;c.fillRect(x-r,y-r,2*r,2*r)}c.restore()}}
+  glow(x,y,r,col,a=1){const c=this.c;if(this.s==='pixel'){if(a<.45)return;c.fillStyle=this.rec(col);const z=Math.max(4,r*.55);c.fillRect(Math.round(x/4)*4-z/2,Math.round(y/4)*4-z/2,z,z);return}
+    c.save();c.globalCompositeOperation='lighter';c.globalAlpha=clamp(a,0,1);const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,rgba(col,0));c.fillStyle=g;c.fillRect(x-r,y-r,2*r,2*r);c.restore()}
+  cres(c,p,dx,dy,fill){c.save();c.clip(p);const q=new Path2D();q.rect(-1500,-1500,4000,4000);q.addPath(p,T(dx,dy));c.clip(q,'evenodd');c.fillStyle=fill;c.fillRect(-1500,-1500,4000,4000);c.restore()}
+  obj(parts,o={}){this.on++;if(this.s==='paper')return this.paperObj(parts,o);
+    const c=this.c;c.save();if(o.alpha!=null)c.globalAlpha=clamp(o.alpha,0,1);
+    if(this.s==='clay'&&this.boil){const j=this.frame*13.7+this.on*7.3;c.translate((hash(j)-.5)*1.6,(hash(j+3.1)-.5)*1.6)}
+    for(const pt of parts)this.part(c,pt,o);c.restore()}
+  paperObj(parts,o){
+    const st=this.stage,buf=st.buf,b=buf.getContext('2d');b.setTransform(1,0,0,1,0,0);b.clearRect(0,0,buf.width,buf.height);const m=this.c.getTransform();b.setTransform(m);
+    if(o.border!==false){b.save();b.fillStyle=b.strokeStyle='#fffdf6';b.lineWidth=o.bw??7;b.lineJoin='round';b.lineCap='round';for(const pt of parts)if(pt.p&&pt.k!=='line'){b.stroke(pt.p);b.fill(pt.p)}b.restore()}
+    for(const pt of parts)this.part(b,pt,o);
+    let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const pt of parts){const bb=pt.p&&pt.p._b;if(!bb)continue;for(const[x,y]of[[bb[0],bb[1]],[bb[2],bb[3]]]){const q=m.transformPoint({x,y});x0=Math.min(x0,q.x);y0=Math.min(y0,q.y);x1=Math.max(x1,q.x);y1=Math.max(y1,q.y)}}
+    const pad=30*this.k;x0=clamp(Math.floor(x0-pad),0,buf.width);y0=clamp(Math.floor(y0-pad),0,buf.height);x1=clamp(Math.ceil(x1+pad),0,buf.width);y1=clamp(Math.ceil(y1+pad),0,buf.height);
+    if(x1<=x0||y1<=y0)return;
+    const c=this.c;c.save();c.setTransform(1,0,0,1,0,0);if(o.alpha!=null)c.globalAlpha=clamp(o.alpha,0,1);
+    c.shadowColor=o.sc||'rgba(80,50,20,.34)';c.shadowBlur=(o.blur??5)*this.k;c.shadowOffsetX=(o.sx??3)*this.k;c.shadowOffsetY=(o.sy??5)*this.k;
+    c.drawImage(buf,x0,y0,x1-x0,y1-y0,x0,y0,x1-x0,y1-y0);c.restore()}
+  part(c,pt,o){const st=this.s;this.pn++;
+    if(pt.k==='eye')return this.eye(c,pt);
+    if(pt.k==='line'){c.save();c.lineCap='round';c.lineJoin='round';c.strokeStyle=this.rec(st==='ink'?INK:pt.c);c.lineWidth=pt.w*(st==='pixel'?1.7:1);if(st==='water')c.globalAlpha*=.85;c.stroke(pt.p);c.restore();return}
+    const col=this.rec(pt.c),flat=pt.k==='flat',p=pt.p;
+    if(st==='paper'){c.fillStyle=col;c.fill(p);if(!flat){c.strokeStyle='rgba(70,45,30,.16)';c.lineWidth=1;c.stroke(p)}return}
+    if(st==='cel'||st==='pixel'){c.fillStyle=col;c.fill(p);
+      if(!flat&&o.shade!==false){this.cres(c,p,st==='pixel'?-10:-7,st==='pixel'?-10:-7,this.rec(mix(col,'#2d2466',.32)));if(st==='cel')this.cres(c,p,3,3,mix(col,'#fffbe6',.3))}
+      if(!flat&&o.outline!==false){c.lineJoin='round';c.lineWidth=o.lw||(st==='pixel'?4.4:3.2);c.strokeStyle=this.rec('#211a35');c.stroke(p)}return}
+    if(st==='ink'){c.fillStyle=col;c.fill(tp(p,T(1.5,1.1)));
+      if(!flat){this.cres(c,p,-8,-7,this.pat('hatch'));const bb=p._b;if(bb&&(bb[2]-bb[0])*(bb[3]-bb[1])>2500)this.cres(c,p,-17,-15,this.pat('hatch2'));
+        c.save();c.lineJoin='round';c.lineCap='round';c.strokeStyle=INK;c.lineWidth=o.lw||1.9;c.stroke(p);c.globalAlpha*=.5;c.lineWidth=.8;c.stroke(tp(p,T(.9,-.7)));c.restore()}return}
+    if(st==='water'){const j=hash(this.pn*3.1);
+      c.fillStyle=mix(col,'#fbf6ea',.4);c.fill(p);
+      c.save();c.globalAlpha*=flat?.55:.45;c.fillStyle=col;c.fill(tp(p,T((j-.5)*5,(hash(j*7.7)-.5)*5)));c.restore();
+      if(!flat){this.cres(c,p,-9,-8,rgba(col,.4));c.save();c.globalAlpha*=.55;c.strokeStyle=mix(col,'#1d1838',.28);c.lineWidth=1.8;c.stroke(p);c.globalAlpha*=.55;c.strokeStyle='#3a3340';c.lineWidth=.7;c.stroke(tp(p,T(1,-.8)));c.restore()}return}
+    if(st==='clay'){const b=p._b||[0,0,10,10],w=b[2]-b[0],h=b[3]-b[1];
+      c.save();if(!flat){c.shadowColor='rgba(20,10,5,.34)';c.shadowBlur=7*this.k;c.shadowOffsetY=3.5*this.k;c.shadowOffsetX=1.5*this.k}
+      const g=c.createRadialGradient(b[0]+w*.34,b[1]+h*.26,0,b[0]+w*.5,b[1]+h*.5,Math.max(w,h,4)*.72);g.addColorStop(0,lt(col,.32));g.addColorStop(.45,col);g.addColorStop(1,dk(col,.3));
+      c.fillStyle=g;c.fill(p);c.restore();
+      if(!flat&&w*h>300){c.save();c.clip(p);c.globalAlpha*=.2;c.globalCompositeOperation='multiply';c.fillStyle=this.pat('noise');c.fillRect(b[0],b[1],w,h);c.restore()}}}
+  eye(c,e){const st=this.s,r=e.r;c.save();c.translate(e.x,e.y);const ox=e.lx*r*e.look,oy=e.ly*r*e.look;
+    if(e.open<.25){c.strokeStyle=this.rec(st==='pixel'?'#211a35':'#2a2030');c.lineWidth=Math.max(st==='pixel'?4:1.6,r*.38);c.lineCap='round';c.beginPath();c.arc(0,-r*.4,r*.78,.2*Math.PI,.8*Math.PI);c.stroke();c.restore();return}
+    c.scale(1,e.open);const dot=(x,y,rx,ry,col)=>{c.beginPath();c.ellipse(x,y,rx,ry,0,0,TAU);c.fillStyle=col;c.fill()};
+    if(st==='paper'){dot(0,0,r*.82,r*1.06,'#ffffff');c.strokeStyle='rgba(40,30,40,.5)';c.lineWidth=1;c.stroke();dot(ox*.8,oy*.8,r*.5,r*.64,'#2a2030');dot(ox*.8-r*.17,oy*.8-r*.26,r*.17,r*.21,'#ffffff')}
+    else if(st==='cel'){dot(0,0,r,r,'#ffffff');c.strokeStyle='#211a35';c.lineWidth=2;c.stroke();dot(ox,oy,r*.56,r*.56,'#211a35');dot(ox-r*.18,oy-r*.2,r*.18,r*.18,'#ffffff')}
+    else if(st==='ink'){dot(ox*.5,oy*.5,r*.56,r*.6,INK);dot(ox*.5-r*.18,oy*.5-r*.2,r*.16,r*.16,'#f7ecd4')}
+    else if(st==='water'){dot(ox*.5,oy*.5,r*.56,r*.6,'#2a2440');dot(ox*.5-r*.18,oy*.5-r*.2,r*.17,r*.17,'#fbf6ea')}
+    else if(st==='clay'){const g=c.createRadialGradient(-r*.3,-r*.3,0,0,0,r);g.addColorStop(0,'#ffffff');g.addColorStop(1,'#d8d2c8');c.save();c.shadowColor='rgba(0,0,0,.35)';c.shadowBlur=3*this.k;c.shadowOffsetY=1.5*this.k;dot(0,0,r*.95,r*.95,g);c.restore();dot(ox,oy,r*.52,r*.52,'#15101a');dot(ox-r*.16,oy-r*.2,r*.17,r*.17,'#ffffff')}
+    else if(st==='pixel'){c.fillStyle=this.rec('#ffffff');const z=Math.max(8,r*1.7);c.fillRect(-z/2,-z/2,z,z);c.fillStyle=this.rec('#211a35');const q=Math.max(4,z*.5);c.fillRect(-q/2+ox*.6,-q/2+oy*.6,q,q*1.2)}
+    c.restore()}
+  grain(a){const c=this.c;c.save();c.globalCompositeOperation='multiply';c.globalAlpha=a;c.fillStyle=this.pat('noise');c.fillRect(0,0,W,H);c.restore()}
+  vignette(col,a,inner=.55){const c=this.c,g=c.createRadialGradient(W/2,H/2,H*inner*.6,W/2,H/2,W*.62);g.addColorStop(0,rgba(col,0));g.addColorStop(1,rgba(col,a));c.fillStyle=g;c.fillRect(0,0,W,H)}
+  finish(){const st=this.s,c=this.c;
+    if(st==='paper')this.grain(.12);
+    if(st==='ink'){this.grain(.28);c.save();c.globalCompositeOperation='multiply';c.fillStyle='rgba(236,206,150,.2)';c.fillRect(0,0,W,H);c.restore();this.vignette('#3a2a20',.22)}
+    if(st==='water'){this.grain(.16);this.vignette('#f6f1e7',.75,.75)}
+    if(st==='clay')this.vignette('#120a06',.38)}
+}
+
+/* ---------- scenes ---------- */
+const PAPER_TREE={trunk:'#a8744a',leaf:'#6fbf4f',leaf2:'#5aa83f',hi:'#a3de7e'};
+const SCENES={
+paper:{style:'paper',
+  shake:t=>(t%6.5<.7)?[Math.sin(t*70)*2.2,Math.cos(t*93)*1.4]:[0,0],
+  bg(P){
+    P.sky([[0,'#93d3ef'],[.65,'#d4f0ec'],[1,'#f4ecd0']]);
+    P.obj([F(blob([[430,320],[530,214],[572,156],[628,154],[668,212],[780,320]]),'#9b88bd'),F(ell(600,157,27,7),'#6c5890','flat'),F(blob([[590,161],[607,161],[613,196],[599,216],[592,190]]),'#f08a4b','flat')],{blur:3,sx:2,sy:3});
+    P.obj(hill(268,40,.3,'#b4dc86'),{blur:4});
+    P.obj(tree(110,302,.62,PAPER_TREE));P.obj(tree(705,296,.5,PAPER_TREE));
+    P.obj(hill(318,30,2.1,'#8cc85e'),{blur:4});
+    P.obj(palm(520,326,.55,{trunk:'#b98a5a',leaf:'#4f9e3c',leaf2:'#6cb84f'},4));
+    P.obj([F(blob([[-60,372],[200,360],[420,368],[640,356],[860,366],[880,540],[-80,540]]),'#79b851')],{blur:5});
+    P.obj([F(blob([[830,336],[720,346],[600,370],[470,394],[330,404],[200,406],[200,420],[330,420],[480,410],[610,386],[730,362],[840,352]]),'#e8cb92')],{border:false,blur:0,sx:0,sy:0});
+  },
+  fg(P,t){
+    const rays=[];for(let i=0;i<10;i++){const a=t*.35+i*TAU/10;rays.push(F(poly([[Math.cos(a-.17)*34,Math.sin(a-.17)*34],[Math.cos(a)*58,Math.sin(a)*58],[Math.cos(a+.17)*34,Math.sin(a+.17)*34]]),'#ffb63b'))}
+    P.obj(place([Ln(lp([[0,-200],[0,-34]]),'#8a6a4a',2),...rays,F(ell(0,0,36,36),'#ffd54a'),E(-12,-4,4.5,0),E(12,-4,4.5,0),Ln(lp([[-10,10],[0,16],[10,10]]),'#b8651f',2.4),F(ell(-20,8,5,3),'#ff9a6a','flat'),F(ell(20,8,5,3),'#ff9a6a','flat')],{x:112,y:96}));
+    [[310,76,.95,0],[548,54,.75,1.4]].forEach(([x,y,s,ph])=>P.obj(place([Ln(lp([[0,-130],[0,-22]]),'#8a6a4a',1.5),...cloud(0,0,1,'#ffffff')],{x,y,s,r:Math.sin(t*.9+ph)*.06,px:0,py:-130})));
+    for(let i=0;i<4;i++){const ph=(t*.2+i/4)%1;P.obj([F(ell(600+Math.sin(ph*5+i)*10+ph*36,146-ph*120,9+ph*22,8+ph*18),'#e2daea')],{blur:3,sx:1,sy:2,alpha:Math.min(1,(1-ph)*1.6)})}
+    const ta=ease(t/2.2),ex=lerp(780,470,ta),ey=lerp(350,396,ta),roll=-(780-ex)/27;
+    const wob=t>2.2?Math.sin(t*10)*.12*Math.max(0,Math.sin((t-2.2)*1.3)):0;
+    P.obj(place(egg(t),{x:ex,y:ey,s:1.05,r:roll+wob,px:0,py:-30}));
+    const jy=(t>2.15&&t<2.6)?-Math.sin((t-2.15)/.45*Math.PI)*24:0;
+    P.obj(place(pip(t,{lx:1,ly:.25,look:.45,open:(t>2.1&&t<3.4)?1:undefined}),{x:330,y:400+jy,s:.95}));
+    const pop=ease((t-2.25)/.3);if(pop>0)P.obj(place([F(rr(-9,-62,18,42,8),'#ef5350'),F(ell(0,-8,9,9),'#ef5350')],{x:424,y:206,s:pop*1.1,r:Math.sin(t*3)*.1,px:0,py:-30}));
+  },
+  front(P){
+    P.obj(fern(36,456,1.15,'#4f9e3c','#6cb84f'));P.obj(fern(772,458,1.05,'#4f9e3c','#6cb84f'));P.obj(fern(612,462,.62,'#5aa83f','#79c25a'));
+    [[150,438,'#ff8fb1'],[560,446,'#ffd54a'],[690,436,'#ff8fb1']].forEach(([x,y,c])=>P.obj([Ln(lp([[x,y+30],[x,y]]),'#4f8a3a',3),F(ell(x-7,y,6,6),c),F(ell(x+7,y,6,6),c),F(ell(x,y-7,6,6),c),F(ell(x,y+7,6,6),c),F(ell(x,y,4,4),'#fff2a8','flat')],{bw:5,blur:3}));
+  }},
+
+cel:{style:'cel',
+  bg(P){
+    P.sky([[0,'#3fb4f0'],[.6,'#a6e3ff'],[1,'#e7f8ff']]);
+    P.obj(cloud(170,86,1.15,'#ffffff'));P.obj(cloud(620,64,.9,'#ffffff'));
+    P.obj([F(blob([[-40,250],[60,182],[150,172],[220,200],[300,232],[420,238],[520,190],[600,152],[700,160],[780,210],[860,250],[860,330],[-60,330]]),'#8aaee3')],{lw:2.5});
+    P.obj([F(blob([[-40,284],[200,264],[420,274],[620,258],[860,270],[860,330],[-40,330]]),'#6cc65a')]);
+    P.obj(tree(80,278,.5,{trunk:'#a8744a',leaf:'#4fb34a',leaf2:'#3f9a3e',hi:'#8fe07a'}));
+    const PL={trunk:'#b07a4a',leaf:'#3fa848',leaf2:'#5cc35a'};
+    P.obj(palm(470,274,.7,PL,6));P.obj(palm(570,266,.85,PL,-4));P.obj(palm(730,270,.75,PL,3));
+    P.obj([F(blob([[-40,292],[300,288],[600,286],[860,292],[860,376],[600,380],[300,376],[-40,372]]),'#3ea2e2')]);
+    P.obj([F(blob([[-60,344],[120,340],[250,354],[380,388],[460,420],[500,480],[-60,480]]),'#f2d68e')]);
+    P.obj([F(blob([[-60,366],[110,360],[230,372],[350,402],[420,432],[440,480],[-60,480]]),'#86d25c')]);
+    P.obj(rock(44,432,.7,'#a3abc2'));
+  },
+  fg(P,t){
+    for(const[y,dir]of[[300,1],[312,-1]])for(let j=0;j<6;j++){const x=((j*150+t*36*dir)%900+900)%900-50;P.obj([Ln(lp([[x,y],[x+46,y]]),'#d8f3ff',3)])}
+    [440,612,780].forEach((x,i)=>{const b=Math.sin(t*1.6+i*1.1)*2.5,awake=(((t+i*1.9)%5.4)<1.2);P.obj(place(croc(t,{open:awake?1:0}),{x:x+Math.sin(t*.5+i)*3,y:330+b,s:1.15}),{lw:3})});
+    P.obj([F(blob([[360,340],[600,337],[860,342],[860,368],[600,372],[360,368]]),'#3ea2e2','flat')]);
+    for(let j=0;j<7;j++){const x=((j*130-t*28)%900+900)%900-40;P.obj([Ln(lp([[x,350+(j%2)*10],[x+34,350+(j%2)*10]]),'#d8f3ff',3)])}
+    [440,612,780].forEach((x,i)=>P.obj([Ln(lp([[x-80,341],[x-20,344],[x+40,341]]),'#ffffff',2.5)]));
+    P.obj(place(pip(t,{lx:1,ly:.15,look:.45}),{x:150,y:394,s:.78}));
+    P.obj(place(tops(t,{lx:1,ly:.1}),{x:278,y:418,s:.82}));
+  },
+  front(P){
+    for(const[x,y,s]of[[22,470,1],[340,470,.8]]){P.obj(place([F(poly([[-14,0],[-4,-46],[4,0]]),'#5bbf4e'),F(poly([[0,0],[14,-38],[16,0]]),'#4fae47'),F(poly([[-26,0],[-22,-30],[-10,0]]),'#4fae47')],{x,y,s}))}
+    P.obj(place([Ln(lp([[0,0],[2,-70]]),'#3f8a3a',3),F(rr(-4,-92,8,24,4),'#8a5a32'),Ln(lp([[16,0],[20,-54]]),'#3f8a3a',3),F(rr(14,-74,8,22,4),'#8a5a32')],{x:380,y:430,s:1}));
+  }},
+
+ink:{style:'ink',
+  L:[14,14,248,422],R:[276,14,510,422],
+  bg(P){const S=this;
+    P.sky([[0,'#efe3c8'],[1,'#efe3c8']]);
+    P.clip(S.L,()=>{P.sky([[0,'#e6b46e'],[1,'#cf8450']]);
+      P.obj([F(blob([[-20,330],[60,250],[140,232],[220,262],[300,300],[300,460],[-20,460]]),'#b9774a')]);});
+    P.clip(S.R,()=>{P.sky([[0,'#2c5560'],[.55,'#6f9488'],[1,'#c9b17a']]);
+      P.obj([F(blob([[250,250],[360,170],[430,190],[520,120],[610,170],[700,140],[820,210],[820,330],[250,330]]),'#3e6a6c')]);
+      P.obj([F(blob([[250,330],[420,282],[560,300],[700,270],[820,300],[820,470],[250,470]]),'#a86d43')]);
+      P.obj([F(blob([[250,392],[450,372],[650,382],[820,370],[820,470],[250,470]]),'#c58f52')]);
+      for(const[x,y]of[[470,420],[540,398]])P.obj([F(ell(x,y,13,6),'#9a6436','flat'),F(ell(x+14,y-9,7,4,-.6),'#9a6436','flat'),F(ell(x+16,y+5,7,4,.6),'#9a6436','flat')]);
+      P.obj(rock(326,424,1.1,'#9a8a74'));});
+  },
+  fg(P,t){const S=this;
+    P.clip(S.L,()=>{
+      for(let i=0;i<3;i++){const ph=(t*.08+i/3)%1;P.obj([F(ell(40+i*80+ph*30,250-ph*120,40+ph*30,24+ph*14),'#d8c2a2')],{alpha:.8*(1-ph)})}
+      const tr=Math.sin(t*40)*.8;
+      P.obj(place(pip(t,{lx:.45,ly:-1,look:.55,tilt:-.1}),{x:92+tr,y:500,s:1.75}));
+      P.obj(place(egg(t),{x:196+tr,y:446,s:1.5,r:Math.sin(t*9)*.05,px:0,py:-10}));
+      P.obj([Ln(lp([[232,176],[244,168]]),INK,2),Ln(lp([[238,194],[252,190]]),INK,2),Ln(lp([[226,160],[232,148]]),INK,2)]);
+      P.obj([F(blob([[214,198],[220,212],[214,220],[208,212]]),'#a9d0d8')]);});
+    P.clip(S.R,()=>{
+      for(let i=0;i<4;i++){const ph=(t*.06+i/4)%1;P.obj([F(ell(520+i*70+ph*40,150-ph*90,46+ph*30,26+ph*16),'#8f9c8e')],{alpha:.85*(1-ph)})}
+      P.obj(place(rex(t,{tilt:.14,lean:8,ly:.6,look:.45}),{x:652,y:452,s:1.08,flip:true}));
+      P.obj(place(pip(t,{lx:1,ly:-.7,look:.5,seed:2}),{x:378,y:428,s:.36}));
+      P.obj(place(egg(t),{x:402,y:428,s:.5}));
+      for(let i=0;i<5;i++){const ph=(t*.3+i/5)%1;P.obj([F(ell(300+hash(i)*480,420-ph*50,1.6,1.6),'#e9d3a0','flat')],{alpha:1-ph})}});
+  },
+  front(P){const S=this,c=P.c;c.save();const g=new Path2D();g.rect(-10,-10,W+20,H+20);g.rect(...S.L);g.rect(...S.R);c.fillStyle='#efe3c8';c.fill(g,'evenodd');
+    c.strokeStyle=INK;c.lineWidth=3;c.strokeRect(...S.L);c.strokeRect(...S.R);c.lineWidth=.8;c.globalAlpha=.5;c.strokeRect(S.L[0]+1.5,S.L[1]-1,S.L[2]-1,S.L[3]+1.5);c.strokeRect(S.R[0]-1,S.R[1]+1.5,S.R[2]+1.5,S.R[3]-1);c.restore()}},
+
+water:{style:'water',
+  bg(P){
+    P.sky([[0,'#1d2556'],[.55,'#3c3f86'],[.85,'#8a6fa8'],[1,'#c98fa6']]);
+    P.glow(650,92,120,'#fff2c8',.4);
+    P.obj([F(ell(650,92,38,38),'#f8eccb'),F(ell(638,84,7,6),'#e3d3ac','flat'),F(ell(662,104,5,4),'#e3d3ac','flat')]);
+    P.obj(hill(262,40,1,'#3a3c7c'));
+    P.obj(fern(110,334,1.6,'#2c4a5a','#335566'));P.obj(fern(730,326,1.3,'#2c4a5a','#335566'));
+    P.obj(hill(305,30,2.4,'#2f3a6c'));
+    P.obj([F(blob([[-60,352],[300,342],[600,354],[860,346],[860,480],[-60,480]]),'#3f5f5c')]);
+    P.obj(rock(590,374,1.3,'#6c6a8a'));
+    P.obj([F(ell(394,394,64,20),'#6f9455')]);
+  },
+  fg(P,t){
+    for(let i=0;i<36;i++){const a=.45+.55*Math.sin(t*2+i*1.7);P.glow(hash(i)*W,hash(i+50)*210,3+hash(i+9)*3,'#fff8dc',a)}
+    const w=Math.sin(t*12)*.15*Math.max(0,Math.sin(t*1.2));
+    P.obj(place(egg(t,{crack:.7}),{x:394,y:400,s:1.1,r:w,px:0,py:0}));
+    P.obj([F(blob([[330,396],[394,416],[458,396],[452,410],[394,424],[336,410]]),'#87a866')]);
+    P.obj([Ln(lp([[340,402],[372,410],[400,405]]),'#5a4a3a',1.6),Ln(lp([[392,414],[424,404],[452,404]]),'#5a4a3a',1.6)]);
+    P.obj(place(pip(t,{lx:1,ly:.35,look:.4,c:{body:'#74b38c',belly:'#efe2a0',crest:'#e8826a',spot:'#5f9c78',far:'#5a9474'}}),{x:258,y:404,s:.82}));
+    P.obj(place(zippy(t,{perched:true,open:0}),{x:592,y:328,s:1.25}));
+    for(let i=0;i<3;i++){const ph=(t*.35+i/3)%1,x=620+ph*34,y=246-ph*64,z=7+ph*6;P.obj([Ln(pl([[x-z,y-z],[x+z,y-z],[x-z,y+z],[x+z,y+z]]),'#f2eaff',2.2)],{alpha:1-ph})}
+    for(let i=0;i<9;i++){const x=120+hash(i)*560+Math.sin(t*.7+i)*42,y=230+hash(i+20)*130+Math.sin(t*1.1+i*2)*20,a=.35+.65*Math.max(0,Math.sin(t*2.4+i*1.7));P.glow(x,y,16,'#ffe27a',a);P.glow(x,y,3.5,'#fffbe0',a)}
+  },
+  front(P){P.obj(fern(30,476,1.4,'#243b44','#2a4650'));P.obj(fern(790,480,1.2,'#243b44','#2a4650'))}},
+
+clay:{style:'clay',fps:12,
+  bg(P){
+    P.sky([[0,'#20402c'],[.6,'#3e6a3a'],[1,'#6f8e40']]);
+    P.obj([F(tube([[270,360],[266,150],[272,-20]],26,22),'#3d4a30')]);P.obj([F(tube([[540,360],[546,150],[538,-20]],22,18),'#3d4a30')]);
+    P.obj([F(tube([[86,480],[94,220],[82,-30]],96,74),'#7a5236'),Ln(lp([[70,320],[78,250],[72,190]]),'#5a3a24',3),Ln(lp([[104,140],[98,80]]),'#5a3a24',3)]);
+    P.obj([F(tube([[724,480],[714,220],[726,-30]],104,82),'#7a5236'),Ln(lp([[740,300],[732,230]]),'#5a3a24',3),Ln(lp([[708,160],[714,90]]),'#5a3a24',3)]);
+    P.obj([F(ell(80,10,140,60),'#2f6a35'),F(ell(300,-10,150,50),'#357a3a'),F(ell(520,0,150,56),'#2f6a35'),F(ell(740,14,140,60),'#357a3a')]);
+    P.obj([F(blob([[-60,362],[400,352],[860,364],[860,480],[-60,480]]),'#6e5034')]);
+    P.obj([F(blob([[-60,372],[200,366],[420,376],[640,366],[860,374],[860,392],[-60,392]]),'#5d8a3a')]);
+    P.obj([F(tube([[440,334],[650,326]],42,38),'#8a5a38'),F(ell(650,326,15,20),'#c79a6a')]);
+    P.obj(mush(200,378,1));P.obj(mush(612,384,.8));P.obj(mush(250,388,.6));
+  },
+  fg(P,t){
+    const pk=(s)=>(Math.sin(t*1.3+s)*.5+.5);
+    P.obj(place(raptor(t,{seed:2}),{x:592,y:312,s:.72,flip:true}));
+    P.obj(place(raptor(t,{seed:0,ly:.3}),{x:146,y:392+pk(0)*26,s:.9}));
+    P.obj(bush(140,420,1.25,'#4f8f3a','#3f7a32'));
+    P.obj(place(raptor(t,{seed:4,ly:.3}),{x:694,y:396+pk(2)*26,s:.92,flip:true}));
+    P.obj(bush(690,428,1.35,'#4f8f3a','#3f7a32'));
+    const lk=Math.sin(t*.8)>0?1:-1;
+    P.obj(place(pip(t,{lx:lk,ly:.1,look:.5}),{x:384,y:410,s:.86}));
+    P.obj(place(egg(t),{x:428,y:406,s:.8,r:Math.sin(t*6)*.06,px:0,py:-10}));
+  },
+  front(P){P.obj(place([F(ell(0,0,60,22,-.5),'#3d7a34'),F(ell(70,10,50,18,.3),'#4a8a3c')],{x:-10,y:452}));P.obj(place([F(ell(0,0,60,22,.5),'#3d7a34'),F(ell(-60,12,46,16,-.3),'#4a8a3c')],{x:810,y:456}))}},
+
+pixel:{style:'pixel',fps:8,
+  bg(P){
+    P.sky([[0,'#4aa8f0'],[.5,'#86d0ff'],[1,'#d2f2ff']]);
+    P.obj(cloud(300,84,.9,'#ffffff'));P.obj(cloud(480,44,.7,'#ffffff'));
+    P.obj([F(blob([[560,304],[640,204],[670,184],[702,186],[732,212],[820,304]]),'#8b7fb8'),F(ell(686,186,16,5),'#5e4f8a','flat')]);
+    P.obj(hill(292,36,.8,'#5cbf5c'));
+    P.obj(palm(60,300,.6,{trunk:'#a8744a',leaf:'#3f9e48',leaf2:'#5cc35a'},3));
+    P.obj([F(blob([[-60,382],[400,374],[860,382],[860,480],[-60,480]]),'#7fd05a')]);
+    P.obj([F(blob([[-40,430],[200,422],[420,436],[640,428],[860,440],[860,470],[-40,470]]),'#d6a868')]);
+  },
+  fg(P,t){
+    for(let i=0;i<3;i++){const ph=(t*.2+i/3)%1;P.obj([F(ell(686+ph*30,176-ph*80,8+ph*14,7+ph*10),'#e8e2f4','flat')])}
+    P.obj(place(longneck(t),{x:604,y:424,s:.92,flip:true}));
+    P.obj(place(tops(t),{x:66,y:436,s:.62}));
+    P.obj(place(shelly(t),{x:410,y:442,s:.78,flip:true}));
+    P.obj(place(pip(t,{lx:1,ly:-.8,look:.5}),{x:200,y:420,s:.72}));
+    P.obj(place(egg(t),{x:258,y:422,s:.7}));
+    P.obj(place(zippy(t),{x:130+Math.sin(t*.8)*24,y:128+Math.sin(t*1.6)*8,s:.82}));
+  }}
+};
+
+/* ---------- stage: caching, animation, pixel palette ---------- */
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const stages=[];
+function mk(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
+class Stage{
+  constructor(canvas,scene){this.cv=canvas;this.sc=scene;this.pal=new Set();this.qc=new Map();this.palN=0;this.start=null;this.visible=false;this.last=-1;this.ok=true;this.resize()}
+  resize(){const sc=this.sc,cv=this.cv;
+    if(sc.style==='pixel'){cv.width=200;cv.height=113;this.k=.25}
+    else{const w=cv.clientWidth||800,d=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(w*d);cv.height=Math.round(w*d*9/16);this.k=cv.width/W}
+    this.ctx=cv.getContext('2d',{willReadFrequently:sc.style==='pixel'});
+    this.buf=mk(cv.width,cv.height);
+    const layer=fn=>{if(!fn)return null;const c=mk(cv.width,cv.height),x=c.getContext('2d');x.setTransform(this.k,0,0,this.k,0,0);const p=new Painter(sc.style,x,this.k,this);fn.call(sc,p);return c};
+    try{this.bgC=layer(sc.bg);this.frC=layer(sc.front)}catch(e){console.error(e);this.ok=false}
+    this.last=-1;this.draw(this.t??0)}
+  draw(t){if(!this.ok)return;this.t=t;const sc=this.sc,c=this.ctx,k=this.k;
+    let f=null;if(sc.fps){f=Math.floor(t*sc.fps);if(f===this.last)return;this.last=f;t=f/sc.fps}
+    let[dx,dy]=sc.shake?sc.shake(t):[0,0];
+    c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,this.cv.width,this.cv.height);
+    if(this.bgC)c.drawImage(this.bgC,dx*k,dy*k);
+    c.setTransform(k,0,0,k,dx*k,dy*k);
+    const p=new Painter(sc.style,c,k,this);p.frame=f??0;p.boil=sc.style==='clay';
+    try{sc.fg.call(sc,p,t)}catch(e){console.error(e);this.ok=false;return}
+    c.setTransform(1,0,0,1,0,0);if(this.frC)c.drawImage(this.frC,dx*k,dy*k);
+    c.setTransform(k,0,0,k,0,0);p.finish();
+    if(sc.style==='pixel')this.quantize()}
+  quantize(){const c=this.ctx,w=this.cv.width,h=this.cv.height,img=c.getImageData(0,0,w,h),d=img.data;
+    if(this.pal.size!==this.palN){this.palN=this.pal.size;this.P=[...this.pal].map(hx);this.qc.clear()}const P=this.P,qc=this.qc;
+    for(let i=0;i<d.length;i+=4){const key=(d[i]<<16)|(d[i+1]<<8)|d[i+2];let m=qc.get(key);
+      if(m===undefined){let best=1e12;for(let j=0;j<P.length;j++){const q=P[j],a=q[0]-d[i],b=q[1]-d[i+1],e=q[2]-d[i+2],dd=a*a*.3+b*b*.59+e*e*.11;if(dd<best){best=dd;m=j}}qc.set(key,m)}
+      const q=P[m];d[i]=q[0];d[i+1]=q[1];d[i+2]=q[2];d[i+3]=255}
+    c.putImageData(img,0,0)}
+}
+document.querySelectorAll('canvas[data-scene]').forEach(cv=>{const sc=SCENES[cv.dataset.scene];if(sc)stages.push(new Stage(cv,sc))});
+const io=new IntersectionObserver(es=>es.forEach(e=>{const s=stages.find(s=>s.cv===e.target);if(!s)return;s.visible=e.isIntersecting;if(s.visible&&s.start===null)s.start=performance.now()}),{threshold:.15});
+stages.forEach(s=>io.observe(s.cv));
+const ro=new ResizeObserver(es=>es.forEach(e=>{const s=stages.find(s=>s.cv===e.target);if(s&&s.sc.style!=='pixel')s.resize()}));
+stages.forEach(s=>ro.observe(s.cv));
+if(reduce){stages.forEach(s=>{s.draw(4)})}
+else{const loop=now=>{for(const s of stages)if(s.visible&&s.start!==null)s.draw((now-s.start)/1000);requestAnimationFrame(loop)};requestAnimationFrame(loop)}
+
+/* ---------- choices: show the character's reaction ---------- */
+document.querySelectorAll('.tale').forEach(tale=>{const say=tale.querySelector('.say'),orig=say.innerHTML;
+  tale.querySelectorAll('.choices button').forEach(btn=>btn.addEventListener('click',()=>{const on=btn.getAttribute('aria-pressed')==='true';
+    tale.querySelectorAll('.choices button').forEach(b=>b.setAttribute('aria-pressed','false'));
+    if(on){say.innerHTML=orig;return}
+    btn.setAttribute('aria-pressed','true');const r=document.createElement('span');r.className='react';r.textContent=btn.dataset.react;const hint=document.createElement('em');hint.textContent='Tap it again to go back.';r.appendChild(hint);say.replaceChildren(r)}));
+  tale.querySelectorAll('.choices button').forEach(b=>b.setAttribute('aria-pressed','false'))});
+})();
+</script>
