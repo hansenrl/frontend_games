@@ -9,6 +9,7 @@ Every push to `main` deploys to GitHub Pages:
 | Home page (list of games) | https://hansenrl.github.io/frontend_games/ |
 | Choo-Choo Junction | https://hansenrl.github.io/frontend_games/train-junction/ |
 | Endurance Docking | https://hansenrl.github.io/frontend_games/interstellar-docking/ |
+| The Runaway Egg | https://hansenrl.github.io/frontend_games/dino-adventure/ |
 
 ## One-time GitHub setup
 
@@ -64,3 +65,11 @@ It tries every combination of pieces and makes sure each level can be solved. Th
 A two-player, top-down docking game inspired by the spinning-station docking scene in *Interstellar*. One player flies the Ranger with **W A S D** (thrust is always up/left/down/right on the screen), the other spins it with **K** and **L**. Match the station's position and drift, match its spin, hold for 10 seconds while the clamps lock, then slow the spin and push the station into the safe zone.
 
 `H` toggles flight data, `G` toggles hints, `T` toggles crew speech bubbles, `P` pauses, `R` restarts. More detail, and the art-style mockups it was designed from, are in [`interstellar-docking/`](interstellar-docking/).
+
+## The Runaway Egg
+
+A choose-your-own dinosaur story for early readers, in the paper-craft style. A rolling egg
+bumps into Pip, and Pip sets off to take it home to Smoke Mountain. Each page has a picture,
+a few short lines and 2–4 choices. See [`dino-adventure/README.md`](dino-adventure/README.md).
+
+`node tools/check-story.js` plays every possible path through the story and checks it.

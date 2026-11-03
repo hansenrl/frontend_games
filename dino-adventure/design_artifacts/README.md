@@ -6,6 +6,7 @@ and 2–3 choices per page. Open the HTML file in a browser.
 | File | Contents |
 |---|---|
 | `round1-story-and-art-styles.html` | Four story ideas, a scene-by-scene plan for *The Runaway Egg* (cast, what the story remembers, five endings), and six animated art-style mockups |
+| `story-ideas.md` | All four story ideas and the original Runaway Egg plan, saved to come back to |
 
 ## Art styles in round 1
 
@@ -20,4 +21,12 @@ Each mockup shows a different scene from the plan, drawn live with canvas code. 
 
 ## Decisions
 
-- Story and art style: not picked yet.
+- **Story:** The Runaway Egg. The other three ideas are kept in `story-ideas.md` for later.
+- **Art style:** Papercraft (matches the shelf's home page and Choo-Choo Junction).
+- **Reader:** a 5–6 year old reading on their own with a grown-up nearby. Short lines (12 words max),
+  one idea per line, tap-to-hear big words, and an optional read-aloud button.
+- Changes from the plan while building:
+  - "Toot the lullaby" became "Sing the egg song", which is learned at night camp.
+  - The glow worms can become friends too, so the forest path can also reach the parade ending.
+  - Mama T. rex gets her own "So THAT was the rumble!" page before the hatching.
+  - The buddy shortcuts are one page each, so they're a bit quicker.

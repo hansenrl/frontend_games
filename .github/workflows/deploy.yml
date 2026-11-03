@@ -24,6 +24,8 @@ jobs:
           node-version: 22
       - name: Check every level can be solved
         run: node tools/check-levels.js
+      - name: Check every path through The Runaway Egg
+        run: node tools/check-story.js
 
   deploy:
     needs: check
