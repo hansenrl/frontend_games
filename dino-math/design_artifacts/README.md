@@ -59,4 +59,8 @@ One world per grade. Fluency goals are the standards that say "fluently"; they b
 - Answer style is configurable from kindergarten (type or pick).
 - Mistakes never cost anything (see rules above).
 - No speed at the early levels; Zoom is opt-in from grade 3.
-- Round 2 (five more looks in the same soft, handmade family) is out for review.
+- **Round 2 pick: Pop-up Book**, for the world map and for gameplay. The world map shows
+  progress: Rex walks the path and the walked part turns red. Vintage Picture Book was the
+  runner-up for gameplay.
+- First build (`../index.html`): pop-up book map, world pages and gameplay. Meteors hang from paper
+  strings; cards, Rex and the number pad fold up off the page.

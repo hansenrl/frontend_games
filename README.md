@@ -9,6 +9,7 @@ Every push to `main` deploys to GitHub Pages:
 | Home page (list of games) | https://hansenrl.github.io/frontend_games/ |
 | Choo-Choo Junction | https://hansenrl.github.io/frontend_games/train-junction/ |
 | Endurance Docking | https://hansenrl.github.io/frontend_games/interstellar-docking/ |
+| Dino Defenders | https://hansenrl.github.io/frontend_games/dino-math/ |
 
 ## One-time GitHub setup
 

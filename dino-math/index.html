@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#c98b58">
+  <title>Dino Defenders</title>
+  <meta name="description" content="A pop-up book math game: help Rex stop the meteors by solving problems from kindergarten to grade 5.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦖</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="stage">
+    <canvas id="game" tabindex="0" aria-label="Dino Defenders. A pop-up book math game."></canvas>
+  </main>
+  <div id="live" class="sr" aria-live="polite"></div>
+
+  <div id="settings" class="overlay" hidden>
+    <form class="panel" role="dialog" aria-modal="true" aria-labelledby="set-title" id="set-form">
+      <div class="panel-head">
+        <h2 id="set-title">Grown-up settings</h2>
+        <button type="button" class="close" id="set-close" aria-label="Close settings">✕</button>
+      </div>
+      <p class="intro">Each world keeps its own settings. Changes are saved on this device.</p>
+
+      <fieldset class="row">
+        <legend>World</legend>
+        <div class="seg" id="set-world"></div>
+      </fieldset>
+
+      <fieldset class="row">
+        <legend>Answer style <span>Pick from a list, or type the number</span></legend>
+        <div class="seg">
+          <input type="radio" name="answer" id="ans-pick" value="pick"><label for="ans-pick">Pick from 3</label>
+          <input type="radio" name="answer" id="ans-type" value="type"><label for="ans-type">Type the number</label>
+        </div>
+      </fieldset>
+
+      <fieldset class="row">
+        <legend>Pace <span>Calm: the meteors stop and wait. Zoom: they drift down, faster as the streak grows. Nothing is ever lost.</span></legend>
+        <div class="seg">
+          <input type="radio" name="pace" id="pace-calm" value="calm"><label for="pace-calm">Calm</label>
+          <input type="radio" name="pace" id="pace-zoom" value="zoom"><label for="pace-zoom">Zoom</label>
+        </div>
+        <p class="note" id="pace-note"></p>
+      </fieldset>
+
+      <fieldset class="row">
+        <legend>Picture help <span>When to draw the problem</span></legend>
+        <div class="seg">
+          <input type="radio" name="pictures" id="pic-miss" value="miss"><label for="pic-miss">After a miss</label>
+          <input type="radio" name="pictures" id="pic-always" value="always"><label for="pic-always">Always</label>
+          <input type="radio" name="pictures" id="pic-off" value="off"><label for="pic-off">Off</label>
+        </div>
+      </fieldset>
+
+      <fieldset class="row">
+        <legend>Read aloud <span>Rex reads every problem out loud</span></legend>
+        <div class="seg">
+          <input type="radio" name="voice" id="voice-on" value="on"><label for="voice-on">On</label>
+          <input type="radio" name="voice" id="voice-off" value="off"><label for="voice-off">Off</label>
+        </div>
+      </fieldset>
+
+      <fieldset class="row">
+        <legend>Sound effects <span>For every world</span></legend>
+        <div class="seg">
+          <input type="radio" name="sound" id="sound-on" value="on"><label for="sound-on">On</label>
+          <input type="radio" name="sound" id="sound-off" value="off"><label for="sound-off">Off</label>
+        </div>
+      </fieldset>
+
+      <div class="row tries">
+        <strong>Tries: unlimited, always.</strong>
+        <span>A miss is “Oops, give it another try!” After two misses Rex helps work it out. Stars only ever go up.</span>
+      </div>
+
+      <div class="row danger">
+        <button type="button" id="reset" class="ghost">Start over (clear all stars)</button>
+        <span id="reset-confirm" hidden>Clear every star in every world?
+          <button type="button" id="reset-yes" class="warn">Yes, clear them</button>
+          <button type="button" id="reset-no" class="ghost">Keep them</button>
+        </span>
+      </div>
+
+      <button type="submit" class="done">Done</button>
+    </form>
+  </div>
+
+  <script src="problems.js"></script>
+  <script src="audio.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

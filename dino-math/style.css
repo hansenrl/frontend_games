@@ -1,0 +1,80 @@
+:root {
+  --wood: #c98b58;
+  --wood-dark: #a86f42;
+  --page: #fdf8ee;
+  --ink: #4a3b52;
+  --muted: #7a6d80;
+  --red: #ef5350;
+  --green: #62a84a;
+  --gold: #f5a623;
+  --shadow: rgba(60, 30, 10, 0.3);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--wood);
+  background-image: repeating-linear-gradient(176deg, rgba(90, 50, 20, 0.07) 0 2px, transparent 2px 26px);
+  color: var(--ink);
+  font-family: 'Fredoka', 'Baloo 2', 'Comic Sans MS', system-ui, sans-serif;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+#stage {
+  position: fixed;
+  inset: 0;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#game { display: block; touch-action: none; outline: none; user-select: none; -webkit-user-select: none; }
+#game:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* grown-up settings */
+.overlay {
+  position: fixed; inset: 0; z-index: 10;
+  background: rgba(60, 35, 20, 0.45);
+  display: flex; align-items: center; justify-content: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.overlay[hidden] { display: none; }
+.panel {
+  width: min(620px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--page);
+  border-radius: 18px;
+  box-shadow: 0 10px 0 rgba(90, 60, 30, 0.25), 0 20px 50px rgba(40, 20, 10, 0.35);
+  padding: 20px 22px 22px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.panel h2 { margin: 0; font-size: 1.6rem; color: var(--red); }
+.intro { margin: 0; color: var(--muted); }
+.close { border: 0; background: #efe6d6; color: var(--ink); width: 40px; height: 40px; border-radius: 50%; font: inherit; font-size: 1.1rem; cursor: pointer; }
+.row { border: 0; margin: 0; padding: 12px 0 0; border-top: 2px dashed #eadfcb; min-width: 0; }
+.row legend { float: left; width: 100%; padding: 0; font-weight: 700; font-size: 1.05rem; margin-bottom: 8px; }
+.row legend + * { clear: both; }
+.row legend span { display: block; font-weight: 500; font-size: 0.9rem; color: var(--muted); }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label {
+  padding: 8px 16px; border-radius: 999px; background: #fff; border: 2px solid #e5d8c2;
+  font-weight: 600; cursor: pointer; user-select: none; min-width: 44px; text-align: center;
+}
+.seg input:checked + label { background: var(--ink); border-color: var(--ink); color: #fff; }
+.seg input:focus-visible + label { outline: 3px solid var(--gold); outline-offset: 2px; }
+.seg input:disabled + label { opacity: 0.4; cursor: not-allowed; }
+.note { margin: 6px 0 0; font-size: 0.9rem; color: var(--muted); min-height: 1.3em; }
+.tries { display: flex; flex-direction: column; gap: 2px; }
+.tries span { color: var(--muted); font-size: 0.92rem; }
+.danger { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 0.95rem; }
+.danger span { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.danger span[hidden] { display: none; }
+button { font: inherit; }
+.ghost { border: 2px solid #e5d8c2; background: transparent; color: var(--ink); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.warn { border: 0; background: var(--red); color: #fff; border-radius: 999px; padding: 8px 14px; cursor: pointer; font-weight: 600; }
+.done { align-self: flex-end; border: 0; background: var(--green); color: #fff; font-weight: 700; font-size: 1.1rem; padding: 10px 26px; border-radius: 999px; cursor: pointer; box-shadow: 0 4px 0 #3f7f30; }
+.close:focus-visible, .ghost:focus-visible, .warn:focus-visible, .done:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }

@@ -24,6 +24,8 @@ jobs:
           node-version: 22
       - name: Check every level can be solved
         run: node tools/check-levels.js
+      - name: Check every Dino Defenders problem is right
+        run: node tools/check-problems.js
 
   deploy:
     needs: check
