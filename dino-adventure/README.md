@@ -13,8 +13,8 @@ Open `index.html` in a browser to play. No build step needed.
 ## How it plays
 
 - Each page has a picture, a few short lines, and 2–4 choices.
-- After a choice, a character answers before the page turns (and Pip earns a Brave, Kind or
-  Clever star).
+- After a choice, a character answers, with a "Next page" button beside the words. Each choice
+  also counts quietly toward a Brave, Kind or Clever badge shown at the end.
 - A play-through is 12–13 pages. There are 22 pages in all, and 91,125 different ways through.
 - The story branches and meets up again:
   - **Act 1:** the egg, Grandpa Longneck, picking a buddy (Tops, Zippy or Shelly), the fork in the path.
@@ -34,12 +34,14 @@ Open `index.html` in a browser to play. No build step needed.
   - What you did. Your buddy brings it up at camp.
 - **Secret choices** (gold, marked "Secret!") only show up if you earned them earlier.
 - The endings you've found are saved as little pictures on the title page.
-- No sound effects and no emoji, on purpose. The only sound is the optional read-aloud voice.
+- No sound effects and no emoji, on purpose.
 
 ## Helping a new reader
 
-- **Big words** (dinosaur names and so on) are orange and underlined. Tap one to hear it.
-- **Read to me** reads the whole page out loud (uses the device's built-in voice).
+- **Big words** (dinosaur names and so on) are orange, so a grown-up can spot the ones to help with.
+- Read-aloud is built in but switched off for now, because the device voices don't sound good
+  enough. Set `VOICE = true` near the top of `game.js` to bring back the **Read to me** button and
+  tap-to-hear on the big words.
 - **Back** goes back a page, or undoes a choice.
 - Tap the picture to make Pip honk.
 - The story is saved as you go. "Keep reading" on the title page picks up where you left off.

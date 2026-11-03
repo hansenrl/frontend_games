@@ -80,7 +80,6 @@ html, body {
   box-shadow: 2px 3px 0 var(--shadow);
 }
 .pouch .item svg { width: 28px; height: 28px; }
-.chip .mini svg { width: 20px; height: 20px; vertical-align: -4px; margin-right: 4px; }
 .pouch .item.new { animation: popin 0.6s cubic-bezier(.3, 1.6, .5, 1); }
 
 /* ---------- book: picture + words ---------- */
@@ -170,6 +169,7 @@ html, body {
 .words p { margin: 0 0 0.15em; }
 .words p:last-child { margin-bottom: 0; }
 .words .pip { color: #3f8a2a; font-weight: 700; }
+.words span.big { font-weight: 700; color: #c2410c; border-bottom: 0; cursor: inherit; }
 .words .big {
   font: inherit;
   font-weight: 700;
@@ -181,17 +181,6 @@ html, body {
   cursor: pointer;
 }
 .words.react { background: #fff7d6; transform: rotate(0.4deg); }
-.words .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.chip {
-  font-family: var(--ui);
-  font-weight: 600;
-  font-size: 1rem;
-  background: #fff;
-  border-radius: 999px;
-  padding: 2px 12px;
-  box-shadow: 1px 2px 0 var(--shadow);
-  animation: popin 0.6s cubic-bezier(.3, 1.6, .5, 1);
-}
 
 .choices { display: flex; flex-direction: column; gap: 10px; }
 .choice {
@@ -302,7 +291,7 @@ html, body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .turn, .pop.show, .chip, .pouch .item.new, .sticker.got .disc { animation: none !important; }
+  .turn, .pop.show, .pouch .item.new, .sticker.got .disc { animation: none !important; }
 }
 
 /* phones: keep the top bar on one screen width even with a full pouch */
@@ -312,4 +301,26 @@ html, body {
   .pouch { gap: 4px; }
   .pouch .item { width: 34px; height: 34px; }
   .pouch .item svg { width: 22px; height: 22px; }
+}
+
+/* "Next page" sits to the right of the words */
+.panel.side-next { flex-direction: row; align-items: stretch; }
+.panel.side-next .words { flex: 1; min-width: 0; }
+.panel.side-next .choices { flex: none; justify-content: center; }
+.panel.side-next .choice.next {
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  width: 7.5em;
+  height: 100%;
+  min-height: 110px;
+  text-align: center;
+  border-left: 0;
+  border-bottom: 10px solid var(--c);
+  border-radius: 16px;
+  font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+}
+.panel.side-next .choice.next::after { border-left-width: 20px; border-top-width: 13px; border-bottom-width: 13px; }
+@media (max-width: 520px) {
+  .panel.side-next .choice.next { width: 5.6em; font-size: 1.05rem; }
 }

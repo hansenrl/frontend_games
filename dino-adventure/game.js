@@ -6,7 +6,9 @@
   const $ = (id) => document.getElementById(id);
   const canvas = $('art'), stageEl = $('stage'), wordsEl = $('words'), choicesEl = $('choices');
   const pouchEl = $('pouch'), backBtn = $('backBtn'), readBtn = $('readBtn');
-  const titleEl = $('pageTitle'), popEl = $('pop');
+  const titleEl = $('pageTitle'), popEl = $('pop'), panelEl = $('panel');
+  // pages with only a "Next page" button show it to the right of the words
+  const sideNext = (on) => panelEl.classList.toggle('side-next', on);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- saving ---------- */
@@ -15,7 +17,10 @@
   const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode */ } };
   const clear = (k) => { try { localStorage.removeItem(k); } catch (e) { /* ignore */ } };
 
-  /* ---------- reading out loud ---------- */
+  /* ---------- reading out loud ----------
+   * Switched off for now: the built-in device voices don't sound good enough.
+   * Set VOICE = true to bring back the "Read to me" button and tap-to-hear big words. */
+  const VOICE = false;
   function speak(text) {
     if (!('speechSynthesis' in window)) return;
     try {
@@ -25,7 +30,9 @@
       speechSynthesis.speak(u);
     } catch (e) { /* no voice */ }
   }
-  if (!('speechSynthesis' in window)) readBtn.hidden = true;
+  const canSpeak = VOICE && 'speechSynthesis' in window;
+  readBtn.hidden = !canSpeak;
+  const bigWord = (w) => (canSpeak ? `<button type="button" class="big" data-say="${w}">${w}</button>` : `<span class="big">${w}</span>`);
 
   /* ---------- little drawn icons for Pip's pouch ---------- */
   const ITEM_SVG = {
@@ -112,7 +119,7 @@
   function lineHTML(line) {
     const esc = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     return esc
-      .replace(/\*([^*]+)\*/g, (m, w) => `<button type="button" class="big" data-say="${w}">${w}</button>`)
+      .replace(/\*([^*]+)\*/g, (m, w) => bigWord(w))
       .replace(/\bPip\b/g, '<span class="pip">Pip</span>');
   }
   function showWords(lines, cls = '') {
@@ -120,7 +127,7 @@
     wordsEl.innerHTML = lines.map((l) => `<p>${lineHTML(l)}</p>`).join('');
   }
   wordsEl.addEventListener('click', (e) => {
-    const b = e.target.closest('.big'); if (b) { e.stopPropagation(); speak(b.dataset.say); }
+    const b = e.target.closest('button.big'); if (b) { e.stopPropagation(); speak(b.dataset.say); }
   });
   readBtn.addEventListener('click', () => speak([...wordsEl.querySelectorAll('p')].map((p) => p.textContent).join(' ')));
 
@@ -154,6 +161,7 @@
     titleEl.textContent = sc.title;
     showWords(S0.textFor(state));
     choicesEl.innerHTML = '';
+    sideNext(!!sc.end || !sc.choices);
     if (sc.end) {
       choicesEl.appendChild(button('The End', showEndCard, 'next'));
     } else if (!sc.choices) {
@@ -179,13 +187,10 @@
     if (!react) { goNext(c); return; }
     view.phase = 'react'; view.choice = c; view.reactStart = performance.now();
     showWords(react, 'react');
-    const chips = [];
-    if (c.star) chips.push(`<span class="chip">${S0.STARS[c.star].name}!</span>`);
     const fresh = state.items.find((i) => !hadItems.has(i));
-    if (fresh) chips.push(`<span class="chip"><span class="mini">${ITEM_SVG[fresh] || ''}</span>Got: ${S0.ITEMS[fresh].name}</span>`);
-    if (chips.length) wordsEl.insertAdjacentHTML('beforeend', `<div class="chips">${chips.join('')}</div>`);
     renderPouch(fresh);
     choicesEl.innerHTML = '';
+    sideNext(true);
     const next = button('Next page', () => goNext(c), 'next');
     choicesEl.appendChild(next);
     backBtn.hidden = false;
@@ -218,6 +223,7 @@
 
   function showTitle() {
     mode = 'title';
+    sideNext(false);
     setArt('title'); view.phase = 'read'; view.choice = null;
     titleEl.textContent = '';
     pouchEl.innerHTML = '';
@@ -225,7 +231,7 @@
     wordsEl.className = 'words card';
     wordsEl.innerHTML = `<h1 class="card-title">The Runaway Egg</h1>
       <div class="sub">A dinosaur story. <b>You</b> choose what happens!</div>
-      <div class="sub" style="font-size:.8em">Pip is a <button type="button" class="big" data-say="Parasaurolophus">Parasaurolophus</button>. Tap the picture to make Pip honk!</div>
+      <div class="sub" style="font-size:.8em">Pip is a ${bigWord('Parasaurolophus')}. Tap the picture to make Pip honk!</div>
       ${stickersHTML()}`;
     choicesEl.innerHTML = '';
     const saved = load(KEY, null);
@@ -245,6 +251,7 @@
   }
   function showEndCard() {
     mode = 'end';
+    sideNext(false);
     const sc = S0.SCENES[state.scene], end = S0.ENDINGS.find((e) => e.id === state.scene);
     const found = load(ENDKEY, []), isNew = !found.includes(end.id);
     if (isNew) { found.push(end.id); store(ENDKEY, found); }
