@@ -1,6 +1,6 @@
 /* Endurance Docking — a two-player, top-down docking game.
  * Pilot: W A S D (screen-oriented thrusters). Co-pilot: ← / → arrow keys (spin).
- * Settings can swap them (arrows thrust, A / D spin) and turn on auto-brake.
+ * Settings can swap them (arrows thrust, A / D spin), turn on auto-brake, and hand the spin to an autopilot.
  * Art style: "Saturday Cartoon" (see design_artifacts/).
  */
 (() => {
@@ -36,6 +36,9 @@ const THRUST = 70;        // units/s^2
 const TORQUE = 0.9;       // rad/s^2
 const DOCKED_THRUST = 0.45, DOCKED_TORQUE = 0.35;   // the joined ships are heavier
 const BRAKE_EASE = 3;     // auto-brake: how softly the last bit of motion fades out (1/s)
+// spin autopilot: how hard it turns toward the nearest spoke. Far off it brakes in time to stop on the line
+// (sqrt of AUTO_SPIN.brake * angle), close in it eases the last bit (AUTO_SPIN.ease * angle).
+const AUTO_SPIN = { brake: 0.9, ease: 1.5 };
 const TOL = { pos: 20, posOut: 30, vel: 12, velOut: 18, ang: 0.14, angOut: 0.22, spin: 0.12, spinOut: 0.2 };
 const HOLD_TIME = 10;
 const WIN_SPIN = 0.06;
@@ -102,6 +105,8 @@ const lbl = a => KEY_LABEL[keyOf(a)];
 window.addEventListener('keydown', e => {
   if (GAME_KEYS.includes(e.code)) { keys.add(e.code); e.preventDefault(); }
   if (e.repeat) return;
+  if (!boardEl.hidden) { if (e.code === 'Escape') closeBoard(); return; }
+  if (e.code === 'Enter' && e.target.id === 'btnBoard') return;   // let Enter open the board, not launch
   if (e.code === 'KeyH') toggle('data');
   else if (e.code === 'KeyG') toggle('hints');
   else if (e.code === 'KeyT') toggle('talk');
@@ -117,15 +122,18 @@ window.addEventListener('keydown', e => {
 window.addEventListener('keyup', e => keys.delete(e.code));
 window.addEventListener('blur', () => { keys.clear(); if (S.phase !== 'title' && S.phase !== 'won') setPause(true); });
 const down = k => keys.has(k);
-const act = a => down(keyOf(a));
+// with the spin on autopilot, the co-pilot's keys do nothing
+const act = a => !(opts.spin === 'auto' && (a === 'ccw' || a === 'cw')) && down(keyOf(a));
 
 // ---------- settings / UI ----------
 // layout: 'classic' (W A S D thrust, ← → spin) or 'swapped' (arrows thrust, A D spin)
 // flight: 'coast' (real thrusters, motion keeps going) or 'brake' (auto-brake: motion eases to a stop when you let go)
-const opts = { data: true, hints: true, talk: true, music: true, syncMusic: true, layout: 'classic', flight: 'coast' };
+// spin: 'manual' (the co-pilot spins with the keys) or 'auto' (an autopilot matches the spin, and despins once docked)
+const opts = { data: true, hints: true, talk: true, music: true, syncMusic: true, layout: 'classic', flight: 'coast', spin: 'manual' };
 try { const saved = JSON.parse(localStorage.getItem('endurance-docking-opts') || 'null'); if (saved) Object.assign(opts, saved); } catch (e) { /* storage unavailable */ }
 if (!LAYOUTS[opts.layout]) opts.layout = 'classic';
 if (opts.flight !== 'brake') opts.flight = 'coast';
+if (opts.spin !== 'auto') opts.spin = 'manual';
 const btn = { data: document.getElementById('btnData'), hints: document.getElementById('btnHints'), talk: document.getElementById('btnTalk'), music: document.getElementById('btnSound'), pause: document.getElementById('btnPause') };
 function syncButtons() {
   for (const k of ['data', 'hints', 'talk']) btn[k].setAttribute('aria-pressed', String(opts[k]));
@@ -156,25 +164,35 @@ function setPause(p) { paused = p; syncButtons(); }
 
 // controls: key layout and flight mode (Settings, and the buttons on the start screen)
 function syncControls() {
-  const swapped = opts.layout === 'swapped', brake = opts.flight === 'brake';
+  const swapped = opts.layout === 'swapped', brake = opts.flight === 'brake', auto = opts.spin === 'auto';
   document.querySelectorAll('[data-layout]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.layout === opts.layout)));
   document.querySelectorAll('[data-flight]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.flight === opts.flight)));
+  document.querySelectorAll('[data-spin]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.spin === opts.spin)));
   const kbd = list => list.map(a => `<kbd>${lbl(a)}</kbd>`).join('');
   document.getElementById('pilotKeys').innerHTML = kbd(['up', 'left', 'down', 'right']);
   document.getElementById('copilotKeys').innerHTML = kbd(['ccw', 'cw']);
   document.getElementById('pilotNote').textContent = `Thrusters push up, left, down, right on the screen. ${brake ? 'Let go and you ease to a stop next to the station.' : 'You keep coasting after you let go.'}`;
-  document.getElementById('copilotNote').textContent = `${lbl('ccw')} spins counter-clockwise, ${lbl('cw')} spins clockwise. ${brake ? 'Let go and the spin eases back to match the station.' : 'The spin keeps going after you let go.'}`;
+  document.getElementById('copilotNote').textContent = auto
+    ? 'Autopilot is flying the spin: it lines up with the station and matches its spin, then slows the spin once you dock.'
+    : `${lbl('ccw')} spins counter-clockwise, ${lbl('cw')} spins clockwise. ${brake ? 'Let go and the spin eases back to match the station.' : 'The spin keeps going after you let go.'}`;
+  document.getElementById('copilotTitle').textContent = auto ? 'Co-pilot: autopilot' : 'Co-pilot';
+  document.getElementById('copilot').classList.toggle('auto', auto);
   document.getElementById('players').classList.toggle('swapped', swapped);
   const quick = document.getElementById('btnQuickKeys'), quickFlight = document.getElementById('btnQuickFlight');
   quick.textContent = swapped ? 'Keys: arrows fly, A D spin' : 'Keys: W A S D fly, ← → spin';
   quickFlight.textContent = brake ? 'Let go: ease to a stop' : 'Let go: keep drifting';
   quickFlight.setAttribute('aria-pressed', String(brake));
+  const quickSpin = document.getElementById('btnQuickSpin');
+  quickSpin.textContent = auto ? 'Spin: autopilot' : 'Spin: co-pilot';
+  quickSpin.setAttribute('aria-pressed', String(auto));
 }
 function setOpt(k, v) { if (opts[k] === v) return; opts[k] = v; keys.clear(); saveOpts(); syncButtons(); }
 document.querySelectorAll('[data-layout]').forEach(b => b.onclick = () => setOpt('layout', b.dataset.layout));
 document.querySelectorAll('[data-flight]').forEach(b => b.onclick = () => setOpt('flight', b.dataset.flight));
 document.getElementById('btnQuickKeys').onclick = () => setOpt('layout', opts.layout === 'swapped' ? 'classic' : 'swapped');
 document.getElementById('btnQuickFlight').onclick = () => setOpt('flight', opts.flight === 'brake' ? 'coast' : 'brake');
+document.querySelectorAll('[data-spin]').forEach(b => b.onclick = () => setOpt('spin', b.dataset.spin));
+document.getElementById('btnQuickSpin').onclick = () => setOpt('spin', opts.spin === 'auto' ? 'manual' : 'auto');
 
 // ---------- pause menu & settings ----------
 const pauseEl = document.getElementById('pauseMenu'), settingsEl = document.getElementById('settings');
@@ -352,6 +370,62 @@ document.getElementById('btnStart').onclick = () => startGame();
 document.getElementById('btnAgain').onclick = () => newGame(S.diff, false);
 function startGame() { newGame(chosenDiff, false); }
 
+// ---------- leaderboard: the five fastest missions on each difficulty ----------
+// A run is { time (seconds from the explosion to the safe zone), at (when it was flown, ms since 1970),
+// spin, flight (the assists that were on) }. The date and time it was flown is what identifies it.
+const BOARD_KEY = 'endurance-docking-leaderboard', BOARD_SIZE = 5;
+const DIFF_NAME = { easy: 'Easy', normal: 'Normal', hard: 'Hard' };
+const board = { easy: [], normal: [], hard: [] };
+try {
+  const saved = JSON.parse(localStorage.getItem(BOARD_KEY) || 'null');
+  if (saved) for (const d in board) if (Array.isArray(saved[d]))
+    board[d] = saved[d].filter(r => r && Number.isFinite(r.time) && Number.isFinite(r.at)).sort((a, b) => a.time - b.time).slice(0, BOARD_SIZE);
+} catch (e) { /* storage unavailable: the board lasts this session */ }
+function saveBoard() { try { localStorage.setItem(BOARD_KEY, JSON.stringify(board)); } catch (e) { /* ignore */ } }
+// add a finished run; returns its place (1 to 5), or 0 if it wasn't fast enough. Ties go to the earlier run.
+function addRun(diff, run) {
+  const list = board[diff].concat(run).sort((a, b) => a.time - b.time || a.at - b.at);
+  const place = list.indexOf(run) + 1;
+  if (place > BOARD_SIZE) return 0;
+  board[diff] = list.slice(0, BOARD_SIZE);
+  saveBoard();
+  return place;
+}
+const fmtTime = t => { const d = Math.round(t * 10); return `${Math.floor(d / 600)}:${String(Math.floor(d / 10) % 60).padStart(2, '0')}.${d % 10}`; };
+function fmtWhen(at) {
+  const d = new Date(at);
+  try { return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'medium' }); } catch (e) { return d.toLocaleString(); }
+}
+// fill an <ol class="board"> with a difficulty's top five; `mark` (a run's `at`) highlights that run
+function renderBoard(ol, diff, mark) {
+  ol.textContent = '';
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    const r = board[diff][i], li = document.createElement('li');
+    const cell = (cls, txt) => { const sp = document.createElement('span'); sp.className = cls; sp.textContent = txt; li.append(sp); return sp; };
+    cell('rank', String(i + 1));
+    if (!r) { li.className = 'empty'; cell('time', '–:––.–'); cell('when', 'No run yet'); ol.append(li); continue; }
+    if (r.at === mark) li.className = 'new';
+    cell('time', fmtTime(r.time));
+    const when = cell('when', fmtWhen(r.at));
+    const tags = [r.spin === 'auto' && 'spin autopilot', r.flight === 'brake' && 'auto-brake'].filter(Boolean);
+    for (const t of tags) { const tag = document.createElement('small'); tag.className = 'tag'; tag.textContent = t; when.append(tag); }
+    ol.append(li);
+  }
+}
+// the Best times panel (start screen)
+const boardEl = document.getElementById('boardOverlay'), boardList = document.getElementById('boardList');
+let boardDiff = 'easy';
+function showBoard(diff) {
+  boardDiff = diff;
+  document.querySelectorAll('[data-board]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.board === diff)));
+  renderBoard(boardList, diff);
+}
+function openBoard() { showBoard(chosenDiff); boardEl.hidden = false; document.getElementById('btnCloseBoard').focus(); }
+function closeBoard() { boardEl.hidden = true; document.getElementById('btnBoard').focus(); }
+document.querySelectorAll('[data-board]').forEach(b => b.onclick = () => showBoard(b.dataset.board));
+document.getElementById('btnBoard').onclick = () => openBoard();
+document.getElementById('btnCloseBoard').onclick = () => closeBoard();
+
 // ---------- crew talk (speech bubbles) ----------
 // Lines in quotes are from the docking scene in the film; the rest are game prompts.
 const LINES = {
@@ -479,6 +553,19 @@ function steer(body, prop, neg, pos, accel, rest, dt) {
   body[prop] += Math.sign(d) * step;
   return step > accel * dt * 0.25 ? Math.sign(d) : 0;
 }
+// Spin autopilot (Settings): turn the body's spin toward `want`, no harder than the spin thrusters could.
+// Returns which way it pushed (-1, 0, +1) so the wing-tip puffs can show it.
+function autoSpin(body, want, accel, dt) {
+  const step = clamp(want - body.w, -accel * dt, accel * dt);
+  body.w += step;
+  return Math.abs(step) > accel * dt * 0.25 ? Math.sign(step) : 0;
+}
+// the spin the autopilot wants while flying free: the station's spin, plus enough extra to swing the Ranger
+// onto the nearest of the four spoke directions and stop there
+function lineUpSpin() {
+  const e = angleErr(S.ship.a, S.st.a), m = Math.abs(e);
+  return S.st.w - Math.sign(e) * Math.min(Math.sqrt(AUTO_SPIN.brake * m), AUTO_SPIN.ease * m);
+}
 function update(dt) {
   const st = S.st, sh = S.ship;
   S.time += dt;
@@ -506,7 +593,7 @@ function update(dt) {
       // flying free, auto-brake brings you to rest next to the station: its drift and its spin
       B.x = steer(sh, 'vx', 'left', 'right', THRUST, st.vx, dt);
       B.y = steer(sh, 'vy', 'up', 'down', THRUST, st.vy, dt);
-      B.w = steer(sh, 'w', 'ccw', 'cw', TORQUE, st.w, dt);
+      B.w = opts.spin === 'auto' ? autoSpin(sh, lineUpSpin(), TORQUE, dt) : steer(sh, 'w', 'ccw', 'cw', TORQUE, st.w, dt);
       if (!S.said.has('moving') && ACTIONS.some(act)) { sayOnce('moving'); sayOnce('intro'); }
     }
     sh.x += sh.vx * dt; sh.y += sh.vy * dt; sh.a += sh.w * dt;
@@ -547,7 +634,7 @@ function update(dt) {
       // once docked there's nothing to match, so auto-brake brings the joined ships to a standstill
       B.x = steer(st, 'vx', 'left', 'right', THRUST * DOCKED_THRUST, 0, dt);
       B.y = steer(st, 'vy', 'up', 'down', THRUST * DOCKED_THRUST, 0, dt);
-      B.w = steer(st, 'w', 'ccw', 'cw', TORQUE * DOCKED_TORQUE, 0, dt);
+      B.w = opts.spin === 'auto' ? autoSpin(st, 0, TORQUE * DOCKED_TORQUE, dt) : steer(st, 'w', 'ccw', 'cw', TORQUE * DOCKED_TORQUE, 0, dt);
     }
     st.x += st.vx * dt; st.y += st.vy * dt; st.a += st.w * dt;
     sh.x = st.x; sh.y = st.y; sh.vx = st.vx; sh.vy = st.vy; sh.w = st.w; sh.a = st.a + S.dockRel;
@@ -624,9 +711,17 @@ function dock() {
 function win() {
   S.phase = 'won'; S.wonAt = S.time;
   S.talk.queue = []; S.talk.cur = null; say('won');
-  const secs = Math.round(S.time);
-  const stars = 1 + (secs < 150 ? 1 : 0) + (S.lostHolds === 0 ? 1 : 0);
-  document.getElementById('winText').textContent = `You docked with Endurance and brought it to safety in ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}.`;
+  // mission time runs from the explosion (when you can first fly) to the safe zone, and stops while paused
+  const time = Math.round((S.time - S.boomAt) * 10) / 10;
+  const stars = 1 + (time < 150 - INTRO_BOOM ? 1 : 0) + (S.lostHolds === 0 ? 1 : 0);
+  const run = { time, at: Date.now(), spin: opts.spin, flight: opts.flight };
+  const place = addRun(S.diff, run), name = DIFF_NAME[S.diff];
+  document.getElementById('winText').textContent = `You docked with Endurance and brought it to safety in ${fmtTime(time)}.`;
+  document.getElementById('winRank').textContent = place === 1 ? `New best time on ${name}!`
+    : place ? `That's #${place} on the ${name} leaderboard!`
+    : `Not quite fast enough for the ${name} top ${BOARD_SIZE}. Beat ${fmtTime(board[S.diff][BOARD_SIZE - 1].time)} to get on.`;
+  document.getElementById('winBoardTitle').textContent = `Best times · ${name}`;
+  renderBoard(document.getElementById('winBoard'), S.diff, place ? run.at : undefined);
   document.getElementById('winStars').textContent = '★'.repeat(stars) + '☆'.repeat(3 - stars) + (S.lostHolds === 0 ? '  Perfect hold!' : '');
   setTimeout(() => { if (S.phase === 'won') winEl.hidden = false; }, 2200);
 }
@@ -961,8 +1056,9 @@ function stageText() {
     case 'approach':
       if (S.posM && S.spinM) return 'Hold steady! Clamps locking…';
       if (!S.posM) return 'Pilot: fly onto the yellow hub and match its drift';
-      return 'Co-pilot: spin to line up with the ghost ship';
+      return opts.spin === 'auto' ? 'Autopilot: lining up with the ghost ship…' : 'Co-pilot: spin to line up with the ghost ship';
     case 'docked':
+      if (Math.abs(st.w) >= WIN_SPIN && opts.spin === 'auto') return 'Docked! Autopilot is slowing the spin…';
       if (Math.abs(st.w) >= WIN_SPIN) return opts.flight === 'brake' ? 'Docked! Co-pilot: let go to slow the spin' : `Docked! Co-pilot: hold ${lbl(st.w > 0 ? 'ccw' : 'cw')} to slow the spin`;
       return 'Pilot: push into the safe zone →';
     case 'won': return 'Mission complete!';
@@ -982,6 +1078,13 @@ function drawPlayerBadges(c) {
   const x2 = swapped ? 14 : VW - 146;
   c.lineWidth = 3; c.strokeStyle = INK; c.fillStyle = 'rgba(255,138,61,.92)'; rr(c, x2, y, 132, bh, 16); c.fill(); c.stroke();
   outlinedText(c, 'CO-PILOT', x2 + 66, y + 14, '#ffffff', 15);
+  if (opts.spin === 'auto') {
+    // spin on autopilot: no keys, just show which way it's turning
+    outlinedText(c, 'AUTOPILOT', x2 + 66, y + 44, '#ffd34d', 19);
+    const B = S.brake.w, on = S.phase === 'approach' || S.phase === 'docked';
+    outlinedText(c, '↺', x2 + 41, y + 76, on && B < 0 ? '#ffd34d' : '#ffffff', 22); outlinedText(c, '↻', x2 + 91, y + 76, on && B > 0 ? '#ffd34d' : '#ffffff', 22);
+    return;
+  }
   keycap(c, x2 + 26, y + 36, lbl('ccw'), act('ccw')); keycap(c, x2 + 76, y + 36, lbl('cw'), act('cw'));
   outlinedText(c, '↺', x2 + 41, y + 82, '#ffffff', 18); outlinedText(c, '↻', x2 + 91, y + 82, '#ffffff', 18);
 }
@@ -1102,14 +1205,14 @@ function render() {
   if (live && opts.hints && !paused) {
     if (S.phase === 'approach') {
       if (!S.posM) drawThrustHint(c, S.ship, thrustNeed());
-      else if (!S.spinM) {
+      else if (!S.spinM && opts.spin !== 'auto') {
         const dw = S.st.w - S.ship.w, e = angleErr(S.ship.a, S.st.a);
         // if spin rates match but angle is off, nudge toward the ghost
         const cw = Math.abs(dw) > TOL.spin * .6 ? Math.sign(dw) : -Math.sign(e);
         drawSpinHint(c, S.ship.x, S.ship.y, cw || 1, Math.abs(dw) > TOL.spin * .6 ? (Math.sign(dw) === Math.sign(S.st.w) ? 'Spin faster!' : 'Slow your spin!') : 'Line up!');
       }
     } else if (S.phase === 'docked') {
-      if (Math.abs(S.st.w) >= WIN_SPIN) drawSpinHint(c, S.st.x, S.st.y, -Math.sign(S.st.w), 'Slow the spin!');
+      if (Math.abs(S.st.w) >= WIN_SPIN) { if (opts.spin !== 'auto') drawSpinHint(c, S.st.x, S.st.y, -Math.sign(S.st.w), 'Slow the spin!'); }
       else drawThrustHint(c, S.st, { x: Math.max(0, (W - ZONE_W + 60 - S.st.x)) * .4 + 10 - S.st.vx, y: -S.st.vy });
     }
   }
@@ -1141,5 +1244,5 @@ loadTrack();
 requestAnimationFrame(loop);
 
 // debug / testing hook
-window.__dock = { get state() { return S; }, newGame, update, render, sync, syncPos, tickSync };
+window.__dock = { get state() { return S; }, newGame, update, render, sync, syncPos, tickSync, opts, board, win };
 })();

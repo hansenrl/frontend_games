@@ -79,6 +79,19 @@
   .quick button[aria-pressed="true"]{background:var(--go)}
   .quick button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
   .settings hr{border:0;border-top:3px dashed rgba(26,16,48,.25);margin:12px 0}
+  .player.auto .keys kbd{opacity:.35}
+  .linkbtn{font:800 15px/1 var(--toon);border:3px solid var(--ink);border-radius:999px;padding:8px 14px 6px;background:#fff;color:var(--ink);cursor:pointer;margin-top:12px;box-shadow:0 3px 0 var(--ink)}
+  .linkbtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+  .linkbtn:focus-visible,.go:focus-visible,.alt:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .panel.boardp{max-width:500px}
+  .panel h3{font-weight:800;font-size:20px;margin:14px 0 0}
+  .board{list-style:none;margin:8px auto 4px;padding:0;max-width:460px;text-align:left}
+  .board li{display:grid;grid-template-columns:22px 70px 1fr;align-items:center;gap:8px;padding:6px 12px 5px;margin:5px 0;border:3px solid var(--ink);border-radius:14px;background:#fff;font-weight:600;font-size:14.5px;line-height:1.25}
+  .board li.new{background:var(--gold)}
+  .board li.empty{border-style:dashed;opacity:.55}
+  .board .rank{font-weight:800;font-size:18px}
+  .board .time{font:500 16px "IBM Plex Mono",monospace}
+  .board .tag{display:inline-block;margin-left:6px;padding:1px 7px;border:2px solid var(--ink);border-radius:999px;background:#c9f3ff;font-size:11.5px;font-weight:800;white-space:nowrap}
   @media (max-width:560px){.players{grid-template-columns:1fr}}
 </style>
 </head>
@@ -103,13 +116,14 @@
       <div class="player p1"><b>Pilot</b>
         <div class="keys" id="pilotKeys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
         <small id="pilotNote">Thrusters push up, left, down, right on the screen. You keep coasting after you let go.</small></div>
-      <div class="player p2"><b>Co-pilot</b>
+      <div class="player p2" id="copilot"><b id="copilotTitle">Co-pilot</b>
         <div class="keys" id="copilotKeys"><kbd>←</kbd><kbd>→</kbd></div>
         <small id="copilotNote">← spins counter-clockwise, → spins clockwise. The spin keeps going after you let go.</small></div>
     </div>
     <div class="quick" role="group" aria-label="Controls (also in Settings)">
       <button id="btnQuickKeys" title="Swap which keys fly and which keys spin">Keys: W A S D fly, ← → spin</button>
       <button id="btnQuickFlight" aria-pressed="false" title="Auto-brake: motion eases to a stop when you let go">Let go: keep drifting</button>
+      <button id="btnQuickSpin" aria-pressed="false" title="Spin autopilot: the spin is flown for you, so one player can fly alone">Spin: co-pilot</button>
     </div>
     <ol class="steps">
       <li>Fly onto the yellow hub and match the station's drift.</li>
@@ -123,7 +137,22 @@
       <button data-diff="hard" aria-pressed="false">Hard</button>
     </div>
     <button class="go" id="btnStart">Launch!</button>
+    <div><button class="linkbtn" id="btnBoard">🏆 Best times</button></div>
     <p class="hint">Enter to launch · R restarts · P pauses · M sound</p>
+  </div>
+</div>
+
+<div class="overlay" id="boardOverlay" hidden>
+  <div class="panel boardp" role="dialog" aria-modal="true" aria-labelledby="boardTitle">
+    <h2 id="boardTitle">Best times</h2>
+    <div class="choice" role="group" aria-label="Difficulty">
+      <button data-board="easy" aria-pressed="true">Easy</button>
+      <button data-board="normal" aria-pressed="false">Normal</button>
+      <button data-board="hard" aria-pressed="false">Hard</button>
+    </div>
+    <ol class="board" id="boardList"></ol>
+    <p class="hint">The five fastest missions on each difficulty, timed from the explosion to the safe zone. Each run is marked with the date and time it was flown.</p>
+    <button class="go" id="btnCloseBoard">Done</button>
   </div>
 </div>
 
@@ -132,6 +161,9 @@
     <h1>Mission <span>complete!</span></h1>
     <p id="winText">Endurance is safe.</p>
     <p class="quote" id="winStars"></p>
+    <p id="winRank"></p>
+    <h3 id="winBoardTitle">Best times</h3>
+    <ol class="board" id="winBoard"></ol>
     <button class="go" id="btnAgain">Play again</button>
     <p class="hint">Enter to play again</p>
   </div>
@@ -160,6 +192,12 @@
       <button data-flight="brake" aria-pressed="false">Ease to a stop</button>
     </div>
     <p class="hint">Ease to a stop: let go and the Ranger settles alongside the station, matching its drift and spin. Once docked, the joined ships slow to a standstill.</p>
+    <p class="label">Spin is flown by</p>
+    <div class="choice" role="group" aria-label="Spin is flown by">
+      <button data-spin="manual" aria-pressed="true">Co-pilot (keys)</button>
+      <button data-spin="auto" aria-pressed="false">Autopilot</button>
+    </div>
+    <p class="hint">Autopilot: the spin keys are switched off. It turns the Ranger to line up with the station and match its spin, then slows the spin once you dock, so one player can fly alone.</p>
     <hr>
     <p class="label">Music track</p>
     <p class="track" id="trackName">None chosen</p>

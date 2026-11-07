@@ -61,6 +61,6 @@ It tries every combination of pieces and makes sure each level can be solved. Th
 
 ## Endurance Docking
 
-A two-player, top-down docking game inspired by the spinning-station docking scene in *Interstellar*. One player flies the Ranger with **W A S D** (thrust is always up/left/down/right on the screen), the other spins it with **K** and **L**. Match the station's position and drift, match its spin, hold for 10 seconds while the clamps lock, then slow the spin and push the station into the safe zone.
+A two-player, top-down docking game inspired by the spinning-station docking scene in *Interstellar*. One player flies the Ranger with **W A S D** (thrust is always up/left/down/right on the screen), the other spins it with **←** and **→** (Settings can put the spin on autopilot so one player can fly alone). Match the station's position and drift, match its spin, hold for 10 seconds while the clamps lock, then slow the spin and push the station into the safe zone. The five fastest missions on each difficulty are kept on a leaderboard, each marked with the date and time it was flown.
 
 `H` toggles flight data, `G` toggles hints, `T` toggles crew speech bubbles, `P` pauses, `R` restarts. More detail, and the art-style mockups it was designed from, are in [`interstellar-docking/`](interstellar-docking/).
