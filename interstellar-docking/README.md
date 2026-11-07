@@ -14,10 +14,21 @@ Controls are oriented to the **screen**, not the ship: W always pushes up the sc
 however the Ranger is turned. Thrusters behave like real thrusters, so speed and spin
 keep going after you let go until you push the other way.
 
+Two control options are on the start screen and in **Settings** (pause, then Settings). The
+browser remembers them:
+
+- **Pilot flies with:** *W A S D* (spin on ← →, the default) or *Arrows* (thrust on the arrow
+  keys, spin on A / D). The on-screen key badges and hints follow the layout you choose.
+- **When you let go of a key:** *Keep drifting* (real thrusters, the default) or *Ease to a stop*
+  (auto-brake). With auto-brake on, whenever neither key for a direction or for spin is held,
+  the thrusters brake that motion smoothly: while flying free the Ranger settles alongside
+  Endurance, matching its drift and spin, and once docked the joined ships slow to a standstill
+  (so letting go also despins them).
+
 | Player | Keys | Does |
 |---|---|---|
-| Pilot | W A S D | Thrust up / left / down / right |
-| Co-pilot | ← / → | Spin counter-clockwise / clockwise |
+| Pilot | W A S D (or arrows) | Thrust up / left / down / right |
+| Co-pilot | ← / → (or A / D) | Spin counter-clockwise / clockwise |
 | Anyone | H | Flight data on/off (live readouts and meters) |
 | Anyone | G | Hints on/off (ghost ship, trail, arrow hints) |
 | Anyone | T | Crew talk on/off (speech bubbles) |
@@ -65,4 +76,4 @@ ahead of the music. The cue times are in `SYNC_CUES` in `game.js`.
 ## Tuning
 
 Gameplay constants are at the top of `game.js`: `DIFF` (spin, drift, start gap, curve and camera zoom per difficulty),
-`THRUST`, `TORQUE`, `TOL` (how close counts as matched), `HOLD_TIME` and `WIN_SPIN`.
+`THRUST`, `TORQUE`, `BRAKE_EASE` (how softly auto-brake finishes), `TOL` (how close counts as matched), `HOLD_TIME` and `WIN_SPIN`.

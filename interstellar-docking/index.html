@@ -43,7 +43,7 @@
   .player small{font-weight:600;font-size:13.5px;display:block;line-height:1.3}
   .steps{text-align:left;margin:10px auto 0;padding-left:22px;max-width:480px;font-weight:600;font-size:15px}
   .diff{display:flex;gap:8px;justify-content:center;margin:16px 0 14px}
-  .diff button{font:800 16px/1 var(--toon);border:3px solid var(--ink);border-radius:999px;padding:9px 16px 7px;background:#fff;cursor:pointer}
+  .diff button{font:800 16px/1 var(--toon);border:3px solid var(--ink);border-radius:999px;padding:9px 16px 7px;background:#fff;color:var(--ink);cursor:pointer}
   .diff button[aria-pressed="true"]{background:var(--gold)}
   .go{font:800 24px/1 var(--toon);border:4px solid var(--ink);border-radius:999px;padding:12px 34px 9px;background:var(--go);cursor:pointer;box-shadow:0 5px 0 var(--ink)}
   .go:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
@@ -69,6 +69,16 @@
   .panel .label{font-size:14px;opacity:.7;margin:0}
   .track{font-family:"IBM Plex Mono",monospace;font-size:15px!important;word-break:break-all;background:#e7e0ff;border:2px solid var(--ink);border-radius:10px;padding:6px 10px}
   .settings .go{margin-top:12px}
+  .players.swapped .p1{order:2}
+  .choice{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:4px 0 10px}
+  .choice button{font:800 15px/1 var(--toon);border:3px solid var(--ink);border-radius:999px;padding:9px 14px 7px;background:#fff;color:var(--ink);cursor:pointer}
+  .choice button[aria-pressed="true"]{background:var(--gold)}
+  .choice button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .quick{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:-6px 0 12px}
+  .quick button{font:800 14px/1 var(--toon);border:3px solid var(--ink);border-radius:999px;padding:7px 12px 5px;background:#fff;color:var(--ink);cursor:pointer}
+  .quick button[aria-pressed="true"]{background:var(--go)}
+  .quick button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .settings hr{border:0;border-top:3px dashed rgba(26,16,48,.25);margin:12px 0}
   @media (max-width:560px){.players{grid-template-columns:1fr}}
 </style>
 </head>
@@ -89,13 +99,17 @@
   <div class="panel">
     <h1>Endurance <span>Docking</span></h1>
     <p class="quote">“It's not possible.” “No. It's necessary.”</p>
-    <div class="players">
+    <div class="players" id="players">
       <div class="player p1"><b>Pilot</b>
-        <div class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
-        <small>Thrusters push up, left, down, right on the screen. You keep coasting after you let go.</small></div>
+        <div class="keys" id="pilotKeys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
+        <small id="pilotNote">Thrusters push up, left, down, right on the screen. You keep coasting after you let go.</small></div>
       <div class="player p2"><b>Co-pilot</b>
-        <div class="keys"><kbd>←</kbd><kbd>→</kbd></div>
-        <small>← spins counter-clockwise, → spins clockwise. The spin keeps going after you let go.</small></div>
+        <div class="keys" id="copilotKeys"><kbd>←</kbd><kbd>→</kbd></div>
+        <small id="copilotNote">← spins counter-clockwise, → spins clockwise. The spin keeps going after you let go.</small></div>
+    </div>
+    <div class="quick" role="group" aria-label="Controls (also in Settings)">
+      <button id="btnQuickKeys" title="Swap which keys fly and which keys spin">Keys: W A S D fly, ← → spin</button>
+      <button id="btnQuickFlight" aria-pressed="false" title="Auto-brake: motion eases to a stop when you let go">Let go: keep drifting</button>
     </div>
     <ol class="steps">
       <li>Fly onto the yellow hub and match the station's drift.</li>
@@ -135,6 +149,18 @@
   </div>
   <div class="panel small settings" id="settings" role="dialog" aria-modal="true" aria-labelledby="setTitle" hidden>
     <h2 id="setTitle">Settings</h2>
+    <p class="label">Pilot flies with</p>
+    <div class="choice" role="group" aria-label="Pilot flies with">
+      <button data-layout="classic" aria-pressed="true">W A S D (spin on ← →)</button>
+      <button data-layout="swapped" aria-pressed="false">Arrows (spin on A D)</button>
+    </div>
+    <p class="label">When you let go of a key</p>
+    <div class="choice" role="group" aria-label="When you let go of a key">
+      <button data-flight="coast" aria-pressed="true">Keep drifting</button>
+      <button data-flight="brake" aria-pressed="false">Ease to a stop</button>
+    </div>
+    <p class="hint">Ease to a stop: let go and the Ranger settles alongside the station, matching its drift and spin. Once docked, the joined ships slow to a standstill.</p>
+    <hr>
     <p class="label">Music track</p>
     <p class="track" id="trackName">None chosen</p>
     <div class="menu row">

@@ -1,5 +1,6 @@
 /* Endurance Docking — a two-player, top-down docking game.
  * Pilot: W A S D (screen-oriented thrusters). Co-pilot: ← / → arrow keys (spin).
+ * Settings can swap them (arrows thrust, A / D spin) and turn on auto-brake.
  * Art style: "Saturday Cartoon" (see design_artifacts/).
  */
 (() => {
@@ -34,6 +35,7 @@ const MANN_FAR = 120, MANN_DOCKED = 36;   // lander gap from the ring, start and
 const THRUST = 70;        // units/s^2
 const TORQUE = 0.9;       // rad/s^2
 const DOCKED_THRUST = 0.45, DOCKED_TORQUE = 0.35;   // the joined ships are heavier
+const BRAKE_EASE = 3;     // auto-brake: how softly the last bit of motion fades out (1/s)
 const TOL = { pos: 20, posOut: 30, vel: 12, velOut: 18, ang: 0.14, angOut: 0.22, spin: 0.12, spinOut: 0.2 };
 const HOLD_TIME = 10;
 const WIN_SPIN = 0.06;
@@ -87,8 +89,16 @@ function connectorIsBroken(i) { return MISSING.includes(i) || MISSING.includes((
 
 // ---------- input ----------
 const keys = new Set();
-const GAME_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowLeft', 'ArrowRight'];
-const CCW = 'ArrowLeft', CW = 'ArrowRight';
+const GAME_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+// key layouts (Settings): which key does each action
+const LAYOUTS = {
+  classic: { up: 'KeyW', down: 'KeyS', left: 'KeyA', right: 'KeyD', ccw: 'ArrowLeft', cw: 'ArrowRight' },
+  swapped: { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', ccw: 'KeyA', cw: 'KeyD' },
+};
+const ACTIONS = Object.keys(LAYOUTS.classic);
+const KEY_LABEL = { KeyW: 'W', KeyA: 'A', KeyS: 'S', KeyD: 'D', ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→' };
+const keyOf = a => (LAYOUTS[opts.layout] || LAYOUTS.classic)[a];
+const lbl = a => KEY_LABEL[keyOf(a)];
 window.addEventListener('keydown', e => {
   if (GAME_KEYS.includes(e.code)) { keys.add(e.code); e.preventDefault(); }
   if (e.repeat) return;
@@ -107,10 +117,15 @@ window.addEventListener('keydown', e => {
 window.addEventListener('keyup', e => keys.delete(e.code));
 window.addEventListener('blur', () => { keys.clear(); if (S.phase !== 'title' && S.phase !== 'won') setPause(true); });
 const down = k => keys.has(k);
+const act = a => down(keyOf(a));
 
 // ---------- settings / UI ----------
-const opts = { data: true, hints: true, talk: true, music: true, syncMusic: true };
+// layout: 'classic' (W A S D thrust, ← → spin) or 'swapped' (arrows thrust, A D spin)
+// flight: 'coast' (real thrusters, motion keeps going) or 'brake' (auto-brake: motion eases to a stop when you let go)
+const opts = { data: true, hints: true, talk: true, music: true, syncMusic: true, layout: 'classic', flight: 'coast' };
 try { const saved = JSON.parse(localStorage.getItem('endurance-docking-opts') || 'null'); if (saved) Object.assign(opts, saved); } catch (e) { /* storage unavailable */ }
+if (!LAYOUTS[opts.layout]) opts.layout = 'classic';
+if (opts.flight !== 'brake') opts.flight = 'coast';
 const btn = { data: document.getElementById('btnData'), hints: document.getElementById('btnHints'), talk: document.getElementById('btnTalk'), music: document.getElementById('btnSound'), pause: document.getElementById('btnPause') };
 function syncButtons() {
   for (const k of ['data', 'hints', 'talk']) btn[k].setAttribute('aria-pressed', String(opts[k]));
@@ -124,6 +139,7 @@ function syncButtons() {
   syncNote.textContent = opts.syncMusic
     ? 'This track follows the mission: it skips ahead when you start moving, start spinning, lock on and reach the safe zone.'
     : 'Sync is off: the track just plays and loops from start to finish.';
+  syncControls();
   pauseEl.hidden = !paused || !S || S.phase === 'title' || S.phase === 'won';
   if (pauseEl.hidden) { settingsEl.hidden = true; pausePanel.hidden = false; }
   syncMusic();
@@ -138,6 +154,28 @@ btn.pause.onclick = () => togglePause();
 let paused = false;
 function setPause(p) { paused = p; syncButtons(); }
 
+// controls: key layout and flight mode (Settings, and the buttons on the start screen)
+function syncControls() {
+  const swapped = opts.layout === 'swapped', brake = opts.flight === 'brake';
+  document.querySelectorAll('[data-layout]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.layout === opts.layout)));
+  document.querySelectorAll('[data-flight]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.flight === opts.flight)));
+  const kbd = list => list.map(a => `<kbd>${lbl(a)}</kbd>`).join('');
+  document.getElementById('pilotKeys').innerHTML = kbd(['up', 'left', 'down', 'right']);
+  document.getElementById('copilotKeys').innerHTML = kbd(['ccw', 'cw']);
+  document.getElementById('pilotNote').textContent = `Thrusters push up, left, down, right on the screen. ${brake ? 'Let go and you ease to a stop next to the station.' : 'You keep coasting after you let go.'}`;
+  document.getElementById('copilotNote').textContent = `${lbl('ccw')} spins counter-clockwise, ${lbl('cw')} spins clockwise. ${brake ? 'Let go and the spin eases back to match the station.' : 'The spin keeps going after you let go.'}`;
+  document.getElementById('players').classList.toggle('swapped', swapped);
+  const quick = document.getElementById('btnQuickKeys'), quickFlight = document.getElementById('btnQuickFlight');
+  quick.textContent = swapped ? 'Keys: arrows fly, A D spin' : 'Keys: W A S D fly, ← → spin';
+  quickFlight.textContent = brake ? 'Let go: ease to a stop' : 'Let go: keep drifting';
+  quickFlight.setAttribute('aria-pressed', String(brake));
+}
+function setOpt(k, v) { if (opts[k] === v) return; opts[k] = v; keys.clear(); saveOpts(); syncButtons(); }
+document.querySelectorAll('[data-layout]').forEach(b => b.onclick = () => setOpt('layout', b.dataset.layout));
+document.querySelectorAll('[data-flight]').forEach(b => b.onclick = () => setOpt('flight', b.dataset.flight));
+document.getElementById('btnQuickKeys').onclick = () => setOpt('layout', opts.layout === 'swapped' ? 'classic' : 'swapped');
+document.getElementById('btnQuickFlight').onclick = () => setOpt('flight', opts.flight === 'brake' ? 'coast' : 'brake');
+
 // ---------- pause menu & settings ----------
 const pauseEl = document.getElementById('pauseMenu'), settingsEl = document.getElementById('settings');
 const trackName = document.getElementById('trackName'), trackFile = document.getElementById('trackFile');
@@ -145,7 +183,7 @@ const btnClearTrack = document.getElementById('btnClearTrack');
 document.getElementById('btnResume').onclick = () => setPause(false);
 document.getElementById('btnRestart').onclick = () => newGame(S.diff, false);
 const pausePanel = document.getElementById('pausePanel');
-document.getElementById('btnSettings').onclick = () => { settingsEl.hidden = false; pausePanel.hidden = true; document.getElementById('btnPickTrack').focus(); };
+document.getElementById('btnSettings').onclick = () => { settingsEl.hidden = false; pausePanel.hidden = true; settingsEl.querySelector('[data-layout][aria-pressed="true"]').focus(); };
 document.getElementById('btnCloseSettings').onclick = () => closeSettings();
 document.getElementById('btnPickTrack').onclick = () => trackFile.click();
 function closeSettings() { settingsEl.hidden = true; pausePanel.hidden = false; document.getElementById('btnSettings').focus(); }
@@ -389,6 +427,7 @@ function newGame(diff, title) {
     curve: d.curve, curveT: Math.random() * TAU, camX: 0,
     mann: { off: MANN_FAR },
     ship: { x: shX, y: H - 110, vx: 0, vy: 0, a: 0, w: 0 },
+    brake: { x: 0, y: 0, w: 0 },   // which way the auto-brake is firing this frame (for the flames)
     cam: 0, trail: [], trailT: 0,
     posM: false, spinM: false, hold: 0, dockRel: 0, bestHold: 0,
     flash: 0, nextBurst: rand(6, 10),
@@ -428,10 +467,23 @@ function explode() {
 }
 
 // ---------- update ----------
+// One control axis (vx, vy or w of a body). Either key held: thrust that way. With auto-brake on and
+// both keys let go, ease back to `rest`, braking no harder than the thrusters could, with a soft finish.
+// Returns which way the brake fired (-1, 0, +1) so the flames can show it.
+function steer(body, prop, neg, pos, accel, rest, dt) {
+  const n = act(neg), p = act(pos);
+  if (n || p) { body[prop] += ((p ? 1 : 0) - (n ? 1 : 0)) * accel * dt; return 0; }
+  if (opts.flight !== 'brake') return 0;
+  const d = rest - body[prop];
+  const step = Math.min(Math.abs(d) * Math.min(1, BRAKE_EASE * dt), accel * dt);
+  body[prop] += Math.sign(d) * step;
+  return step > accel * dt * 0.25 ? Math.sign(d) : 0;
+}
 function update(dt) {
   const st = S.st, sh = S.ship;
   S.time += dt;
   const playing = S.phase === 'approach' || S.phase === 'docked';
+  const B = S.brake; B.x = B.y = B.w = 0;
 
   // opening scene: Mann's lander creeps in to dock, then the hatch blows
   if (S.phase === 'intro') {
@@ -451,13 +503,11 @@ function update(dt) {
   if (S.phase !== 'docked' && S.phase !== 'won') {
     // free flight
     if (playing) {
-      if (down('KeyW')) sh.vy -= THRUST * dt;
-      if (down('KeyS')) sh.vy += THRUST * dt;
-      if (down('KeyA')) sh.vx -= THRUST * dt;
-      if (down('KeyD')) sh.vx += THRUST * dt;
-      if (down(CW)) sh.w += TORQUE * dt;
-      if (down(CCW)) sh.w -= TORQUE * dt;
-      if (!S.said.has('moving') && GAME_KEYS.some(down)) { sayOnce('moving'); sayOnce('intro'); }
+      // flying free, auto-brake brings you to rest next to the station: its drift and its spin
+      B.x = steer(sh, 'vx', 'left', 'right', THRUST, st.vx, dt);
+      B.y = steer(sh, 'vy', 'up', 'down', THRUST, st.vy, dt);
+      B.w = steer(sh, 'w', 'ccw', 'cw', TORQUE, st.w, dt);
+      if (!S.said.has('moving') && ACTIONS.some(act)) { sayOnce('moving'); sayOnce('intro'); }
     }
     sh.x += sh.vx * dt; sh.y += sh.vy * dt; sh.a += sh.w * dt;
     st.x += st.vx * dt; st.y += st.vy * dt; st.a += st.w * dt;
@@ -494,12 +544,10 @@ function update(dt) {
   } else {
     // docked: the station and Ranger move as one heavier body
     if (S.phase === 'docked') {
-      if (down('KeyW')) st.vy -= THRUST * DOCKED_THRUST * dt;
-      if (down('KeyS')) st.vy += THRUST * DOCKED_THRUST * dt;
-      if (down('KeyA')) st.vx -= THRUST * DOCKED_THRUST * dt;
-      if (down('KeyD')) st.vx += THRUST * DOCKED_THRUST * dt;
-      if (down(CW)) st.w += TORQUE * DOCKED_TORQUE * dt;
-      if (down(CCW)) st.w -= TORQUE * DOCKED_TORQUE * dt;
+      // once docked there's nothing to match, so auto-brake brings the joined ships to a standstill
+      B.x = steer(st, 'vx', 'left', 'right', THRUST * DOCKED_THRUST, 0, dt);
+      B.y = steer(st, 'vy', 'up', 'down', THRUST * DOCKED_THRUST, 0, dt);
+      B.w = steer(st, 'w', 'ccw', 'cw', TORQUE * DOCKED_TORQUE, 0, dt);
     }
     st.x += st.vx * dt; st.y += st.vy * dt; st.a += st.w * dt;
     sh.x = st.x; sh.y = st.y; sh.vx = st.vx; sh.vy = st.vy; sh.w = st.w; sh.a = st.a + S.dockRel;
@@ -695,11 +743,13 @@ function drawShip(c, sh, thrusting) {
   c.save(); c.translate(sh.x, sh.y);
   // screen-oriented thruster flames (drawn before rotating)
   if (thrusting) {
-    const flames = [];
-    if (down('KeyW')) flames.push([0, 1]); if (down('KeyS')) flames.push([0, -1]);
-    if (down('KeyA')) flames.push([1, 0]); if (down('KeyD')) flames.push([-1, 0]);
-    for (const [fx, fy] of flames) {
-      const len = 26 + Math.sin(S.time * 40) * 4, base = 30;
+    const flames = [], B = S.brake;
+    if (act('up')) flames.push([0, 1, 1]); if (act('down')) flames.push([0, -1, 1]);
+    if (act('left')) flames.push([1, 0, 1]); if (act('right')) flames.push([-1, 0, 1]);
+    // auto-brake fires smaller flames, opposite the way it pushes
+    if (B.x) flames.push([-B.x, 0, .6]); if (B.y) flames.push([0, -B.y, .6]);
+    for (const [fx, fy, size] of flames) {
+      const len = (26 + Math.sin(S.time * 40) * 4) * size, base = 30;
       c.save(); c.rotate(Math.atan2(fy, fx));
       c.fillStyle = '#ff8a3d'; c.strokeStyle = INK; c.lineWidth = 3;
       c.beginPath(); c.moveTo(base, -9); c.quadraticCurveTo(base + len, 0, base, 9); c.closePath(); c.fill(); c.stroke();
@@ -709,8 +759,8 @@ function drawShip(c, sh, thrusting) {
   }
   c.rotate(sh.a); c.scale(SS, SS); c.lineJoin = 'round';
   // spin puffs at the wing tips
-  if (thrusting && (down(CCW) || down(CW))) {
-    const dir = down(CW) ? -1 : 1;
+  if (thrusting && (act('ccw') || act('cw') || S.brake.w)) {
+    const dir = act('cw') || (!act('ccw') && S.brake.w > 0) ? -1 : 1;
     c.fillStyle = '#ffffff'; c.strokeStyle = INK; c.lineWidth = 2;
     for (const s of [-1, 1]) { const r = 4 + Math.sin(S.time * 30 + s) * 1.2; circ(c, s * 23, 16 + dir * s * 6, r); c.fill(); c.stroke(); }
   }
@@ -854,7 +904,7 @@ function outlinedText(c, txt, x, y, col, size = 20, align = 'center') {
   c.lineWidth = 6; c.strokeStyle = INK; c.strokeText(txt, x, y); c.fillStyle = col; c.fillText(txt, x, y);
 }
 function drawSpinHint(c, x, y, cw, label) {
-  // cw = +1 means "spin clockwise more" (press →)
+  // cw = +1 means "spin clockwise more" (press the clockwise key)
   const pulse = .55 + .45 * Math.sin(S.time * 6);
   const col = `rgba(255,211,77,${pulse})`, r = 62;
   const a0 = -Math.PI / 2 - cw * .9, a1 = -Math.PI / 2 + cw * .9;
@@ -862,7 +912,8 @@ function drawSpinHint(c, x, y, cw, label) {
   c.beginPath(); c.arc(x, y, r, a0, a1, cw < 0); c.stroke(); c.lineCap = 'butt';
   const tx = -Math.sin(a1) * cw, ty = Math.cos(a1) * cw, hx = x + Math.cos(a1) * r, hy = y + Math.sin(a1) * r;
   c.fillStyle = col; c.beginPath(); c.moveTo(hx + tx * 14, hy + ty * 14); c.lineTo(hx - Math.cos(a1) * 10, hy - Math.sin(a1) * 10); c.lineTo(hx + Math.cos(a1) * 10, hy + Math.sin(a1) * 10); c.closePath(); c.fill();
-  keycap(c, x - 15, y - r - 50, cw > 0 ? '→' : '←', down(cw > 0 ? CW : CCW));
+  const k = cw > 0 ? 'cw' : 'ccw';
+  keycap(c, x - 15, y - r - 50, lbl(k), act(k));
   outlinedText(c, label, x, y - r - 64, '#ffd34d', 17);
 }
 function drawThrustHint(c, sh, need) {
@@ -878,10 +929,10 @@ function drawThrustHint(c, sh, need) {
   c.lineCap = 'butt';
   // which keys
   const ks = [];
-  if (Math.abs(need.y) > 4) ks.push(need.y < 0 ? 'W' : 'S');
-  if (Math.abs(need.x) > 4) ks.push(need.x < 0 ? 'A' : 'D');
+  if (Math.abs(need.y) > 4) ks.push(need.y < 0 ? 'up' : 'down');
+  if (Math.abs(need.x) > 4) ks.push(need.x < 0 ? 'left' : 'right');
   let kx = x2 + ux * 22 - ks.length * 17, ky = y2 + uy * 22 - 15;
-  for (const k of ks) { keycap(c, kx, ky, k, down('Key' + k)); kx += 34; }
+  for (const k of ks) { keycap(c, kx, ky, lbl(k), act(k)); kx += 34; }
 }
 function thrustNeed() {
   const st = S.st, sh = S.ship;
@@ -912,24 +963,26 @@ function stageText() {
       if (!S.posM) return 'Pilot: fly onto the yellow hub and match its drift';
       return 'Co-pilot: spin to line up with the ghost ship';
     case 'docked':
-      if (Math.abs(st.w) >= WIN_SPIN) return `Docked! Co-pilot: hold ${st.w > 0 ? '←' : '→'} to slow the spin`;
+      if (Math.abs(st.w) >= WIN_SPIN) return opts.flight === 'brake' ? 'Docked! Co-pilot: let go to slow the spin' : `Docked! Co-pilot: hold ${lbl(st.w > 0 ? 'ccw' : 'cw')} to slow the spin`;
       return 'Pilot: push into the safe zone →';
     case 'won': return 'Mission complete!';
   }
   return '';
 }
 function drawPlayerBadges(c) {
+  // each badge sits on the side of the keyboard its keys are on
+  const swapped = opts.layout === 'swapped';
   // P1
-  const y = VH - 112, bh = 98;
-  c.lineWidth = 3; c.strokeStyle = INK; c.fillStyle = 'rgba(79,216,255,.92)'; rr(c, 14, y, 132, bh, 16); c.fill(); c.stroke();
-  outlinedText(c, 'PILOT', 80, y + 14, '#ffffff', 15);
-  keycap(c, 65, y + 28, 'W', down('KeyW'));
-  keycap(c, 31, y + 62, 'A', down('KeyA')); keycap(c, 65, y + 62, 'S', down('KeyS')); keycap(c, 99, y + 62, 'D', down('KeyD'));
+  const y = VH - 112, bh = 98, x1 = swapped ? VW - 146 : 14;
+  c.lineWidth = 3; c.strokeStyle = INK; c.fillStyle = 'rgba(79,216,255,.92)'; rr(c, x1, y, 132, bh, 16); c.fill(); c.stroke();
+  outlinedText(c, 'PILOT', x1 + 66, y + 14, '#ffffff', 15);
+  keycap(c, x1 + 51, y + 28, lbl('up'), act('up'));
+  keycap(c, x1 + 17, y + 62, lbl('left'), act('left')); keycap(c, x1 + 51, y + 62, lbl('down'), act('down')); keycap(c, x1 + 85, y + 62, lbl('right'), act('right'));
   // P2
-  const x2 = VW - 146;
+  const x2 = swapped ? 14 : VW - 146;
   c.lineWidth = 3; c.strokeStyle = INK; c.fillStyle = 'rgba(255,138,61,.92)'; rr(c, x2, y, 132, bh, 16); c.fill(); c.stroke();
   outlinedText(c, 'CO-PILOT', x2 + 66, y + 14, '#ffffff', 15);
-  keycap(c, x2 + 26, y + 36, '←', down(CCW)); keycap(c, x2 + 76, y + 36, '→', down(CW));
+  keycap(c, x2 + 26, y + 36, lbl('ccw'), act('ccw')); keycap(c, x2 + 76, y + 36, lbl('cw'), act('cw'));
   outlinedText(c, '↺', x2 + 41, y + 82, '#ffffff', 18); outlinedText(c, '↻', x2 + 91, y + 82, '#ffffff', 18);
 }
 function drawBubble(c) {
