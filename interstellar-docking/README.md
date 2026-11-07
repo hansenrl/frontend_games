@@ -64,7 +64,7 @@ random, and its drift path swings between straight up and up-left.
 The game keeps a leaderboard of the five fastest missions on each difficulty, in the browser's
 local storage. A mission is timed from the explosion (when you can first fly) to the moment the
 docked ships reach the safe zone; the clock stops while paused. Each run on the board is marked
-with the date and time it was flown, plus a tag if the spin autopilot or auto-brake was on.
+with the date and time it was flown. Runs flown with the spin autopilot or auto-brake count the same as any other.
 The win screen shows where your run placed (highlighted), and **🏆 Best times** on the start
 screen shows the board for each difficulty.
 

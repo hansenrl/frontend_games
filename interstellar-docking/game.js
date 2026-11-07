@@ -371,8 +371,8 @@ document.getElementById('btnAgain').onclick = () => newGame(S.diff, false);
 function startGame() { newGame(chosenDiff, false); }
 
 // ---------- leaderboard: the five fastest missions on each difficulty ----------
-// A run is { time (seconds from the explosion to the safe zone), at (when it was flown, ms since 1970),
-// spin, flight (the assists that were on) }. The date and time it was flown is what identifies it.
+// A run is { time (seconds from the explosion to the safe zone), at (when it was flown, ms since 1970) }.
+// The date and time it was flown is what identifies it.
 const BOARD_KEY = 'endurance-docking-leaderboard', BOARD_SIZE = 5;
 const DIFF_NAME = { easy: 'Easy', normal: 'Normal', hard: 'Hard' };
 const board = { easy: [], normal: [], hard: [] };
@@ -406,9 +406,7 @@ function renderBoard(ol, diff, mark) {
     if (!r) { li.className = 'empty'; cell('time', '–:––.–'); cell('when', 'No run yet'); ol.append(li); continue; }
     if (r.at === mark) li.className = 'new';
     cell('time', fmtTime(r.time));
-    const when = cell('when', fmtWhen(r.at));
-    const tags = [r.spin === 'auto' && 'spin autopilot', r.flight === 'brake' && 'auto-brake'].filter(Boolean);
-    for (const t of tags) { const tag = document.createElement('small'); tag.className = 'tag'; tag.textContent = t; when.append(tag); }
+    cell('when', fmtWhen(r.at));
     ol.append(li);
   }
 }
@@ -714,7 +712,7 @@ function win() {
   // mission time runs from the explosion (when you can first fly) to the safe zone, and stops while paused
   const time = Math.round((S.time - S.boomAt) * 10) / 10;
   const stars = 1 + (time < 150 - INTRO_BOOM ? 1 : 0) + (S.lostHolds === 0 ? 1 : 0);
-  const run = { time, at: Date.now(), spin: opts.spin, flight: opts.flight };
+  const run = { time, at: Date.now() };
   const place = addRun(S.diff, run), name = DIFF_NAME[S.diff];
   document.getElementById('winText').textContent = `You docked with Endurance and brought it to safety in ${fmtTime(time)}.`;
   document.getElementById('winRank').textContent = place === 1 ? `New best time on ${name}!`
