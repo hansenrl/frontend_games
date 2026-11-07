@@ -1151,12 +1151,20 @@ function togglesLeft() {
 function drawHUD(c) {
   chip(c, 14, 14, 150, 'Position', S.posM || S.phase === 'docked' || S.phase === 'won');
   chip(c, 172, 14, 110, 'Spin', S.spinM || S.phase === 'docked' || S.phase === 'won');
+  // mission clock: counts up from the explosion (when you can first fly), stops at the safe zone and while paused
+  const flying = S.phase === 'approach' || S.phase === 'docked' || S.phase === 'won';
+  const secs = !flying ? 0 : (S.phase === 'won' ? S.wonAt : S.time) - S.boomAt;
+  c.lineWidth = 3.5; c.strokeStyle = INK; c.fillStyle = S.phase === 'won' ? '#5cff9d' : '#4a3f80';
+  rr(c, 290, 14, 104, 38, 19); c.fill(); c.stroke();
+  c.font = '800 20px "Baloo 2", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillStyle = S.phase === 'won' ? INK : flying ? '#ffffff' : '#cfc8ff';
+  c.fillText(fmtTime(secs), 342, 35);
   const txt = stageText();
   if (txt) {
-    // small pill beside the Position/Spin chips; drops below them if the top-right buttons are in the way
+    // small pill beside the chips and the clock; drops below them if the top-right buttons are in the way
     c.font = '800 15px "Baloo 2", sans-serif';
     const w = c.measureText(txt).width + 26;
-    let x = 292, y = 19;
+    let x = 404, y = 19;
     if (x + w > togglesLeft() - 10) { x = 14; y = 60; }
     c.lineWidth = 3; c.strokeStyle = INK; c.fillStyle = S.phase === 'docked' ? '#ff8a3d' : '#f6f2ff';
     rr(c, x, y, w, 28, 14); c.fill(); c.stroke();
